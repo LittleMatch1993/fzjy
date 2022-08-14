@@ -153,7 +153,7 @@ public class BanDealInfoServiceImpl extends ServiceImpl<BanDealInfoMapper, BanDe
         Map<String, List<GbOrgInfo>> gbOrgMap = gbOrgList.stream().collect(Collectors.groupingBy(GbOrgInfo::getCardId));
         List<BanDealInfo> banDealInfoList = new ArrayList<>(); //保存禁止交易数据
         List<SysDictBiz> dictList = sysDictBizService.selectList();
-        List<String>  noSubmitId = new ArrayList<>(); //提交失败的数据id
+        List<String>  submitId = new ArrayList<>(); //提交失败的数据id
         for (InvestInfo info : infoList) {
             String gbCardId = info.getCardId();//干部的身份证
             List<GbOrgInfo> gbOrgInfoList = !gbOrgMap.containsKey(gbCardId) ? null : ((List<GbOrgInfo>) gbOrgMap.get(gbCardId));//是否在干部表中查询到干部数据
@@ -220,8 +220,7 @@ public class BanDealInfoServiceImpl extends ServiceImpl<BanDealInfoMapper, BanDe
                     bandealInfo = validSupplierAndCodeAndBanPurchaseCode(bandealInfo, SystemConstant.SAVE_STATE); //新建
                     banDealInfoList.add(bandealInfo);
                 }
-            }else{
-                noSubmitId.add(info.getId());
+                submitId.add(info.getId());
             }
         }
         //社会企业信用代码验证
@@ -231,7 +230,7 @@ public class BanDealInfoServiceImpl extends ServiceImpl<BanDealInfoMapper, BanDe
         //新增操作记录
         boolean deal = banDealInfoRecordService.insertBanDealInfoRecord(newBanDealInfoList, SystemConstant.OPERATION_TYPE_ADD); //新增
         Map<String,Object> map = new HashMap();
-        map.put("noSubmitIds",noSubmitId); //记录不能提交的数据
+        map.put("submitIds",submitId); //记录不能提交的数据
         map.put("banDeal",b); //禁止交易数据是否提交成功
         map.put("banDealRecord",deal); //禁止交易记录数据是否提交成功
         return ResultMsgUtil.success(map);
@@ -243,7 +242,7 @@ public class BanDealInfoServiceImpl extends ServiceImpl<BanDealInfoMapper, BanDe
         List<SysDictBiz> dictList = sysDictBizService.selectList();
         Map<String, List<GbOrgInfo>> gbOrgMap = gbOrgList.stream().collect(Collectors.groupingBy(GbOrgInfo::getCardId));
         List<BanDealInfo> banDealInfoList = new ArrayList<>();
-        List<String>  noSubmitId = new ArrayList<>(); //提交失败的数据id
+        List<String>  submitId = new ArrayList<>(); //提交的数据id
         for (PrivateEquity info : infoList) {
             String gbCardId = info.getCardId();//干部的身份证
             List<GbOrgInfo> gbOrgInfoList = !gbOrgMap.containsKey(gbCardId) ? null : ((List<GbOrgInfo>) gbOrgMap.get(gbCardId));//是否在干部表中查询到干部数据
@@ -271,8 +270,8 @@ public class BanDealInfoServiceImpl extends ServiceImpl<BanDealInfoMapper, BanDe
 
                     bandealInfo.setEngageInfo(engageInfo);
                     bandealInfo.setOperatScope(info.getManagerOperatScope());
-                    bandealInfo.setSupplier(info.getPrivateequityName());
-                    bandealInfo.setCode(info.getCode());
+                    bandealInfo.setSupplier(info.getManager());
+                    bandealInfo.setCode(info.getRegistrationNumber());
 
                     String company = gbOrgInfo.getUnit();
                     String department = gbOrgInfo.getDeparment();
@@ -304,19 +303,18 @@ public class BanDealInfoServiceImpl extends ServiceImpl<BanDealInfoMapper, BanDe
                     bandealInfo = validSupplierAndCodeAndBanPurchaseCode(bandealInfo, SystemConstant.SAVE_STATE); //新建
                     banDealInfoList.add(bandealInfo);
                 }
-            }else{
-                noSubmitId.add(info.getId());
+                submitId.add(info.getId());
             }
         }
         //社会企业信用代码验证 13-3表不验证
-        //List<BanDealInfo> newBanDealInfoList = this.validBatchCompanyCode(banDealInfoList);
+        List<BanDealInfo> newBanDealInfoList = this.validBatchCompanyCode(banDealInfoList);
         //在禁止企业交易信息表中添加数据
         boolean b = this.saveBatch(banDealInfoList);
         //新增操作记录
         boolean deal = banDealInfoRecordService.insertBanDealInfoRecord(banDealInfoList, SystemConstant.OPERATION_TYPE_ADD); //新增
 
         Map<String,Object> map = new HashMap();
-        map.put("noSubmitIds",noSubmitId); //记录不能提交的数据
+        map.put("submitIds",submitId); //记录能提交的数据
         map.put("banDeal",b); //禁止交易数据是否提交成功
         map.put("banDealRecord",deal); //禁止交易记录数据是否提交成功
         return ResultMsgUtil.success(map);
@@ -326,7 +324,7 @@ public class BanDealInfoServiceImpl extends ServiceImpl<BanDealInfoMapper, BanDe
     @Override
     public ResultMsgUtil<Map<String,Object>> insertBanDealInfoOfMechanismInfo(List<MechanismInfo> infoList, List<GbOrgInfo> gbOrgList) {
         List<SysDictBiz> dictList = sysDictBizService.selectList();
-        List<String>  noSubmitId = new ArrayList<>(); //提交失败的数据id
+        List<String>  submitId = new ArrayList<>(); //提交失败的数据id
         Map<String, List<GbOrgInfo>> gbOrgMap = gbOrgList.stream().collect(Collectors.groupingBy(GbOrgInfo::getCardId));
         List<BanDealInfo> banDealInfoList = new ArrayList<>();
         for (MechanismInfo info : infoList) {
@@ -389,8 +387,7 @@ public class BanDealInfoServiceImpl extends ServiceImpl<BanDealInfoMapper, BanDe
                     bandealInfo = validSupplierAndCodeAndBanPurchaseCode(bandealInfo, SystemConstant.SAVE_STATE); //新建
                     banDealInfoList.add(bandealInfo);
                 }
-            }else{
-                noSubmitId.add(info.getId());
+                submitId.add(info.getId());
             }
 
         }
@@ -402,7 +399,7 @@ public class BanDealInfoServiceImpl extends ServiceImpl<BanDealInfoMapper, BanDe
         //新增操作记录
         boolean deal = banDealInfoRecordService.insertBanDealInfoRecord(newBanDealInfoList, SystemConstant.OPERATION_TYPE_ADD); //新增
         Map<String,Object> map = new HashMap();
-        map.put("noSubmitIds",noSubmitId); //记录不能提交的数据
+        map.put("submitIds",submitId); //记录不能提交的数据
         map.put("banDeal",b); //禁止交易数据是否提交成功
         map.put("banDealRecord",deal); //禁止交易记录数据是否提交成功
         return ResultMsgUtil.success(map);

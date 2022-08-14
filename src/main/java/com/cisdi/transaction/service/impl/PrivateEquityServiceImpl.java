@@ -75,6 +75,11 @@ public class PrivateEquityServiceImpl extends ServiceImpl<PrivateEquityMapper, P
         info.setUpdateTime(DateUtil.date());
         info.setTenantId(dto.getServiceLesseeId());
         info.setCreatorId(dto.getServiceUserId());
+
+        info.setCreateAccount(dto.getServiceUserAccount());
+        info.setCreateName(dto.getServiceUserName());
+        info.setOrgCode(dto.getServiceLesseeId());
+        info.setOrgName(dto.getServiceLesseeName());
         this.save(info);
     }
 
@@ -100,7 +105,8 @@ public class PrivateEquityServiceImpl extends ServiceImpl<PrivateEquityMapper, P
             return ResultMsgUtil.failure("当前表中的有效数据不能重复提交到禁止交易信息表中!");
         }
 
-        boolean b = this.updateState(ids, SystemConstant.VALID_STATE);
+       // boolean b = this.updateState(ids, SystemConstant.VALID_STATE);
+        boolean b = true;
 
         if (b) { //配偶、子女及其配偶投资私募股权投资基金或者担任高级职务的情况 表数据改为有效状态 并且修改成功 往 配偶，子女及其配偶表中添加数据。
             // 配偶，子女及其配偶表中添加数据。如果 干部身份证号 姓名 称谓 重复则不添加
@@ -155,17 +161,19 @@ public class PrivateEquityServiceImpl extends ServiceImpl<PrivateEquityMapper, P
             //处理提交数据后
             Map<String, Object> data = mapResult.getData();
             String banDeal = data.get("banDeal").toString();
-            List<String> noSubmitIds = (List<String>)data.get("noSubmitIds");
+            List<String> submitIds = (List<String>)data.get("submitIds");
             StringJoiner sj = new StringJoiner(",");
-            if(CollectionUtil.isNotEmpty(noSubmitIds)){
-                this.updateState(noSubmitIds,SystemConstant.SAVE_STATE);
+            if(CollectionUtil.isNotEmpty(submitIds)){
+                this.updateState(submitIds,SystemConstant.VALID_STATE);
             }
             if(!Boolean.valueOf(banDeal)){
                 sj.add("提交数据失败");
             }else{
                 sj.add("提交数据成功");
-                if(CollectionUtil.isNotEmpty(noSubmitIds)){
-                    sj.add(",其中"+noSubmitIds.size()+"数据提交失败");
+                if(CollectionUtil.isNotEmpty(submitIds)){
+                    int beferIndex = infoList.size();
+                    int afterIndex = submitIds.size();
+                    sj.add(",其中"+(beferIndex-afterIndex)+"数据提交失败");
                 }
             }
             resutStr = sj.toString();
@@ -175,7 +183,7 @@ public class PrivateEquityServiceImpl extends ServiceImpl<PrivateEquityMapper, P
 
     @Override
     public void savePrivateEquity(PrivateEquityDTO dto) {
-        PrivateEquity one = null;
+      /*  PrivateEquity one = null;
         if (dto.getIsSituation().equals(SystemConstant.IS_SITUATION_YES)) {
             if (StringUtils.isNotBlank(dto.getName()) && StringUtils.isNotBlank(dto.getCode())) {
                 one = this.lambdaQuery().eq(PrivateEquity::getCardId, dto.getCardId()).eq(PrivateEquity::getName, dto.getName())
@@ -186,7 +194,7 @@ public class PrivateEquityServiceImpl extends ServiceImpl<PrivateEquityMapper, P
         } else {
             one = this.lambdaQuery().eq(PrivateEquity::getCardId, dto.getCardId()).eq(PrivateEquity::getIsRelation, SystemConstant.IS_SITUATION_NO)
                     .last(SqlConstant.ONE_SQL).one();
-        }
+        }*/
         PrivateEquity equity = new PrivateEquity();
         BeanUtil.copyProperties(dto,equity,new String[]{"id"});
         equity.setState(SystemConstant.SAVE_STATE);
@@ -198,14 +206,16 @@ public class PrivateEquityServiceImpl extends ServiceImpl<PrivateEquityMapper, P
         equity.setCreateName(dto.getServiceUserName());
         equity.setOrgCode(dto.getServiceLesseeId());
         equity.setOrgName(dto.getServiceLesseeName());
-        if (one == null) {
+        //新增
+        this.save(equity);
+      /*  if (one == null) {
             //新增
             this.save(equity);
         } else {
             //覆盖
             equity.setId(one.getId());
             this.updateById(equity);
-        }
+        }*/
     }
 
     @Override

@@ -98,7 +98,7 @@ public class CadreFamiliesController {
             result = investInfoService.submitInvestInfo(ids.getIds());
         }catch (Exception e){
             e.printStackTrace();
-            return ResultMsgUtil.failure("提交失败，请检查数据是否正确");
+            return ResultMsgUtil.failure("提交失败,程序处理数据异常");
         }
         return result;
     }
@@ -161,9 +161,13 @@ public class CadreFamiliesController {
     public ResultMsgUtil<String> submitPrivateEquity(@ApiParam(value = "id集合", required = true)
                                                      @RequestBody SubmitDto ids) {
         ResultMsgUtil<String> result = null;
+        try {
+            //向禁止交易表中提交数据
+            result = privateEquityService.submitPrivateEquity(ids.getIds());
+        }catch (Exception e){
+            return ResultMsgUtil.success("提交失败,程序处理数据异常");
+        }
 
-        //向禁止交易表中提交数据
-        result = privateEquityService.submitPrivateEquity(ids.getIds());
         return result;
     }
 
@@ -226,7 +230,7 @@ public class CadreFamiliesController {
         try {
             result = mechanismInfoService.submitMechanismInfo(ids);
         }catch (Exception e){
-            return ResultMsgUtil.failure("提交失败,请检查数据是否正确");
+            return ResultMsgUtil.failure("提交失败,程序处理数据异常");
         }
 
         //提交数据至禁止交易表
