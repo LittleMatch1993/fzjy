@@ -22,7 +22,6 @@ public class ProhibitTransaction implements CommandLineRunner {
         SpringApplication.run(ProhibitTransaction.class,args);
     }
 
-
     @Override
     public void run(String... args) throws Exception {
      log.info("服务器启动成功");
