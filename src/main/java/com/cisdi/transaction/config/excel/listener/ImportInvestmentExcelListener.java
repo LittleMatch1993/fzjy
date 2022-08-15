@@ -54,7 +54,7 @@ public class ImportInvestmentExcelListener extends AnalysisEventListener<Investm
         if (!CollectionUtils.isEmpty(var1)){
             for (CellData value : var1.values()) {
                 if (Objects.nonNull(value)&& StringUtils.isNotBlank(value.toString())&&!columns.contains(value.toString())){
-                    throw new ExcelAnalysisException("模板不包含此字段："+value);
+                    throw new ExcelAnalysisException("模板不包含此内容："+value);
                 }
             }
         }
