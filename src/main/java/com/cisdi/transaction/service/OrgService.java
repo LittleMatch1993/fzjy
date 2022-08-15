@@ -49,4 +49,6 @@ public interface OrgService  extends IService<Org> {
     Org selectByOrgancode(String orgCode);
 
     List<Org> selectChildOrgByPathnamecode(String pathnamecode);
+
+    List<Org> selectByName(String name,String orgCode);
 }

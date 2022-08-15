@@ -81,7 +81,7 @@ public class InvestmentDTO {
     @ExcelProperty(value = "注册地（国家）")
     private String registerCountry;
 
-    @ExcelProperty(value = "注册地（省份）")
+    @ExcelProperty(value = "注册地（省）")
     private String registerProvince;
 
     @ExcelProperty(value = "注册地（市）")

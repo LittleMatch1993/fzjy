@@ -7,16 +7,14 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.cisdi.transaction.config.base.ResultMsgUtil;
 import com.cisdi.transaction.constant.SqlConstant;
 import com.cisdi.transaction.constant.SystemConstant;
-import com.cisdi.transaction.domain.dto.EquityFundsDTO;
-import com.cisdi.transaction.domain.dto.InvestInfoDTO;
-import com.cisdi.transaction.domain.dto.InvestmentDTO;
-import com.cisdi.transaction.domain.dto.PrivateEquityDTO;
+import com.cisdi.transaction.domain.dto.*;
 import com.cisdi.transaction.domain.model.*;
 import com.cisdi.transaction.mapper.master.PrivateEquityMapper;
 import com.cisdi.transaction.service.BanDealInfoService;
 import com.cisdi.transaction.service.PrivateEquityService;
 import com.cisdi.transaction.service.SpouseBasicInfoService;
 import com.cisdi.transaction.service.SysDictBizService;
+import com.cisdi.transaction.util.ThreadLocalUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -94,8 +92,9 @@ public class PrivateEquityServiceImpl extends ServiceImpl<PrivateEquityMapper, P
 
     @Transactional(rollbackFor = Exception.class)
     @Override
-    public ResultMsgUtil<String> submitPrivateEquity(List<String> ids) {
+    public ResultMsgUtil<String> submitPrivateEquity(SubmitDto subDto) {
         String resutStr = "提交成功";
+        List<String> ids = subDto.getIds();
         List<PrivateEquity> infoList = this.lambdaQuery().in(PrivateEquity::getId, ids).list();
         if (CollectionUtil.isEmpty(infoList)) {
             return ResultMsgUtil.failure("数据不存在了");
@@ -141,12 +140,14 @@ public class PrivateEquityServiceImpl extends ServiceImpl<PrivateEquityMapper, P
 
             banDealInfoService.deleteBanDealInfoByRefId(ids);
             //获取干部的基本信息
-            List<String> cardIds = infoList.stream().map(PrivateEquity::getCardId).collect(Collectors.toList());
+            //List<String> cardIds = infoList.stream().map(PrivateEquity::getCardId).collect(Collectors.toList());
            // List<GbBasicInfo> gbList = gbBasicInfoService.selectBatchByCardIds(cardIds);
             //获取干部组织的基本信息
             List<GbOrgInfo> gbOrgList = null;
             try {
-                 gbOrgList = gbBasicInfoService.selectGbOrgInfoByCardIds(cardIds);
+                //gbOrgList = gbBasicInfoService.selectGbOrgInfoByCardIds(cardIds);
+                String orgCode = subDto.getOrgCode();
+                gbOrgList = gbBasicInfoService.selectByOrgode(orgCode);
             }catch (Exception e){
                 e.printStackTrace();
                 this.updateState(ids, SystemConstant.SAVE_STATE);
@@ -271,16 +272,50 @@ public class PrivateEquityServiceImpl extends ServiceImpl<PrivateEquityMapper, P
             if (t.getIsSituation().equals(SystemConstant.IS_SITUATION_YES)) {
                 if (CollectionUtil.isNotEmpty(infos)) {//如果不为空，进行比较
                     //有此类情况
-                    infos.stream().forEach(e -> {
+                    //校验姓名和统一社会信用代码不能为空
+                    if (StringUtils.isNotBlank(t.getName())&&StringUtils.isNotBlank(t.getTitle())  && StringUtils.isNotBlank(t.getCode())) {
+                        //校验国家/省/市
+                        PrivateEquity info = new PrivateEquity();
+                        BeanUtils.copyProperties(t, info);
+                        info.setState(SystemConstant.SAVE_STATE)//默认类型新建
+                                .setUpdateTime(DateUtil.date());
+                        //判断该干部下的其他子项名称和代码是否相同
+                        long nameIndex = infos.stream().filter(e->t.getName().equals(e.getName())).count();
+                        long titleIndex = infos.stream().filter(e->sysDictBizService.getDictId(t.getTitle(),dictList).equals(e.getTitle())).count();
+                        long codeIndex = infos.stream().filter(e->t.getCode().equals(e.getCode())).count();
+                        info = this.replaceDictId(info,dictList);
+                        if(nameIndex==0|titleIndex==0|codeIndex==0){ //一个都不重复
+                            //如果不相同，新增，否则就是覆盖
+                            info.setCreateTime(DateUtil.date());
+                            privateEquity.add(info);
+                        }else{ //有重复数据了
+                            PrivateEquity existInfo = infos.stream().filter(e->t.getName().equals(e.getName())
+                                    &&sysDictBizService.getDictId(t.getTitle(),dictList).equals(e.getTitle())
+                                    &&t.getCode().equals(e.getCode())).findAny().orElse(null);
+                            if(Objects.nonNull(existInfo)){
+                                info.setId(existInfo.getId());
+                                updateList.add(info);
+                            }
+                        }
+                        /*if (!t.getName().equals(e.getName()) &&!info.getTitle().equals(e.getTitle())&& !t.getCode().equals(e.getCode())) {
+                            //如果不相同，新增，否则就是覆盖
+                            info.setCreateTime(DateUtil.date());
+                            investInfoList.add(info);
+                        } else {
+                            info.setId(e.getId());
+                            updateList.add(info);
+                        }*/
+                    }
+                    /*infos.stream().forEach(e -> {
                         //判断该干部下的其他子项名称和代码是否相同，不相同则添加数据库
-                        if (StringUtils.isNotBlank(t.getName()) && StringUtils.isNotBlank(t.getCode())) {
+                        if (StringUtils.isNotBlank(t.getName()) && StringUtils.isNotBlank(t.getTitle()) && StringUtils.isNotBlank(t.getRegistrationNumber())) {
                             PrivateEquity info = new PrivateEquity();
                             BeanUtils.copyProperties(t, info);
                             info.setState(SystemConstant.SAVE_STATE)//默认类型新建
                                     .setUpdateTime(new Date());
                             //字典替换
                             info = this.replaceDictId(info,dictList);
-                            if (!t.getName().equals(e.getName()) && !t.getCode().equals(e.getCode())) {
+                            if (!t.getName().equals(e.getName()) || !info.getTitle().equals(e.getTitle())||!t.getRegistrationNumber().equals(e.getRegistrationNumber())) {
                                 info.setCreateTime(new Date());
                                 privateEquity.add(info);
                             } else {
@@ -288,7 +323,7 @@ public class PrivateEquityServiceImpl extends ServiceImpl<PrivateEquityMapper, P
                                 updateList.add(info);
                             }
                         }
-                    });
+                    });*/
                 } else {
                     if (StringUtils.isNotBlank(t.getName()) && StringUtils.isNotBlank(t.getCode())) {
                         //数据库为空，直接add

@@ -3,6 +3,7 @@ package com.cisdi.transaction.service.impl;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.date.DateUtil;
+import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -16,7 +17,9 @@ import com.cisdi.transaction.domain.vo.CadreExcelVO;
 import com.cisdi.transaction.mapper.master.GbBasicInfoMapper;
 import com.cisdi.transaction.service.GbBasicInfoService;
 import com.cisdi.transaction.service.GbBasicInfoThreeService;
+import com.cisdi.transaction.service.OrgService;
 import com.cisdi.transaction.service.SysDictBizService;
+import com.cisdi.transaction.util.ThreadLocalUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,9 +46,29 @@ public class GbBasicInfoServiceImpl extends ServiceImpl<GbBasicInfoMapper, GbBas
     @Autowired
     private SysDictBizService sysDictBizService;
 
+    @Autowired
+    private OrgService orgService;
+
     @Override
-    public List<GbBasicInfo> selectByName(String name) {
-        List<GbBasicInfo> list = this.lambdaQuery().like(GbBasicInfo::getName, name).list();
+    public List<GbBasicInfo> selectByName(String name,String orgCode) {
+        List<GbBasicInfo> list =  new ArrayList<>();
+         if(StrUtil.isEmpty(orgCode)){
+            return list;
+         }
+        //List<GbBasicInfo> list = this.lambdaQuery().like(GbBasicInfo::getName, name).list();
+        List<GbOrgInfo> gbOrgInfos = this.selectByOrgode(orgCode.toString());
+        if(CollectionUtil.isEmpty(gbOrgInfos)){
+            return list;
+        }
+        List<GbOrgInfo> collect = gbOrgInfos.stream().filter(e -> e.getName().equals(name)).collect(Collectors.toList());
+        if(CollectionUtil.isEmpty(collect)){
+            return list;
+        }
+        collect.stream().forEach(e->{
+            GbBasicInfo info = new GbBasicInfo();
+            BeanUtil.copyProperties(e, info);
+            list.add(info);
+        });
         return list;
     }
 
@@ -113,6 +136,19 @@ public class GbBasicInfoServiceImpl extends ServiceImpl<GbBasicInfoMapper, GbBas
             return null;
         }
         return  this.baseMapper.selectByCardIds(ids);
+    }
+
+    @Override
+    public List<GbOrgInfo> selectByOrgode(String orgCode) {
+        if (StrUtil.isEmpty(orgCode)){
+            return null;
+        }
+        Org org = orgService.selectByOrgancode(orgCode);
+        if (Objects.isNull(org)){
+            return null;
+        }
+        String pathNamecode = org.getAsgpathnamecode();
+        return this.baseMapper.selectByPathNameCode(pathNamecode);
     }
 
     private List<CadreExcelVO> replaceDictValue(List<CadreExcelVO> list, List<SysDictBiz> dictList){

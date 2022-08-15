@@ -19,4 +19,5 @@ public class SubmitDto extends  BaseDTO {
     @ApiModelProperty(value = "id集合")
     @NotBlank(message = "提交的数据不能为空")
     private List<String> ids;
+    private String orgCode;
 }

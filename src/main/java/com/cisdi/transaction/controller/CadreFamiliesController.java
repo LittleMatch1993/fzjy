@@ -94,7 +94,7 @@ public class CadreFamiliesController {
         //提交数据至禁止交易表
         ResultMsgUtil<String> result = null;
         try {
-            result = investInfoService.submitInvestInfo(ids.getIds());
+            result = investInfoService.submitInvestInfo(ids);
         }catch (Exception e){
             e.printStackTrace();
             return ResultMsgUtil.failure("提交失败,程序处理数据异常");
@@ -162,7 +162,7 @@ public class CadreFamiliesController {
         ResultMsgUtil<String> result = null;
         try {
             //向禁止交易表中提交数据
-            result = privateEquityService.submitPrivateEquity(ids.getIds());
+            result = privateEquityService.submitPrivateEquity(ids);
         }catch (Exception e){
             return ResultMsgUtil.success("提交失败,程序处理数据异常");
         }
@@ -182,7 +182,7 @@ public class CadreFamiliesController {
         System.out.println("私募新增");
         System.out.println(dto.toString());
         //int count = privateEquityService.countByNameAndCardIdAndCode(dto.getName(), dto.getCardId(), dto.getCode());
-        PrivateEquity one =  privateEquityService.getRepeatInvestInfo(dto.getName(), dto.getCardId(), dto.getCode());
+        PrivateEquity one =  privateEquityService.getRepeatInvestInfo(dto.getName(), dto.getCardId(), dto.getRegistrationNumber());
         if (Objects.nonNull(one)) {
             String id = one.getId();
             privateEquityService.overrideInvestInfo(id,dto);
@@ -247,7 +247,7 @@ public class CadreFamiliesController {
     public ResultMsgUtil<String> saveMechanismInfo(@RequestBody @Valid MechanismInfoDTO dto) {
 
         //int count = mechanismInfoService.countByNameAndCardIdAndCode(dto.getGbName(), dto.getCardId(), dto.getCode());
-        MechanismInfo one = mechanismInfoService.getRepeatInvestInfo(dto.getGbName(), dto.getCardId(), dto.getCode());
+        MechanismInfo one = mechanismInfoService.getRepeatInvestInfo(dto.getName(), dto.getCardId(), dto.getCode());
         if (Objects.nonNull(one)) {
             String id = one.getId();
             mechanismInfoService.overrideInvestInfo(id,dto);
@@ -318,9 +318,9 @@ public class CadreFamiliesController {
              */
             EasyExcel.read(file.getInputStream(), InvestmentDTO.class, new ImportInvestmentExcelListener(investInfoService)).sheet().headRowNumber(3).doRead();
             return ResultMsgUtil.success();
-        } catch (IOException e) {
+        } catch (Exception e) {
             e.printStackTrace();
-            return ResultMsgUtil.failure(ResultCode.RC999.getCode(), "导入失败");
+            return ResultMsgUtil.failure(ResultCode.RC999.getCode(), "导入失败"+e.getMessage());
         }
     }
 
@@ -350,9 +350,9 @@ public class CadreFamiliesController {
         try {
             EasyExcel.read(file.getInputStream(), CommunityServiceDTO.class, new ImportCommunityServiceExcelListener(mechanismInfoService)).sheet().headRowNumber(3).doRead();
             return ResultMsgUtil.success();
-        } catch (IOException e) {
+        } catch (Exception e) {
             e.printStackTrace();
-            return ResultMsgUtil.failure(ResultCode.RC999.getCode(), "导入失败");
+            return ResultMsgUtil.failure(ResultCode.RC999.getCode(), "导入失败"+e.getMessage());
         }
     }
 
@@ -383,9 +383,9 @@ public class CadreFamiliesController {
         try {
             EasyExcel.read(file.getInputStream(), EquityFundsDTO.class, new ImportEquityFundsExcelListener(privateEquityService)).sheet().headRowNumber(3).doRead();
             return ResultMsgUtil.success();
-        } catch (IOException e) {
+        } catch (Exception e) {
             e.printStackTrace();
-            return ResultMsgUtil.failure(ResultCode.RC999.getCode(), "导入失败");
+            return ResultMsgUtil.failure(ResultCode.RC999.getCode(), "导入失败"+e.getMessage());
         }
     }
 

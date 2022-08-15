@@ -63,8 +63,10 @@ public class CadreController{
      */
     @ApiOperation("根据干部姓名获取信息")
     @GetMapping("/selectGbInfoByName")
-    public ResultMsgUtil<List> selectGbInfoByName(@ApiParam(value = "干部姓名") @RequestParam String name) {
-        List<GbBasicInfo> list = gbBasicInfoService.selectByName(name);
+    public ResultMsgUtil<List> selectGbInfoByName(@ApiParam(value = "干部姓名") @RequestParam(value = "name" ,required = false) String name,
+                                                  @RequestParam(value = "orgCode" ,required = false) String orgCode) {
+        System.out.println("orgCode------------"+orgCode);
+        List<GbBasicInfo> list = gbBasicInfoService.selectByName(name,orgCode);
         return ResultMsgUtil.success(list);
     }
 

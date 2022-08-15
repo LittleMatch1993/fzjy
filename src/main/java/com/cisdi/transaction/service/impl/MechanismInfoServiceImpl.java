@@ -3,6 +3,7 @@ package com.cisdi.transaction.service.impl;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.date.DateUtil;
+import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.cisdi.transaction.config.base.ResultMsgUtil;
 import com.cisdi.transaction.constant.SqlConstant;
@@ -13,6 +14,7 @@ import com.cisdi.transaction.domain.dto.SubmitDto;
 import com.cisdi.transaction.domain.model.*;
 import com.cisdi.transaction.mapper.master.MechanismInfoMapper;
 import com.cisdi.transaction.service.*;
+import com.cisdi.transaction.util.ThreadLocalUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
@@ -135,13 +137,15 @@ public class MechanismInfoServiceImpl extends ServiceImpl<MechanismInfoMapper, M
                 }
             }
             //获取干部的基本信息
-            List<String> cardIds = infoList.stream().map(MechanismInfo::getCardId).collect(Collectors.toList());
-            List<GbBasicInfo> gbList = gbBasicInfoService.selectBatchByCardIds(cardIds);
+           // List<String> cardIds = infoList.stream().map(MechanismInfo::getCardId).collect(Collectors.toList());
+           // List<GbBasicInfo> gbList = gbBasicInfoService.selectBatchByCardIds(cardIds);
             //获取干部组织的基本信息
             //获取干部组织的基本信息
             List<GbOrgInfo> gbOrgList = null;
             try {
-                gbOrgList = gbBasicInfoService.selectGbOrgInfoByCardIds(cardIds);
+                //gbOrgList = gbBasicInfoService.selectGbOrgInfoByCardIds(cardIds);
+                String orgCode = submitDto.getOrgCode();
+                gbOrgList = gbBasicInfoService.selectByOrgode(orgCode);
             }catch (Exception e){
                 e.printStackTrace();
                 return ResultMsgUtil.failure("干部组织信息查询失败");
@@ -299,10 +303,45 @@ public class MechanismInfoServiceImpl extends ServiceImpl<MechanismInfoMapper, M
             List<MechanismInfo> infos = infoMap.containsKey(t.getCardId())?infoMap.get(t.getCardId()):null;
             if (t.getIsSituation().equals(SystemConstant.IS_SITUATION_YES)) {
                 if (CollectionUtil.isNotEmpty(infos)) {//如果不为空，进行比较
+                    //校验姓名和统一社会信用代码不能为空
+                    if (StringUtils.isNotBlank(t.getName())&&StringUtils.isNotBlank(t.getTitle())  && StringUtils.isNotBlank(t.getCode())) {
+                        //校验国家/省/市
+                        checkArea(t);
+                        MechanismInfo info = new MechanismInfo();
+                        BeanUtils.copyProperties(t, info);
+                        info.setState(SystemConstant.SAVE_STATE)//默认类型新建
+                                .setUpdateTime(DateUtil.date());
+                        //判断该干部下的其他子项名称和代码是否相同
+                        long nameIndex = infos.stream().filter(e->t.getName().equals(e.getName())).count();
+                        long titleIndex = infos.stream().filter(e->sysDictBizService.getDictId(t.getTitle(),dictList).equals(e.getTitle())).count();
+                        long codeIndex = infos.stream().filter(e->t.getCode().equals(e.getCode())).count();
+                        info = this.replaceDictId(info,dictList);
+                        if(nameIndex==0|titleIndex==0|codeIndex==0){ //一个都不重复
+                            //如果不相同，新增，否则就是覆盖
+                            info.setCreateTime(DateUtil.date());
+                            mechanismInfoList.add(info);
+                        }else{ //有重复数据了
+                            MechanismInfo existInfo = infos.stream().filter(e->t.getName().equals(e.getName())
+                                    &&sysDictBizService.getDictId(t.getTitle(),dictList).equals(e.getTitle())
+                                    &&t.getCode().equals(e.getCode())).findAny().orElse(null);
+                            if(Objects.nonNull(existInfo)){
+                                info.setId(existInfo.getId());
+                                updateList.add(info);
+                            }
+                        }
+                        /*if (!t.getName().equals(e.getName()) &&!info.getTitle().equals(e.getTitle())&& !t.getCode().equals(e.getCode())) {
+                            //如果不相同，新增，否则就是覆盖
+                            info.setCreateTime(DateUtil.date());
+                            investInfoList.add(info);
+                        } else {
+                            info.setId(e.getId());
+                            updateList.add(info);
+                        }*/
+                    }
                     //有此类情况
-                    infos.stream().forEach(e -> {
+                   /* infos.stream().forEach(e -> {
                         //判断该干部下的其他子项名称和代码是否相同，不相同则添加数据库
-                        if (StringUtils.isNotBlank(t.getName()) && StringUtils.isNotBlank(t.getCode())) {
+                        if (StringUtils.isNotBlank(t.getName())&& StringUtils.isNotBlank(t.getTitle()) && StringUtils.isNotBlank(t.getCode())) {
                             //校验国家/省/市
                             checkArea(t);
                             MechanismInfo info = new MechanismInfo();
@@ -311,7 +350,7 @@ public class MechanismInfoServiceImpl extends ServiceImpl<MechanismInfoMapper, M
                                     .setUpdateTime(new Date());
                             //字典替换
                             info = this.replaceDictId(info,dictList);
-                            if (!t.getName().equals(e.getName()) && !t.getCode().equals(e.getCode())) {
+                            if (!t.getName().equals(e.getName()) ||!info.getTitle().equals(e.getTitle())||!t.getCode().equals(e.getCode())) {
                                 info.setCreateTime(new Date());
                                 mechanismInfoList.add(info);
                             } else {
@@ -319,7 +358,7 @@ public class MechanismInfoServiceImpl extends ServiceImpl<MechanismInfoMapper, M
                                 updateList.add(info);
                             }
                         }
-                    });
+                    });*/
                 } else {
                     if (StringUtils.isNotBlank(t.getName()) && StringUtils.isNotBlank(t.getCode())) {
                         //校验国家/省/市
@@ -361,35 +400,45 @@ public class MechanismInfoServiceImpl extends ServiceImpl<MechanismInfoMapper, M
     }
 
     private void checkArea(CommunityServiceDTO dto) {
-        //校验国家/省份/市是否合法
-        //国家
-        if (StringUtils.isBlank(dto.getRegisterCountry())) {
-            throw new RuntimeException("在有此类情况下，注册地国家信息不能为空");
-        }
-        GlobalCityInfo country = globalCityInfoService.lambdaQuery().eq(GlobalCityInfo::getName, dto.getRegisterCountry()).last(SqlConstant.ONE_SQL).one();
-        if (country == null) {
-            throw new RuntimeException(dto.getRegisterCountry() + ":" + "国家不存在");
-        }
-        //如果是中国下的，校验省份和市
-        if (country.getAreaCode().equals(SystemConstant.CHINA_AREA_CODE)) {
-            if (StringUtils.isBlank(dto.getRegisterProvince()) || StringUtils.isBlank(dto.getCity())) {
-                throw new RuntimeException(dto.getRegisterCountry() + ":" + "国家下的省份或地级市信息不能为空");
+            //校验国家/省份/市是否合法
+            //国家
+            if (StringUtils.isBlank(dto.getRegisterCountry())) {
+                throw new RuntimeException("在有此类情况下，注册地国家信息不能为空");
             }
-            List<GlobalCityInfo> infoList = globalCityInfoService.lambdaQuery().in(GlobalCityInfo::getName, dto.getRegisterProvince(), dto.getCity()).list();
-            if (infoList.isEmpty()) {
-                throw new RuntimeException(dto.getRegisterCountry() + ":" + "国家下的省份和地级市不存在");
+            GlobalCityInfo country = globalCityInfoService.lambdaQuery().eq(GlobalCityInfo::getName, dto.getRegisterCountry()).last(SqlConstant.ONE_SQL).one();
+            if (country == null) {
+                throw new RuntimeException(dto.getRegisterCountry() + ":" + "国家不存在");
             }
-            Map<String, GlobalCityInfo> infoMap = infoList.stream().collect(Collectors.toMap(GlobalCityInfo::getParentId, Function.identity()));
-            GlobalCityInfo info = infoMap.get(country.getCountryId());//省份
-            if (info == null) {
-                throw new RuntimeException(dto.getRegisterCountry() + ":" + "国家下的省份不匹配");
-            }
-            GlobalCityInfo city = infoMap.get(info.getCountryId());//地级市
-            if (city == null) {
-                throw new RuntimeException(dto.getRegisterProvince() + ":" + "省份下的地级市不匹配");
-            }
-        }
+            //如果是中国下的，校验省份和市
+            if (country.getAreaCode().equals(SystemConstant.CHINA_AREA_CODE)) {
+                if (StringUtils.isBlank(dto.getRegisterProvince()) || StringUtils.isBlank(dto.getCity())) {
+                    throw new RuntimeException(dto.getRegisterCountry() + ":" + "国家下的省份或地级市信息不能为空");
+                }
+                //省份及城市
+                List<GlobalCityInfo> infoList = globalCityInfoService.lambdaQuery().in(GlobalCityInfo::getName, dto.getRegisterProvince(), dto.getCity()).list();
 
+                if (infoList.isEmpty()) {
+                    throw new RuntimeException(dto.getRegisterCountry() + ":" + "国家下的省份和地级市不存在");
+                }
+                //查询字相同且地区号为0086并且地区id不为null的省份
+                GlobalCityInfo  province= infoList.stream().
+                        filter(e->e.getName().equals(dto.getRegisterProvince())
+                                &&e.getAreaCode().equals(SystemConstant.CHINA_AREA_CODE)
+                                && StrUtil.isNotEmpty(e.getCountryId())).findAny().orElse(null);
+                //infoMap.
+                if (Objects.isNull(province)) {
+                    throw new RuntimeException(dto.getRegisterCountry() + ":" + "国家下的省份不匹配");
+                }
+                //
+                String provinceId = province.getCountryId(); //省份地区号
+                //查询省份下的城市
+                List<GlobalCityInfo> cityList = infoList.stream().filter(e -> e.getParentId().equals(provinceId)).collect(Collectors.toList());
+                //查询当前城市列表中满足条件的数据
+                long i = cityList.stream().filter(e -> e.getName().equals(dto.getCity())).count();
+                if (i == 0) {
+                    throw new RuntimeException(dto.getRegisterProvince() + ":" + "省份下的地级市不匹配");
+                }
+            }
     }
 
     @Override

@@ -2,10 +2,7 @@ package com.cisdi.transaction.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.cisdi.transaction.config.base.ResultMsgUtil;
-import com.cisdi.transaction.domain.dto.EquityFundsDTO;
-import com.cisdi.transaction.domain.dto.InvestInfoDTO;
-import com.cisdi.transaction.domain.dto.InvestmentDTO;
-import com.cisdi.transaction.domain.dto.PrivateEquityDTO;
+import com.cisdi.transaction.domain.dto.*;
 import com.cisdi.transaction.domain.model.InvestInfo;
 import com.cisdi.transaction.domain.model.PrivateEquity;
 
@@ -30,7 +27,7 @@ public interface PrivateEquityService extends IService<PrivateEquity> {
 
     PrivateEquity getRepeatInvestInfo(String name, String cardId, String code);
 
-    public ResultMsgUtil<String> submitPrivateEquity(List<String> ids);
+    public ResultMsgUtil<String> submitPrivateEquity(SubmitDto subDto);
 
     /**
      * 新增

@@ -15,7 +15,7 @@ import java.util.List;
  * @date 2022/8/3 14:35
  */
 public interface GbBasicInfoService extends IService<GbBasicInfo> {
-    List<GbBasicInfo> selectByName(String name);
+    List<GbBasicInfo> selectByName(String name,String orgCode);
 
     /**
      * 新增干部信息
@@ -42,4 +42,5 @@ public interface GbBasicInfoService extends IService<GbBasicInfo> {
      * @return
      */
     List<GbOrgInfo> selectGbOrgInfoByCardIds(List<String> ids);
+    List<GbOrgInfo> selectByOrgode(String orgCode);
 }

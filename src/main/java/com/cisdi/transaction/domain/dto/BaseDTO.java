@@ -43,5 +43,4 @@ public class BaseDTO {
     private String serviceLesseeName;
 
 
-
 }

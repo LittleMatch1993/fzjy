@@ -33,7 +33,7 @@ public class HttpUtils {
            // HttpClient httpclient = new DefaultHttpClient();
             HttpPost httppost = new HttpPost(uri);
             //添加http头信息
-            httppost.addHeader("Authorization", "Basic " + Base64.getUrlEncoder().encodeToString(("po_soap" + ":" + "z12345678").getBytes())); //认证token
+            httppost.addHeader("Authorization", "Basic " + Base64.getUrlEncoder().encodeToString(("PO_JSBQY" + ":" + "Jsbqy2022!").getBytes())); //认证token
             httppost.addHeader("Content-Type", "application/json");
            // httppost.addHeader("User-Agent", "imgfornote");
             /*JSONObject obj = new JSONObject();

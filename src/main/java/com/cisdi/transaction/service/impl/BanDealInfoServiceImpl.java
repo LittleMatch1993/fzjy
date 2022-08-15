@@ -130,7 +130,7 @@ public class BanDealInfoServiceImpl extends ServiceImpl<BanDealInfoMapper, BanDe
         List<String> ids = new ArrayList<>();
         ids.add(infoDto.getId());
         this.updateById(info);
-        //purchaseBanDealInfoSevice.deletePushDataForPurchase(ids);
+         //purchaseBanDealInfoSevice.deletePushDataForPurchase(ids);
         //新增操作记录
         List<BanDealInfo> infoList = new ArrayList<>();
         infoList.add(info);
@@ -173,7 +173,8 @@ public class BanDealInfoServiceImpl extends ServiceImpl<BanDealInfoMapper, BanDe
                     bandealInfo.setUpdateTime(DateUtil.date());
                     bandealInfo.setFamilyName(info.getName());
                     bandealInfo.setRelation(info.getTitle());
-                    bandealInfo.setEngageType("投资企业或担任高级职务");
+                    bandealInfo.setEngageType(sysDictBizService.getDictId("投资企业或者担任高级职务",dictList));
+
                     //13-1表中的，显示X（个人认缴出资额或个人出资额（人民币万元））,Y（个人认缴出资比例或个人出资比例（%））,AA（是否担任高级职务），AB（所担任的高级职务名称）列内容
                     //----如果AA值为是，则拼接AB列，否则不拼接
                     String engageInfo = "个人认缴出资额或个人出资额(人民币万元):" + info.getPersonalCapital() + ",个人认缴出资比例或个人出资比例(%):" + info.getPersonalRatio()
@@ -195,7 +196,8 @@ public class BanDealInfoServiceImpl extends ServiceImpl<BanDealInfoMapper, BanDe
                         //当禁业职务类型为直管企业党委管理干部副职，则禁止交易采购单位为该干部所在单位及以下；
                         String banPostType = bandealInfo.getBanPostType();
                         String whether = SystemConstant.WHETHER_YES;
-                        String purchaseCode = Objects.isNull(gbOrgInfo) ? "" : gbOrgInfo.getUnitCode();//禁止交易采购单位代码
+                        //String purchaseCode = Objects.isNull(gbOrgInfo) ? "" : gbOrgInfo.getUnitCode();//禁止交易采购单位代码
+                        String purchaseCode = Objects.isNull(gbOrgInfo) ? "" : gbOrgInfo.getOrgCode();//禁止交易采购单位代码
                         String purchaseName = Objects.isNull(gbOrgInfo) ? "" : gbOrgInfo.getUnit();
                         ;//禁止交易采购单位名称
                         if ("党组管理干部正职".equals(sysDictBizService.getDictValue(banPostType,dictList))) {
@@ -203,8 +205,11 @@ public class BanDealInfoServiceImpl extends ServiceImpl<BanDealInfoMapper, BanDe
                             purchaseName = "中国五矿集团有限公司";
                         } else if ("总部处长".equals(sysDictBizService.getDictValue(banPostType,dictList))) {
                             whether = SystemConstant.WHETHER_NO;//是否继承关系
-                            purchaseCode = Objects.isNull(gbOrgInfo) ? "" : gbOrgInfo.getDeparmentCode();//禁止交易采购单位代码
-                            purchaseName = Objects.isNull(gbOrgInfo) ? "" : gbOrgInfo.getDeparment();
+                            /*purchaseCode = Objects.isNull(gbOrgInfo) ? "" : gbOrgInfo.getDeparmentCode();//禁止交易采购单位代码
+                            purchaseName = Objects.isNull(gbOrgInfo) ? "" : gbOrgInfo.getDeparment();*/
+
+                            purchaseCode = Objects.isNull(gbOrgInfo) ? "" : gbOrgInfo.getOrgCode();//禁止交易采购单位代码
+                            purchaseName = Objects.isNull(gbOrgInfo) ? "" : gbOrgInfo.getUnit();
                             ;//禁止交易采购单位名称
                         }
                         bandealInfo.setIsExtends(whether);//是否继承关系
@@ -260,7 +265,7 @@ public class BanDealInfoServiceImpl extends ServiceImpl<BanDealInfoMapper, BanDe
                     bandealInfo.setUpdateTime(DateUtil.date());
                     bandealInfo.setFamilyName(info.getName());
                     bandealInfo.setRelation(info.getTitle());
-                    bandealInfo.setEngageType("投资私募股权投资基金或者担任高级职务");
+                    bandealInfo.setEngageType(sysDictBizService.getDictId("投资私募股权投资基金或者担任高级职务",dictList));
                     //13-3表中的，显示M（投资的私募股权投资基金产品名称），O（基金总实缴金额（人民币万元）），P（个人实缴金额（人民币万元））,Q（基金投向），X（认缴金额（人民币万元）），Y（认缴比例（%）），AA（是否担任该基金管理人高级职务），AB（所担任的高级职务名称）列内容
                     //------如果AA值为是，则拼接AB列，否则不拼接
                     String engageInfo = "投资的私募股权投资基金产品名称:" + info.getPrivateequityName() + ",基金总实缴金额（人民币万元）:" + info.getMoney()
@@ -346,7 +351,7 @@ public class BanDealInfoServiceImpl extends ServiceImpl<BanDealInfoMapper, BanDe
 
                     bandealInfo.setFamilyName(info.getName());
                     bandealInfo.setRelation(info.getTitle());
-                    bandealInfo.setEngageType("开办有偿社会中介和法律服务机构或者从业");
+                    bandealInfo.setEngageType(sysDictBizService.getDictId("开办有偿社会中介和法律服务结构或从业",dictList));
                     //13-2表中的，显示Z（个人认缴出资额或个人出资额（人民币万元）），AA（个人认缴出资比例或个人出资比例（%）），AC（是否在该机构中从业），AD（所担任的职务名称）列内容
                     //------如果AC值为是，则拼接AD列，否则不拼接
                     String engageInfo = "个人认缴出资额或个人出资额（人民币万元）:" + info.getPersonalCapital() + ",个人认缴出资比例或个人出资比例（%）:" + info.getPersonalRatio()
@@ -457,7 +462,7 @@ public class BanDealInfoServiceImpl extends ServiceImpl<BanDealInfoMapper, BanDe
                             String tips = e.getCheckTips();
                             if (StrUtil.isBlank(tips) || !tips.contains("企业名称和统一社会信用代码/注册号不匹配")) {
                                 StringJoiner sj = new StringJoiner(",");
-                                sj.add(e.getCheckTips());
+                                sj.add(StrUtil.isEmpty(e.getCheckTips())?"":e.getCheckTips());
                                 sj.add("企业名称和统一社会信用代码/注册号不匹配");
                                 e.setCheckTips(sj.toString());
                             }
@@ -510,7 +515,7 @@ public class BanDealInfoServiceImpl extends ServiceImpl<BanDealInfoMapper, BanDe
                         String tips = banDealInfo.getCheckTips();
                         if (StrUtil.isNotBlank(tips) && !tips.contains("企业名称和统一社会信用代码/注册号不匹配")) {
                             StringJoiner sj = new StringJoiner(",");
-                            sj.add(banDealInfo.getCheckTips());
+                            sj.add(StrUtil.isEmpty(banDealInfo.getCheckTips())?"":banDealInfo.getCheckTips());
                             sj.add("企业名称和统一社会信用代码/注册号不匹配");
                             banDealInfo.setCheckTips(sj.toString());
                         }

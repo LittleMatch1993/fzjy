@@ -3,6 +3,7 @@ package com.cisdi.transaction.service.impl;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.date.DateUtil;
+import cn.hutool.core.util.StrUtil;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -17,6 +18,7 @@ import com.cisdi.transaction.domain.vo.InstitutionalFrameworkExcelVO;
 import com.cisdi.transaction.mapper.master.OrgMapper;
 import com.cisdi.transaction.service.OrgService;
 import com.cisdi.transaction.service.SysDictBizService;
+import com.cisdi.transaction.util.ThreadLocalUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -79,11 +81,11 @@ public class OrgServiceImpl extends ServiceImpl<OrgMapper, Org> implements OrgSe
         JSONObject obj = new JSONObject();
 
         //换成配置文件
-        obj.put("app_id", "test");
+        obj.put("app_id", "sphy");
         obj.put("table_name", "");
         obj.put("stringDate", "18000101");
         obj.put("condition", "1=1");
-        obj.put("secretKey", "195a101a2ceee131104928b440626785");
+        obj.put("secretKey", "50857140b5b84ddeeef5f62709b32fac");
         String result = HttpUtils.sendPostOfAuth(url, obj);
         JSONObject jb = JSONObject.parseObject(result);
         String code = jb.getString("code");
@@ -134,6 +136,36 @@ public class OrgServiceImpl extends ServiceImpl<OrgMapper, Org> implements OrgSe
     public List<Org> selectChildOrgByPathnamecode(String pathnamecode) {
         QueryWrapper<Org> queryWrapper = new QueryWrapper<>();
         queryWrapper.lambda().likeRight(Org::getAsgpathnamecode,pathnamecode);
+        return this.baseMapper.selectList(queryWrapper);
+    }
+
+    @Override
+    public List<Org> selectByName(String name,String orgCode) {
+        List<Org> list = new ArrayList<>();
+        //Object orgCode = ThreadLocalUtils.get("orgCode");
+      /*  if(StrUtil.isEmpty(orgCode)){
+            return list;
+        }
+        Org org = this.selectByOrgancode(orgCode.toString());
+        if(Objects.isNull(org)){
+            return list;
+        }
+        String pathnamecode = org.getAsgpathnamecode();
+        QueryWrapper<Org> queryWrapper = new QueryWrapper<>();
+
+        if(StrUtil.isNotEmpty(name)){
+            queryWrapper.lambda().likeRight(Org::getAsgpathnamecode,pathnamecode);
+            queryWrapper.lambda().like(Org::getAsgorganname, name);
+        }else{
+            queryWrapper.lambda().likeRight(Org::getAsgpathnamecode,pathnamecode).last(SqlConstant.ONE_SQL_YB);
+        }*/
+        QueryWrapper<Org> queryWrapper = new QueryWrapper<>();
+
+        if(StrUtil.isNotEmpty(name)){
+            queryWrapper.lambda().like(Org::getAsgorganname, name);
+        }else{
+            queryWrapper.lambda().likeRight(Org::getAsgorganname, name).last(SqlConstant.ONE_SQL_YB);
+        }
         return this.baseMapper.selectList(queryWrapper);
     }
 

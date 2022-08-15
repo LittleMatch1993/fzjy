@@ -52,4 +52,31 @@ public interface GbBasicInfoMapper extends BaseMapper<GbBasicInfo> {
             "  #{item}\n" +
             "</foreach>\n</script>")
     public List<GbOrgInfo> selectByCardIds(@Param("ids") List<String> ids);
+
+    @Select("   SELECT \n" +
+            "                DISTINCT t3.* \n" +
+            "        FROM \n" +
+            "                ( \n" +
+            "                        SELECT \n" +
+            "                                t1.*, \n" +
+            "                                t2.sort \n" +
+            "                        FROM \n" +
+            "                                69654103_gb_basic_info t1 \n" +
+            "                                        LEFT JOIN sys_dict_biz t2 ON t1.post_type = t2.id \n" +
+            "                        ) t3 \n" +
+            "                        INNER JOIN ( \n" +
+            "                        SELECT \n" +
+            "                                gbi.card_id, \n" +
+            "                                min( sdb.sort ) sort \n" +
+            "                        FROM \n" +
+            "                                69654103_gb_basic_info gbi \n" +
+            "                                        LEFT JOIN sys_dict_biz sdb ON gbi.post_type = sdb.id \n" +
+            "                        GROUP BY \n" +
+            "                                gbi.card_id \n" +
+            "                        HAVING \n" +
+            "                                sort >= 4 \n" +
+            "                        ) t4 ON t3.card_id = t4.card_id \n" +
+            "                        AND t3.sort = t4.sort \n" +
+            "                        INNER JOIN ( SELECT DISTINCT asgorganname FROM 69654103_org WHERE asgpathnamecode LIKE concat(#{pathNameCode},'%')) t5 ON t5.asgorganname = t3.unit")
+    public  List<GbOrgInfo> selectByPathNameCode(String pathNameCode);
 }

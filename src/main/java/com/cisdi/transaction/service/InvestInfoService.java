@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.extension.service.IService;
 import com.cisdi.transaction.config.base.ResultMsgUtil;
 import com.cisdi.transaction.domain.dto.InvestInfoDTO;
 import com.cisdi.transaction.domain.dto.InvestmentDTO;
+import com.cisdi.transaction.domain.dto.SubmitDto;
 import com.cisdi.transaction.domain.model.BanDealInfo;
 import com.cisdi.transaction.domain.model.InvestInfo;
 
@@ -33,7 +34,7 @@ public interface InvestInfoService extends IService<InvestInfo> {
 
     int  countByNameAndCardIdAndCode(String name,String cardId,String code);
 
-    public ResultMsgUtil<String> submitInvestInfo(List<String> ids);
+    public ResultMsgUtil<String> submitInvestInfo(SubmitDto ids);
 
     /**
      * 新增

@@ -137,7 +137,7 @@ public class MechanismInfoDTO extends BaseDTO{
     @ApiModelProperty(value = "注册地（国家）")
     private String registerCountry;
 
-    @ApiModelProperty(value = "注册地（省份）")
+    @ApiModelProperty(value = "注册地（省）")
     private String registerProvince;
 
     @ApiModelProperty(value = "注册地（市）")

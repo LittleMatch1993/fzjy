@@ -26,7 +26,7 @@ public class SystemConstant {
     /**
      * 有无此类情况
      */
-    public final static String IS_SITUATION_YES="有";
+    public final static String IS_SITUATION_YES="有此类情况";
     public final static String IS_SITUATION_NO="无";
     /**
      * 国家/省份/市----中国地区号

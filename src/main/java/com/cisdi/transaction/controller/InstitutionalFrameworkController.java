@@ -1,5 +1,6 @@
 package com.cisdi.transaction.controller;
 
+import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.StrUtil;
 import com.cisdi.transaction.config.base.ResultMsgUtil;
 import com.cisdi.transaction.config.utils.ExportExcelUtils;
@@ -8,26 +9,27 @@ import com.cisdi.transaction.constant.SqlConstant;
 import com.cisdi.transaction.domain.dto.BusinessTransactionDTO;
 import com.cisdi.transaction.domain.dto.CadreFamilyExportDto;
 import com.cisdi.transaction.domain.dto.InstitutionalFrameworkDTO;
+import com.cisdi.transaction.domain.model.GbBasicInfo;
 import com.cisdi.transaction.domain.model.Org;
 import com.cisdi.transaction.domain.vo.BusinessTransactionExcelVO;
 import com.cisdi.transaction.domain.vo.InstitutionalFrameworkExcelVO;
+import com.cisdi.transaction.domain.vo.OrgDictVo;
 import com.cisdi.transaction.service.OrgService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -89,5 +91,39 @@ public class InstitutionalFrameworkController {
             log.error("文件处理异常", e);
         }
         return ResultMsgUtil.success(url);
+    }
+
+    @ApiOperation("根据组织名获取信息")
+    @GetMapping("/selectByName")
+    public ResultMsgUtil<List> selectGbInfoByName(@ApiParam(value = "组织名") @RequestParam(value = "keyword" ,required = false) String keyword,
+                                                  @RequestParam(value = "orgCode" ,required = false) String orgCode) {
+        List<Org> list = orgService.selectByName(keyword,orgCode);
+        List<OrgDictVo> voList = new ArrayList<>();
+        if(CollectionUtil.isNotEmpty(list)){
+            list.stream().forEach(e->{
+                OrgDictVo vo = new OrgDictVo();
+                vo.setId(e.getAsgorganname());
+                vo.setName(e.getAsgorganname());
+                voList.add(vo);
+            });
+        }
+        return ResultMsgUtil.success(voList);
+    }
+
+    @ApiOperation("根据组织名和编码")
+    @GetMapping("/selectCodeAndNameByName")
+    public ResultMsgUtil<List> selectCodeAndNameByName(@ApiParam(value = "组织名") @RequestParam(value = "keyword" ,required = false) String keyword,
+                                                  @RequestParam(value = "orgCode" ,required = false) String orgCode) {
+        List<Org> list = orgService.selectByName(keyword,orgCode);
+        List<OrgDictVo> voList = new ArrayList<>();
+        if(CollectionUtil.isNotEmpty(list)){
+            list.stream().forEach(e->{
+                OrgDictVo vo = new OrgDictVo();
+                vo.setId(e.getAsgorganname());
+                vo.setName(e.getAsgorgancode()+"-"+e.getAsgorganname());
+                voList.add(vo);
+            });
+        }
+        return ResultMsgUtil.success(voList);
     }
 }

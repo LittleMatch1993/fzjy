@@ -20,4 +20,6 @@ public class SqlConstant {
      * 截取前5个数据
      */
     public static final String ONE_SQL_FIVE="\t limit 5";
+
+    public static final String ONE_SQL_YB="\t limit 300";
 }

@@ -13,7 +13,12 @@ public class GbOrgInfo {
     /**
      * 干部姓名
      */
-    private  String name;
+    private String id;
+
+    /**
+     * 干部姓名
+     */
+    private String name;
 
     /**
      * 干部身份证id
@@ -52,8 +57,6 @@ public class GbOrgInfo {
      */
     private String postType;
 
-    /**
-     * 职务
-     */
-    private int level;
+    private String orgCode;
+
 }
