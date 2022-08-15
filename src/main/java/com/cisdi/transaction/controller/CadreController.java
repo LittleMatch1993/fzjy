@@ -10,6 +10,7 @@ import com.cisdi.transaction.domain.dto.CadreFamilyExportDto;
 import com.cisdi.transaction.domain.dto.InvestmentDTO;
 import com.cisdi.transaction.domain.model.GbBasicInfo;
 import com.cisdi.transaction.domain.vo.CadreExcelVO;
+import com.cisdi.transaction.domain.vo.KVVO;
 import com.cisdi.transaction.service.GbBasicInfoService;
 import com.cisdi.transaction.service.SpouseBasicInfoService;
 import com.cisdi.transaction.util.ThreadLocalUtils;
@@ -58,6 +59,25 @@ public class CadreController{
     /**
      * 根据干部姓名获取信息
      *
+     * @param id 干部id
+     * @return
+     */
+    @ApiOperation("根据干部id获取信息")
+    @GetMapping("/selectGbInfoById")
+    public ResultMsgUtil<Object> selectGbInfoById(@ApiParam(value = "干部id") @RequestParam(value = "id" ,required = true) String id,
+                                                  @RequestParam(value = "orgCode" ,required = false) String orgCode) {
+        System.out.println("orgCode------------"+orgCode);
+        if(StrUtil.isEmpty(id)){
+            return ResultMsgUtil.failure("干部id为空");
+        }
+        GbBasicInfo gbBasicInfoServiceById = gbBasicInfoService.getById(id);
+        return ResultMsgUtil.success(gbBasicInfoServiceById);
+    }
+
+
+    /**
+     * 根据干部姓名获取信息
+     *
      * @param name 干部姓名
      * @return
      */
@@ -69,6 +89,34 @@ public class CadreController{
         List<GbBasicInfo> list = gbBasicInfoService.selectByName(name,orgCode);
         return ResultMsgUtil.success(list);
     }
+
+
+    /**
+     * 根据干部姓名获取 干部字典类型数据，如：  id_name   name
+     *
+     * @param name 干部姓名
+     * @return
+     */
+    @ApiOperation("根据干部姓名获取 干部字典类型数据")
+    @GetMapping("/selectGbDivtVoByName")
+    public ResultMsgUtil<List> selectGbDivtVoByName(@ApiParam(value = "干部姓名") @RequestParam(value = "name" ,required = false) String name,
+                                                  @RequestParam(value = "orgCode" ,required = false) String orgCode) {
+         System.out.println("orgCode------------"+orgCode);
+         List<GbBasicInfo> list = gbBasicInfoService.selectGbDictVoByName(name,orgCode);
+         List<KVVO> kvvoList = new ArrayList<>();
+         if(CollectionUtil.isNotEmpty(list)){
+             list.stream().forEach(e->{
+                 KVVO kv = new KVVO();
+                 String id = e.getId();
+                 String gbname = e.getName();
+                 kv.setId(id+"_"+gbname);
+                 kv.setName(gbname);
+                 kvvoList.add(kv);
+             });
+         }
+        return ResultMsgUtil.success(kvvoList);
+    }
+
 
     /**
      * 根据干部姓名获取家属信息

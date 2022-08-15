@@ -121,7 +121,7 @@ public class InvestInfoServiceImpl extends ServiceImpl<InvestInfoMapper, InvestI
             try {
                 //gbOrgList = gbBasicInfoService.selectGbOrgInfoByCardIds(cardIds);
                 String orgCode = subDto.getOrgCode();
-                gbOrgList = gbBasicInfoService.selectByOrgode(orgCode);
+                gbOrgList = gbBasicInfoService.selectByOrgCode(orgCode);
             }catch (Exception e){
                 e.printStackTrace();
                 return ResultMsgUtil.failure("干部组织信息查询失败");
@@ -185,8 +185,8 @@ public class InvestInfoServiceImpl extends ServiceImpl<InvestInfoMapper, InvestI
         info.setCreatorId(dto.getServiceUserId());
         info.setCreateAccount(dto.getServiceUserAccount());
         info.setCreateName(dto.getServiceUserName());
-        info.setOrgCode(dto.getServiceLesseeId());
-        info.setOrgName(dto.getServiceLesseeName());
+        info.setOrgCode(dto.getOrgCode());
+        info.setOrgName(dto.getOrgName());
         //新增
         this.save(info);
     }
@@ -207,8 +207,8 @@ public class InvestInfoServiceImpl extends ServiceImpl<InvestInfoMapper, InvestI
 
         info.setCreateAccount(dto.getServiceUserAccount());
         info.setCreateName(dto.getServiceUserName());
-        info.setOrgCode(dto.getServiceLesseeId());
-        info.setOrgName(dto.getServiceLesseeName());
+        info.setOrgCode(dto.getOrgCode());
+        info.setOrgName(dto.getOrgName());
         this.save(info);
 
     }

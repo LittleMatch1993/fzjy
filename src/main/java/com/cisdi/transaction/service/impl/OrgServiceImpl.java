@@ -143,29 +143,64 @@ public class OrgServiceImpl extends ServiceImpl<OrgMapper, Org> implements OrgSe
     public List<Org> selectByName(String name,String orgCode) {
         List<Org> list = new ArrayList<>();
         //Object orgCode = ThreadLocalUtils.get("orgCode");
-      /*  if(StrUtil.isEmpty(orgCode)){
+        if(StrUtil.isEmpty(orgCode)){
             return list;
         }
         Org org = this.selectByOrgancode(orgCode.toString());
         if(Objects.isNull(org)){
             return list;
         }
-        String pathnamecode = org.getAsgpathnamecode();
         QueryWrapper<Org> queryWrapper = new QueryWrapper<>();
-
-        if(StrUtil.isNotEmpty(name)){
-            queryWrapper.lambda().likeRight(Org::getAsgpathnamecode,pathnamecode);
-            queryWrapper.lambda().like(Org::getAsgorganname, name);
+        String asglevel = org.getAsglevel();
+        if(StrUtil.isNotEmpty(asglevel)&&asglevel.equals("1")){ //看所有
+            if(StrUtil.isNotEmpty(name)){
+                queryWrapper.lambda().like(Org::getAsgorganname, name);
+            }else{
+                queryWrapper.lambda().last(SqlConstant.ONE_SQL_YB);
+            }
         }else{
-            queryWrapper.lambda().likeRight(Org::getAsgpathnamecode,pathnamecode).last(SqlConstant.ONE_SQL_YB);
-        }*/
-        QueryWrapper<Org> queryWrapper = new QueryWrapper<>();
-
-        if(StrUtil.isNotEmpty(name)){
-            queryWrapper.lambda().like(Org::getAsgorganname, name);
-        }else{
-            queryWrapper.lambda().likeRight(Org::getAsgorganname, name).last(SqlConstant.ONE_SQL_YB);
+            String pathnamecode = org.getAsgpathnamecode();
+            if(StrUtil.isNotEmpty(name)){
+                queryWrapper.lambda().likeRight(Org::getAsgpathnamecode,pathnamecode);
+                queryWrapper.lambda().like(Org::getAsgorganname, name);
+            }else{
+                queryWrapper.lambda().likeRight(Org::getAsgpathnamecode,pathnamecode).last(SqlConstant.ONE_SQL_YB);
+            }
         }
+
+        return this.baseMapper.selectList(queryWrapper);
+    }
+
+    @Override
+    public List<Org> selectUnitByName(String name, String orgCode) {
+        List<Org> list = new ArrayList<>();
+        //Object orgCode = ThreadLocalUtils.get("orgCode");
+        if(StrUtil.isEmpty(orgCode)){
+            return list;
+        }
+        Org org = this.selectByOrgancode(orgCode.toString());
+        if(Objects.isNull(org)){
+            return list;
+        }
+        QueryWrapper<Org> queryWrapper = new QueryWrapper<>();
+        String asglevel = org.getAsglevel();
+        if(StrUtil.isNotEmpty(asglevel)&&asglevel.equals("1")){ //看所有
+            if(StrUtil.isNotEmpty(name)){
+                queryWrapper.lambda().like(Org::getAsgorganname, name+"公司");
+            }else{
+                queryWrapper.lambda().likeLeft(Org::getAsgorganname, "公司").last(SqlConstant.ONE_SQL_YB);;
+            }
+        }else{
+            String pathnamecode = org.getAsgpathnamecode();
+            if(StrUtil.isNotEmpty(name)){
+                queryWrapper.lambda().likeRight(Org::getAsgpathnamecode,pathnamecode);
+                queryWrapper.lambda().like(Org::getAsgorganname, name+"公司");
+            }else{
+                queryWrapper.lambda().likeLeft(Org::getAsgorganname, "公司");
+                queryWrapper.lambda().likeRight(Org::getAsgpathnamecode,pathnamecode).last(SqlConstant.ONE_SQL_YB);
+            }
+        }
+
         return this.baseMapper.selectList(queryWrapper);
     }
 

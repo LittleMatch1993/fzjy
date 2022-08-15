@@ -11,7 +11,7 @@ import lombok.Data;
 public class GbOrgInfo {
 
     /**
-     * 干部姓名
+     * 干部id
      */
     private String id;
 

@@ -56,7 +56,7 @@ public class GbBasicInfoServiceImpl extends ServiceImpl<GbBasicInfoMapper, GbBas
             return list;
          }
         //List<GbBasicInfo> list = this.lambdaQuery().like(GbBasicInfo::getName, name).list();
-        List<GbOrgInfo> gbOrgInfos = this.selectByOrgode(orgCode.toString());
+        List<GbOrgInfo> gbOrgInfos = this.selectByOrgCode(orgCode.toString());
         if(CollectionUtil.isEmpty(gbOrgInfos)){
             return list;
         }
@@ -70,6 +70,46 @@ public class GbBasicInfoServiceImpl extends ServiceImpl<GbBasicInfoMapper, GbBas
             list.add(info);
         });
         return list;
+    }
+
+    @Override
+    public List<GbBasicInfo> selectGbDictVoByName(String name, String orgCode) {
+        List<GbBasicInfo> list =  new ArrayList<>();
+        if(StrUtil.isEmpty(orgCode)){
+            return list;
+        }
+        Org org = orgService.selectByOrgancode(orgCode);
+        if(Objects.isNull(org)){
+            return list;
+        }
+        String asglevel = org.getAsglevel();
+        if(StrUtil.isNotEmpty(asglevel)&&asglevel.equals("1")) { //看所有
+            QueryWrapper<GbBasicInfo> queryWrapper = new QueryWrapper();
+            if(StrUtil.isNotEmpty(name)){ //有名字时
+                queryWrapper.lambda().like(GbBasicInfo::getName, name);
+            }else{
+                queryWrapper.lambda().last(SqlConstant.ONE_SQL_YB);
+            }
+           return this.baseMapper.selectList(queryWrapper);
+        }else{ //按权限查看数据
+            String pathNameCode = org.getAsgpathnamecode();
+            List<GbOrgInfo> gbOrgInfoList = null;
+            if(StrUtil.isNotEmpty(name)){ //有名字时
+                gbOrgInfoList = this.baseMapper.selectByOrgCodeAndGbName(name, pathNameCode);
+            }else{
+                gbOrgInfoList = this.baseMapper.selectByOrgCodeAndGbNamePage(name, pathNameCode);
+            }
+            if(CollectionUtil.isEmpty(gbOrgInfoList)){
+                return list;
+            }
+            List<GbBasicInfo>  gbBasicInfoList = new ArrayList<>();
+            gbOrgInfoList.stream().forEach(e->{
+                GbBasicInfo gbBasic = new GbBasicInfo();
+                BeanUtil.copyProperties(e, gbBasic);
+                gbBasicInfoList.add(gbBasic);
+            });
+            return gbBasicInfoList;
+        }
     }
 
 
@@ -139,7 +179,7 @@ public class GbBasicInfoServiceImpl extends ServiceImpl<GbBasicInfoMapper, GbBas
     }
 
     @Override
-    public List<GbOrgInfo> selectByOrgode(String orgCode) {
+    public List<GbOrgInfo> selectByOrgCode(String orgCode) {
         if (StrUtil.isEmpty(orgCode)){
             return null;
         }
@@ -149,6 +189,20 @@ public class GbBasicInfoServiceImpl extends ServiceImpl<GbBasicInfoMapper, GbBas
         }
         String pathNamecode = org.getAsgpathnamecode();
         return this.baseMapper.selectByPathNameCode(pathNamecode);
+    }
+
+    @Override
+    public List<GbOrgInfo> selectByOrgCodeAndGbName(String orgCode,String name) {
+        if (StrUtil.isEmpty(orgCode)){
+            return null;
+        }
+        Org org = orgService.selectByOrgancode(orgCode);
+        if (Objects.isNull(org)){
+            return null;
+        }
+        String pathNamecode = org.getAsgpathnamecode();
+        return this.baseMapper.selectByOrgCodeAndGbName(name,pathNamecode);
+
     }
 
     private List<CadreExcelVO> replaceDictValue(List<CadreExcelVO> list, List<SysDictBiz> dictList){

@@ -17,6 +17,8 @@ import java.util.List;
 public interface GbBasicInfoService extends IService<GbBasicInfo> {
     List<GbBasicInfo> selectByName(String name,String orgCode);
 
+    List<GbBasicInfo> selectGbDictVoByName(String name,String orgCode);
+
     /**
      * 新增干部信息
      * @param dto
@@ -42,5 +44,7 @@ public interface GbBasicInfoService extends IService<GbBasicInfo> {
      * @return
      */
     List<GbOrgInfo> selectGbOrgInfoByCardIds(List<String> ids);
-    List<GbOrgInfo> selectByOrgode(String orgCode);
+    List<GbOrgInfo> selectByOrgCode(String orgCode);
+
+    List<GbOrgInfo> selectByOrgCodeAndGbName(String orgCode,String name);
 }
