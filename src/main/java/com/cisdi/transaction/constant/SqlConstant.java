@@ -21,5 +21,5 @@ public class SqlConstant {
      */
     public static final String ONE_SQL_FIVE="\t limit 5";
 
-    public static final String ONE_SQL_YB="\t limit 300";
+    public static final String ONE_SQL_YB="\t limit 200";
 }

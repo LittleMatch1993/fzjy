@@ -93,11 +93,11 @@ public class InstitutionalFrameworkController {
         return ResultMsgUtil.success(url);
     }
 
-    @ApiOperation("根据组织名获取信息")
+    @ApiOperation("根据组织名获取单位信息")
     @GetMapping("/selectByName")
     public ResultMsgUtil<List> selectGbInfoByName(@ApiParam(value = "组织名") @RequestParam(value = "keyword" ,required = false) String keyword,
                                                   @RequestParam(value = "orgCode" ,required = false) String orgCode) {
-        List<Org> list = orgService.selectByName(keyword,orgCode);
+        List<Org> list = orgService.selectUnitByName(keyword,orgCode);
         List<OrgDictVo> voList = new ArrayList<>();
         if(CollectionUtil.isNotEmpty(list)){
             list.stream().forEach(e->{
@@ -119,7 +119,7 @@ public class InstitutionalFrameworkController {
         if(CollectionUtil.isNotEmpty(list)){
             list.stream().forEach(e->{
                 OrgDictVo vo = new OrgDictVo();
-                vo.setId(e.getAsgorganname());
+                vo.setId(e.getAsgorgancode());
                 vo.setName(e.getAsgorgancode()+"-"+e.getAsgorganname());
                 voList.add(vo);
             });

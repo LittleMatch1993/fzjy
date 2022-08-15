@@ -42,5 +42,16 @@ public class BaseDTO {
     @ApiModelProperty(value = "登陆人所在单位")
     private String serviceLesseeName;
 
+    /**
+     * 登录人所组织code
+     */
+    @ApiModelProperty(value = "登陆人所在登录人所组织code")
+    private String orgCode;
+    /**
+     * 登录人所在组织名称
+     */
+    @ApiModelProperty(value = "登录人所在组织名称")
+    private String orgName;
+
 
 }

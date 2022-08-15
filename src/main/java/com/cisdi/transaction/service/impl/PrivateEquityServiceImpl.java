@@ -76,8 +76,8 @@ public class PrivateEquityServiceImpl extends ServiceImpl<PrivateEquityMapper, P
 
         info.setCreateAccount(dto.getServiceUserAccount());
         info.setCreateName(dto.getServiceUserName());
-        info.setOrgCode(dto.getServiceLesseeId());
-        info.setOrgName(dto.getServiceLesseeName());
+        info.setOrgCode(dto.getOrgCode());
+        info.setOrgName(dto.getOrgName());
         this.save(info);
     }
 
@@ -147,7 +147,7 @@ public class PrivateEquityServiceImpl extends ServiceImpl<PrivateEquityMapper, P
             try {
                 //gbOrgList = gbBasicInfoService.selectGbOrgInfoByCardIds(cardIds);
                 String orgCode = subDto.getOrgCode();
-                gbOrgList = gbBasicInfoService.selectByOrgode(orgCode);
+                gbOrgList = gbBasicInfoService.selectByOrgCode(orgCode);
             }catch (Exception e){
                 e.printStackTrace();
                 this.updateState(ids, SystemConstant.SAVE_STATE);
@@ -205,8 +205,8 @@ public class PrivateEquityServiceImpl extends ServiceImpl<PrivateEquityMapper, P
         equity.setCreatorId(dto.getServiceUserId());
         equity.setCreateAccount(dto.getServiceUserAccount());
         equity.setCreateName(dto.getServiceUserName());
-        equity.setOrgCode(dto.getServiceLesseeId());
-        equity.setOrgName(dto.getServiceLesseeName());
+        equity.setOrgCode(dto.getOrgCode());
+        equity.setOrgName(dto.getOrgName());
         //新增
         this.save(equity);
       /*  if (one == null) {
