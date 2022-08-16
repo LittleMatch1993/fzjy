@@ -8,7 +8,9 @@ import com.cisdi.transaction.constant.WarnCodeConstant;
 import com.cisdi.transaction.domain.dto.BusinessTransactionDTO;
 import com.cisdi.transaction.domain.dto.CadreFamilyExportDto;
 import com.cisdi.transaction.domain.dto.YjxxDTO;
+import com.cisdi.transaction.domain.dto.YjxxObjectDTO;
 import com.cisdi.transaction.domain.vo.BusinessTransactionExcelVO;
+import com.cisdi.transaction.enums.WarnTypeEnum;
 import com.cisdi.transaction.service.EnterpriseDealInfoService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -30,10 +32,7 @@ import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -58,7 +57,10 @@ public class BusinessTransactionController {
 
     @ApiOperation("新增企业交易信息")
     @PostMapping("/saveInfo")
-    public ResultMsgUtil<Object> saveInfo(@RequestBody List<YjxxDTO> yjxxDTOS)   {
+    public ResultMsgUtil<Object> saveInfo(@RequestBody YjxxObjectDTO yjxxObjectDTO)   {
+        List<YjxxDTO> yjxxDTOS = yjxxObjectDTO.getYjxxDTOS();
+        System.out.println("ddddddddddd"+yjxxDTOS);
+        log.error("dddddddddddd"+yjxxDTOS);
         if (CollectionUtils.isEmpty(yjxxDTOS)){
             return ResultMsgUtil.failure("预警信息不能为空");
         }
@@ -68,21 +70,39 @@ public class BusinessTransactionController {
             String outputField = e.getOutputField();
             JSONObject yjxxObject = JSONObject.parseObject(outputField);
             BusinessTransactionDTO dto = new BusinessTransactionDTO();
-            dto.setInfoType("禁止交易");
             dto.setUniqueCode(yjxxObject.getString("唯一标识码"));
             dto.setCode(yjxxObject.getString("社会统一信用代码"));
             dto.setPurchaseName(yjxxObject.getString("采购单位名称"));
             dto.setSupplier(yjxxObject.getString("禁止交易供应商名称"));
             dto.setBusinessCode(yjxxObject.getString("参与的采购业务编码"));
             dto.setBusinessName(yjxxObject.getString("参与的采购业务名称"));
-            if (WarnCodeConstant.JYJY07.equals(e.getYjlxid())||WarnCodeConstant.JYJY08.equals(e.getYjlxid())){
-                dto.setStraightPipeName(yjxxObject.getString("直管单位名称"));
-                dto.setContractPrice(yjxxObject.getString("合同价格"));
-                try {
-                    dto.setContractTime(StringUtils.isBlank(yjxxObject.getString("签订日期")) ? null : new SimpleDateFormat("yyyy-MM-dd").parse(yjxxObject.getString("签订日期")));
-                } catch (ParseException e1) {
-                    log.error("日期格式错误",yjxxObject.getString("签订日期"));
-                }
+            dto.setInfoTips(e.getYjnr());
+            String yjlxid = e.getYjlxid();
+            switch (WarnTypeEnum.valueOf(yjlxid)){
+                case JYJY01:
+                    dto.setInfoType(WarnTypeEnum.JYJY01.getName());
+                    break;
+                case JYJY06:
+                    dto.setInfoType(WarnTypeEnum.JYJY06.getName());
+                    break;
+                case JYJY07:
+                    dto.setStraightPipeName(yjxxObject.getString("直管单位名称"));
+                    dto.setSupplierPrice(yjxxObject.getString("供应商报价"));
+                    dto.setBidder(yjxxObject.getString("是否为中标供应商"));
+                    dto.setInfoType(WarnTypeEnum.JYJY07.getName());
+                    break;
+                case JYJY08:
+                    dto.setInfoType(WarnTypeEnum.JYJY08.getName());
+                    dto.setStraightPipeName(yjxxObject.getString("直管单位名称"));
+                    dto.setContractPrice(yjxxObject.getString("合同价格"));
+                    dto.setContractCode(yjxxObject.getString("采购合同编码"));
+                    dto.setContractName(yjxxObject.getString("采购合同名称"));
+                    try {
+                        dto.setContractTime(StringUtils.isBlank(yjxxObject.getString("签订日期")) ? null : new SimpleDateFormat("yyyy-MM-dd").parse(yjxxObject.getString("签订日期")));
+                    } catch (ParseException e1) {
+                        log.error("日期格式错误",yjxxObject.getString("签订日期"));
+                    }
+                    break;
             }
             return dto;
         }).collect(Collectors.toList());

@@ -2,6 +2,7 @@ package com.cisdi.transaction.domain.dto;
 
 import io.swagger.annotations.ApiModel;
 import lombok.Data;
+import lombok.ToString;
 
 import java.util.Date;
 
@@ -11,8 +12,9 @@ import java.util.Date;
  * @date 2022/8/4 10:13
  */
 @Data
+@ToString
 @ApiModel(description = "预警信息实体")
-public class YjxxDTO extends BaseDTO {
+public class YjxxDTO{
 
     private String id;
     // 采购回调ID

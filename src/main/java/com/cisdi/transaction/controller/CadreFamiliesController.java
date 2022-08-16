@@ -308,7 +308,7 @@ public class CadreFamiliesController {
 
     @ApiOperation("家属投资企业或者担任高级职务导入功能")
     @PostMapping("/importInvestmentExcel")
-    public ResultMsgUtil<Object> importInvestmentExcel(@RequestPart("file") MultipartFile file,@RequestBody BaseDTO baseDTO) {
+    public ResultMsgUtil<Object> importInvestmentExcel(@RequestPart("file") MultipartFile file,BaseDTO baseDTO) {
         try {
             /**
              *  inputStream   文件流
@@ -379,7 +379,7 @@ public class CadreFamiliesController {
 
     @ApiOperation("家属投资私募股权投资基金或者担任高级职务的情况导入功能")
     @PostMapping(value = "/importEquityFundsExcel")
-    public ResultMsgUtil<Object> importEquityFundsExcel(@RequestPart("file") MultipartFile file,@RequestBody BaseDTO baseDTO) {
+    public ResultMsgUtil<Object> importEquityFundsExcel(@RequestPart("file") MultipartFile file,BaseDTO baseDTO) {
         try {
             EasyExcel.read(file.getInputStream(), EquityFundsDTO.class, new ImportEquityFundsExcelListener(privateEquityService,baseDTO)).sheet().headRowNumber(3).doRead();
             return ResultMsgUtil.success();

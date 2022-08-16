@@ -107,7 +107,7 @@ public class BusinessTransactionDTO extends BaseDTO {
     @ApiModelProperty(value = "采购合同签订日期")
     private Date contractTime;
 //
-//    @ApiModelProperty(value = "信息提示")
+    @ApiModelProperty(value = "信息提示")
 //    @NotBlank(message = "信息提示不能为空")
-//    private String infoTips;
+    private String infoTips;
 }
