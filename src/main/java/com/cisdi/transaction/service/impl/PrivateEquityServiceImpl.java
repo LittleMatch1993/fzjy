@@ -100,6 +100,7 @@ public class PrivateEquityServiceImpl extends ServiceImpl<PrivateEquityMapper, P
         info.setCreateName(dto.getServiceUserName());
         info.setOrgCode(dto.getOrgCode());
         info.setOrgName(dto.getOrgName());
+        info = this.valid(info);
         this.save(info);
     }
 
@@ -206,7 +207,56 @@ public class PrivateEquityServiceImpl extends ServiceImpl<PrivateEquityMapper, P
         }
         return ResultMsgUtil.success(resutStr);
     }
+    private PrivateEquity  valid(PrivateEquity info){
+        List<SysDictBiz> dictList = sysDictBizService.selectList();
+        if("无此类情况".equals(sysDictBizService.getDictValue(info.getIsSituation(),dictList))){
+            info.setName(null);
+            info.setTitle(null);
+            info.setCode(null);
+            info.setPrivateequityName(null);
+            info.setMoney(null);
+            info.setPersonalMoney(null);
+            info.setInvestDirection(null);
+            info.setContractTime(null);
+            info.setContractExpireTime(null);
+            info.setManager(null);
+            info.setRegistrationNumber(null);
+            info.setController(null);
+            info.setShareholder(null);
+            info.setSubscriptionMoney(null);
+            info.setSubscriptionRatio(null);
+            info.setSubscriptionTime(null);
+            info.setPractice(null);
+            info.setPostName(null);
+            info.setInductionStartTime(null);
+            info.setInductionEndTime(null);
+            info.setManagerOperatScope(null);
+            info.setIsRelation(null);
+            info.setRemarks(null);
+            info.setTbType(null);
+            info.setYear(null);
+        }else{
+            //是否为股东（合伙人、所有人）
+            if("否".equals(sysDictBizService.getDictValue(info.getShareholder(),dictList))){
+                info.setSubscriptionMoney(null);
+                info.setSubscriptionRatio(null);
+                info.setSubscriptionTime(null);
+            }
+            //是否为该基金管理人的实际控制人
 
+            //是否担任该基金管理人高级职务
+            if("否".equals(sysDictBizService.getDictValue(info.getPractice(),dictList))){
+                info.setPostName(null);
+                info.setInductionStartTime(null);
+                info.setInductionEndTime(null);
+            }
+            //是否与报告人所在单位（系统）直接发生过经济关系
+            if("否".equals(sysDictBizService.getDictValue(info.getIsRelation(),dictList))){
+                info.setRemarks(null);
+            }
+        }
+        return info;
+    }
     @Override
     public void savePrivateEquity(PrivateEquityDTO dto) {
       /*  PrivateEquity one = null;
@@ -232,6 +282,7 @@ public class PrivateEquityServiceImpl extends ServiceImpl<PrivateEquityMapper, P
         equity.setCreateName(dto.getServiceUserName());
         equity.setOrgCode(dto.getOrgCode());
         equity.setOrgName(dto.getOrgName());
+        equity = this.valid(equity);
         //新增
         this.save(equity);
       /*  if (one == null) {
@@ -251,6 +302,7 @@ public class PrivateEquityServiceImpl extends ServiceImpl<PrivateEquityMapper, P
         equity.setState(SystemConstant.SAVE_STATE);
         equity.setUpdateTime(DateUtil.date());
         equity.setUpdaterId(dto.getServiceUserId());
+        equity = this.valid(equity);
         this.updateById(equity);
     }
 

@@ -100,6 +100,7 @@ public class MechanismInfoServiceImpl extends ServiceImpl<MechanismInfoMapper, M
         info.setUpdateTime(DateUtil.date());
         info.setTenantId(dto.getServiceLesseeId());
         info.setCreatorId(dto.getServiceUserId());
+        info = this.valid(info);
         this.save(info);
     }
 
@@ -205,7 +206,54 @@ public class MechanismInfoServiceImpl extends ServiceImpl<MechanismInfoMapper, M
         }
         return ResultMsgUtil.success();
     }
-
+    private MechanismInfo  valid(MechanismInfo info){
+        List<SysDictBiz> dictList = sysDictBizService.selectList();
+        if("无此类情况".equals(sysDictBizService.getDictValue(info.getIsSituation(),dictList))){
+            info.setName(null);
+            info.setTitle(null);
+            info.setQualificationName(null);
+            info.setQualificationCode(null);
+            info.setOrganizationName(null);
+            info.setCode(null);
+            info.setOperatScope(null);
+            info.setEstablishTime(null);
+            info.setRegisterCountry(null);
+            info.setRegisterProvince(null);
+            info.setCity(null);
+            info.setOperatAddr(null);
+            info.setOrganizationType(null);
+            info.setRegisterCapital(null);
+            info.setOperatState(null);
+            info.setShareholder(null);
+            info.setPersonalCapital(null);
+            info.setPersonalRatio(null);
+            info.setJoinTime(null);
+            info.setPractice(null);
+            info.setPostName(null);
+            info.setInductionTime(null);
+            info.setIsRelation(null);
+            info.setRemarks(null);
+            info.setTbType(null);
+            info.setYear(null);
+        }else{
+            //是否为股东（合伙人、所有人）
+            if("否".equals(sysDictBizService.getDictValue(info.getShareholder(),dictList))){
+                info.setPersonalCapital(null);
+                info.setPersonalRatio(null);
+                info.setJoinTime(null);
+            }
+            //是否在该机构中从业
+            if("否".equals(sysDictBizService.getDictValue(info.getPractice(),dictList))){
+                info.setPostName(null);
+                info.setInductionTime(null);
+            }
+            //该企业或其他市场主体是否与报告人所在单位（系统）直接发生过商品、劳务、服务等经济关系
+            if("否".equals(sysDictBizService.getDictValue(info.getIsRelation(),dictList))){
+                info.setRemarks(null);
+            }
+        }
+        return info;
+    }
     @Override
     public void saveMechanismInfo(MechanismInfoDTO dto) {
       /*  MechanismInfo one = null;
@@ -233,6 +281,7 @@ public class MechanismInfoServiceImpl extends ServiceImpl<MechanismInfoMapper, M
         info.setCreateName(dto.getServiceUserName());
         info.setOrgCode(dto.getOrgCode());
         info.setOrgName(dto.getOrgName());
+        info = this.valid(info);
         this.save(info);
     /*    if (one == null) {
             //新增
@@ -283,6 +332,7 @@ public class MechanismInfoServiceImpl extends ServiceImpl<MechanismInfoMapper, M
         info.setState(SystemConstant.SAVE_STATE);
         info.setUpdateTime(DateUtil.date());
         info.setUpdaterId(dto.getServiceUserId());
+        info = this.valid(info);
         this.updateById(info);
     }
 

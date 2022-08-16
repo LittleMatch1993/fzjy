@@ -212,13 +212,13 @@ public class InvestInfoServiceImpl extends ServiceImpl<InvestInfoMapper, InvestI
         info.setCreateName(dto.getServiceUserName());
         info.setOrgCode(dto.getOrgCode());
         info.setOrgName(dto.getOrgName());
+        info = this.valid(info);
         //新增
         this.save(info);
     }
 
     @Override
     public void overrideInvestInfo(String id ,InvestInfoDTO dto) {
-
         InvestInfo info = new InvestInfo();
         BeanUtil.copyProperties(dto,info);
         info.setId(id);
@@ -234,8 +234,58 @@ public class InvestInfoServiceImpl extends ServiceImpl<InvestInfoMapper, InvestI
         info.setCreateName(dto.getServiceUserName());
         info.setOrgCode(dto.getOrgCode());
         info.setOrgName(dto.getOrgName());
+        info = this.valid(info);
         this.save(info);
 
+    }
+
+    private InvestInfo  valid(InvestInfo info){
+        List<SysDictBiz> dictList = sysDictBizService.selectList();
+        if("无此类情况".equals(sysDictBizService.getDictValue(info.getIsSituation(),dictList))){
+            info.setName(null);
+            info.setTitle(null);
+            info.setCode(null);
+            info.setEnterpriseName(null);
+            info.setEstablishTime(null);
+            info.setOperatScope(null);
+            info.setRegisterCountry(null);
+            info.setRegisterProvince(null);
+            info.setCity(null);
+            info.setOperatAddr(null);
+            info.setEnterpriseType(null);
+            info.setRegisterCapital(null);
+            info.setEnterpriseState(null);
+            info.setShareholder(null);
+            info.setPersonalCapital(null);
+            info.setPersonalRatio(null);
+            info.setInvestTime(null);
+            info.setSeniorPosition(null);
+            info.setSeniorPositionName(null);
+            info.setSeniorPositionStartTime(null);
+            info.setSeniorPositionEndTime(null);
+            info.setIsRelation(null);
+            info.setRemarks(null);
+            info.setTbType(null);
+            info.setYear(null);
+        }else{
+            //是否为股东（合伙人、所有人）
+            if("否".equals(sysDictBizService.getDictValue(info.getShareholder(),dictList))){
+                info.setPersonalCapital(null);
+                info.setPersonalRatio(null);
+                info.setInvestTime(null);
+            }
+            //是否担任高级职务
+            if("否".equals(sysDictBizService.getDictValue(info.getSeniorPosition(),dictList))){
+                info.setSeniorPositionName(null);
+                info.setSeniorPositionStartTime(null);
+                info.setSeniorPositionEndTime(null);
+            }
+            //该企业或其他市场主体是否与报告人所在单位（系统）直接发生过商品、劳务、服务等经济关系
+            if("否".equals(sysDictBizService.getDictValue(info.getIsRelation(),dictList))){
+                info.setRemarks(null);
+            }
+        }
+        return info;
     }
 
     @Override
@@ -286,6 +336,7 @@ public class InvestInfoServiceImpl extends ServiceImpl<InvestInfoMapper, InvestI
         info.setState(SystemConstant.SAVE_STATE);
         info.setUpdateTime(DateUtil.date());
         info.setUpdaterId(dto.getServiceUserId());
+        info = this.valid(info);
         this.updateById(info);
     }
 

@@ -1,8 +1,6 @@
 package com.cisdi.transaction.domain.model;
 
-import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableId;
-import com.baomidou.mybatisplus.annotation.TableName;
+import com.baomidou.mybatisplus.annotation.*;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
@@ -79,106 +77,132 @@ public class MechanismInfo {
     /**
      * 姓名
      */
+    @TableField(updateStrategy = FieldStrategy.IGNORED )
     private String name;
     /**
      * 称谓
      */
+    @TableField(updateStrategy =FieldStrategy.IGNORED )
     private String title;
     /**
      * 执业资格名称
      */
+    @TableField(updateStrategy =FieldStrategy.IGNORED )
     private String qualificationName;
     /**
      * 执业证号
      */
+    @TableField(updateStrategy =FieldStrategy.IGNORED )
     private String qualificationCode;
     /**
      * 开办或所在机构名称
      */
+    @TableField(updateStrategy =FieldStrategy.IGNORED )
     private String organizationName;
     /**
      * 统一社会信用代码
      */
+    @TableField(updateStrategy =FieldStrategy.IGNORED )
     private String code;
     /**
      * 经营范围
      */
+    @TableField(updateStrategy =FieldStrategy.IGNORED )
     private String operatScope;
     /**
      * 成立日期
      */
+    @TableField(updateStrategy =FieldStrategy.IGNORED )
     private String establishTime;
     /**
      * 注册地（国家）
      */
+    @TableField(updateStrategy =FieldStrategy.IGNORED )
     private String registerCountry;
     /**
      * 注册地（省份）
      */
+    @TableField(updateStrategy =FieldStrategy.IGNORED )
     private String registerProvince;
     /**
      * 注册地（市）
      */
+    @TableField(updateStrategy =FieldStrategy.IGNORED )
     private String city;
     /**
      * 经营（服务）地
      */
+    @TableField(updateStrategy =FieldStrategy.IGNORED )
     private String operatAddr;
     /**
      * 机构类型
      */
+    @TableField(updateStrategy =FieldStrategy.IGNORED )
     private String organizationType;
     /**
      * 注册资本（金）或资金数额（出资额）（人民币万元）
      */
+    @TableField(updateStrategy =FieldStrategy.IGNORED )
     private String registerCapital;
     /**
      * 经营状态
      */
+    @TableField(updateStrategy =FieldStrategy.IGNORED )
     private String operatState;
     /**
      * 是否为机构股东（合伙人、所有人等）
      */
+    @TableField(updateStrategy =FieldStrategy.IGNORED )
     private String shareholder;
     /**
      * 个人认缴出资额或个人出资额（人民币万元）
      */
+    @TableField(updateStrategy =FieldStrategy.IGNORED )
     private String personalCapital;
     /**
      * 个人认缴出资比例或个人出资比例（%）
      */
+    @TableField(updateStrategy =FieldStrategy.IGNORED )
     private String personalRatio;
     /**
      * 入股（合伙）时间
      */
+    @TableField(updateStrategy =FieldStrategy.IGNORED )
     private String joinTime;
     /**
      * 是否在该机构中从业
      */
+    @TableField(updateStrategy =FieldStrategy.IGNORED )
     private String practice;
     /**
      * 所担任的职务名称
      */
+    @TableField(updateStrategy =FieldStrategy.IGNORED )
     private String postName;
     /**
      * 入职时间
      */
+    @TableField(updateStrategy =FieldStrategy.IGNORED )
     private String inductionTime;
     /**
      * 是否与报告人所在单位（系统）直接发生过经济关系
      */
+    @TableField(updateStrategy =FieldStrategy.IGNORED )
     private String isRelation;
     /**
      * 备注
      */
+    @TableField(updateStrategy =FieldStrategy.IGNORED )
     private String remarks;
     /**
      * 填报类型
      */
+    @TableField(updateStrategy =FieldStrategy.IGNORED )
     private String tbType;
     /**
      * 年度
      */
+    @TableField(updateStrategy =FieldStrategy.IGNORED )
     private String year;
     /**
      * 状态
