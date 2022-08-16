@@ -115,7 +115,7 @@ public class InvestInfoServiceImpl extends ServiceImpl<InvestInfoMapper, InvestI
             }
             banDealInfoService.deleteBanDealInfoByRefId(ids);
             //获取干部的基本信息
-            //List<String> cardIds = infoList.stream().map(InvestInfo::getCardId).collect(Collectors.toList());
+            List<String> cardIds = infoList.stream().map(InvestInfo::getCardId).collect(Collectors.toList());
            // List<GbBasicInfo> gbList = gbBasicInfoService.selectBatchByCardIds(cardIds);
             //获取干部组织的基本信息
             List<GbOrgInfo> gbOrgList = null;
