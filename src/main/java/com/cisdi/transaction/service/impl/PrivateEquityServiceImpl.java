@@ -445,9 +445,15 @@ public class PrivateEquityServiceImpl extends ServiceImpl<PrivateEquityMapper, P
                             PrivateEquity existInfo = infos.stream().filter(e->t.getName().equals(e.getName())
                                     &&sysDictBizService.getDictId(t.getTitle(),dictList).equals(e.getTitle())
                                     &&t.getCode().equals(e.getCode())).findAny().orElse(null);
+                            String title = info.getTitle();
                             if(Objects.nonNull(existInfo)){
                                 info.setId(existInfo.getId());
                                 updateList.add(info);
+                            }else if (privateEquity.isEmpty()||privateEquity.stream().filter(privateEquity1 -> t.getName().equals(privateEquity1.getName())&&t.getCode().equals(privateEquity1.getCode())&&title.equals(privateEquity1.getTitle())).count()==0){
+                                info.setCreateTime(DateUtil.date());
+                                info.setCreateName(baseDTO.getServiceUserName());
+                                info.setCreateAccount(baseDTO.getServiceUserAccount());
+                                privateEquity.add(info);
                             }
                         }
                         /*if (!t.getName().equals(e.getName()) &&!info.getTitle().equals(e.getTitle())&& !t.getCode().equals(e.getCode())) {

@@ -534,9 +534,15 @@ public class InvestInfoServiceImpl extends ServiceImpl<InvestInfoMapper, InvestI
                             InvestInfo existInfo = infos.stream().filter(e->t.getName().equals(e.getName())
                                     &&sysDictBizService.getDictId(t.getTitle(),dictList).equals(e.getTitle())
                                     &&t.getCode().equals(e.getCode())).findAny().orElse(null);
+                            String title = info.getTitle();
                             if(Objects.nonNull(existInfo)){
                                 info.setId(existInfo.getId());
                                 updateList.add(info);
+                            }else if (investInfoList.isEmpty()||investInfoList.stream().filter(privateEquity1 -> t.getName().equals(privateEquity1.getName())&&t.getCode().equals(privateEquity1.getCode())&&title.equals(privateEquity1.getTitle())).count()==0){
+                                info.setCreateTime(DateUtil.date());
+                                info.setCreateName(baseDTO.getServiceUserName());
+                                info.setCreateAccount(baseDTO.getServiceUserAccount());
+                                investInfoList.add(info);
                             }
                         }
                         /*if (!t.getName().equals(e.getName()) &&!info.getTitle().equals(e.getTitle())&& !t.getCode().equals(e.getCode())) {
@@ -576,6 +582,7 @@ public class InvestInfoServiceImpl extends ServiceImpl<InvestInfoMapper, InvestI
                         //数据库为空，直接add
                         InvestInfo info = new InvestInfo();
                         BeanUtils.copyProperties(t, info);
+                        info = this.repalceDictId(info,dictList);
                         info.setState(SystemConstant.SAVE_STATE)//默认类型新建
                                 .setCreateTime(DateUtil.date())
                                 .setUpdateTime(DateUtil.date());

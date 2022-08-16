@@ -59,8 +59,6 @@ public class BusinessTransactionController {
     @PostMapping("/saveInfo")
     public ResultMsgUtil<Object> saveInfo(@RequestBody YjxxObjectDTO yjxxObjectDTO)   {
         List<YjxxDTO> yjxxDTOS = yjxxObjectDTO.getYjxxDTOS();
-        System.out.println("ddddddddddd"+yjxxDTOS);
-        log.error("dddddddddddd"+yjxxDTOS);
         if (CollectionUtils.isEmpty(yjxxDTOS)){
             return ResultMsgUtil.failure("预警信息不能为空");
         }
