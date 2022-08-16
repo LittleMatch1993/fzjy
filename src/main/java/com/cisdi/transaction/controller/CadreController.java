@@ -2,6 +2,7 @@ package com.cisdi.transaction.controller;
 
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.StrUtil;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.cisdi.transaction.config.base.ResultMsgUtil;
 import com.cisdi.transaction.config.utils.ExportExcelUtils;
 import com.cisdi.transaction.config.utils.MinIoUtil;
@@ -88,6 +89,19 @@ public class CadreController{
         System.out.println("orgCode------------"+orgCode);
         List<GbBasicInfo> list = gbBasicInfoService.selectByName(name,orgCode);
         return ResultMsgUtil.success(list);
+    }
+
+    @ApiOperation("根据干部姓名，单位 职务 获取信息")
+    @GetMapping("/selectGbInfoByNameAndUnitAndPost")
+    public ResultMsgUtil<Object> selectGbInfoByNameAndUnitAndPost(@ApiParam(value = "干部姓名") @RequestParam(value = "name" ,required = false) String name,
+                                                  @RequestParam(value = "unit" ,required = false) String unit,
+                                                                @RequestParam(value = "post" ,required = false) String post) {
+        List<GbBasicInfo> gbBasicInfos = gbBasicInfoService.selectGbInfoByNameAndUnitAndPost(name, unit, post);
+        if(CollectionUtil.isNotEmpty(gbBasicInfos)){
+             GbBasicInfo gbBasicInfo = gbBasicInfos.get(0);
+             return   ResultMsgUtil.success(gbBasicInfo);
+        }
+        return ResultMsgUtil.success(null);
     }
 
 

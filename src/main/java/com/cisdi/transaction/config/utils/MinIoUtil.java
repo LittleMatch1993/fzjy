@@ -10,6 +10,7 @@ import io.minio.messages.DeleteObject;
 import io.minio.messages.Item;
 import lombok.SneakyThrows;
 import org.apache.tomcat.util.http.fileupload.IOUtils;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -28,6 +29,12 @@ import java.util.*;
  */
 @Component
 public class MinIoUtil {
+
+    /*@Value("${minio.downloadUrl}")
+    private  String downloadUrl;*/
+
+    @Value("${minio.endpoint}")
+    private  String endpoint;
 
     @Resource
     private MinioClient client;
@@ -399,6 +406,7 @@ public class MinIoUtil {
         inputStream.close();
         // 返回生成文件名、访问路径
         String url = getObjectUrl(bucketName, minFileName, DEFAULT_EXPIRY);
+        //url = url.replace(uploadUrl, downloadUrl);
         return  url;
     }
 
