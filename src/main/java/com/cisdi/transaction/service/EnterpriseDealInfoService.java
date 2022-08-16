@@ -25,4 +25,10 @@ public interface EnterpriseDealInfoService extends IService<EnterpriseDealInfo> 
      * @return
      */
     List<BusinessTransactionExcelVO> export(List<String> ids);
+
+    /**
+     * 新增信息
+     * @param dtos
+     */
+    void saveList(List<BusinessTransactionDTO> dtos);
 }

@@ -16,7 +16,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
+import javax.validation.constraints.NotBlank;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -91,5 +93,43 @@ public class EnterpriseDealInfoServiceImpl extends ServiceImpl<EnterpriseDealInf
             vo.setInfoType(infoType);
         });
         return list;
+    }
+
+
+    @Override
+    public void saveList(List<BusinessTransactionDTO> dtos) {
+        List<BanDealInfo> banDealInfos = banDealInfoService.lambdaQuery().in(BanDealInfo::getCode, dtos.stream().map(BusinessTransactionDTO::getCode).collect(Collectors.toList())).list();
+        if (!CollectionUtils.isEmpty(banDealInfos)){
+            List<EnterpriseDealInfo> collect=new ArrayList<>();
+            dtos.forEach(businessTransactionDTO -> {
+                String code = businessTransactionDTO.getCode();
+                List<BanDealInfo> infoList = banDealInfos.stream().filter(banDealInfo -> code.equals(banDealInfo.getCode())).collect(Collectors.toList());
+                if (!CollectionUtils.isEmpty(infoList)){
+                     infoList.forEach(t -> {
+                        EnterpriseDealInfo info = new EnterpriseDealInfo();
+                        BeanUtils.copyProperties(businessTransactionDTO, info);
+                        info.setCardId(t.getCardId())
+                                .setName(t.getName())
+                                .setCompany(t.getCompany())
+                                .setPost(t.getPost())
+                                .setPostType(t.getPostType())
+                                .setBanPostType(t.getBanPostType())
+                                .setFamilyName(t.getFamilyName())
+                                .setRelation(t.getRelation())
+                                .setEngageType(t.getEngageType())
+                                .setEngageInfo(t.getEngageInfo())
+                                .setOperatScope(t.getOperatScope())
+                                .setCreateTime(DateUtil.date())
+                                .setUpdateTime(DateUtil.date());
+                        collect.add(info);
+                    });
+                }else {
+                    log.info("禁止交易表中未匹配到对应信息，故舍弃掉数据");
+                }
+            });
+            if (!collect.isEmpty()){
+                this.saveBatch(collect);
+            }
+        }
     }
 }
