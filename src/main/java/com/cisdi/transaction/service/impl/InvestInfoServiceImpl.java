@@ -8,6 +8,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.cisdi.transaction.config.base.ResultMsgUtil;
 import com.cisdi.transaction.constant.SqlConstant;
 import com.cisdi.transaction.constant.SystemConstant;
+import com.cisdi.transaction.domain.dto.BaseDTO;
 import com.cisdi.transaction.domain.dto.InvestInfoDTO;
 import com.cisdi.transaction.domain.dto.InvestmentDTO;
 import com.cisdi.transaction.domain.dto.SubmitDto;
@@ -461,6 +462,155 @@ public class InvestInfoServiceImpl extends ServiceImpl<InvestInfoMapper, InvestI
         }).collect(Collectors.toList());
         list = this.repalceDictValue(list,dictList);
         return list;
+    }
+
+    @Override
+    public void saveBatchInvestmentInfo(List<InvestmentDTO> list, BaseDTO baseDTO) {
+        List<SysDictBiz> dictList = sysDictBizService.selectList();
+        List<InvestInfo> investInfoList = new ArrayList<>();
+
+        List<String> cardIds = list.stream().distinct().map(t -> t.getCardId()).collect(Collectors.toList());
+        List<InvestInfo> infoList = this.lambdaQuery().in(InvestInfo::getCardId, cardIds).list();
+        if (infoList.isEmpty()) {
+            list.stream().forEach(t -> {
+                if (t.getIsSituation().equals(SystemConstant.IS_SITUATION_YES)) {
+                    if (StringUtils.isNotBlank(t.getName()) && StringUtils.isNotBlank(t.getCode())) {
+                        //校验国家/省/市
+                        checkArea(t);
+                        InvestInfo investInfo = new InvestInfo();
+                        BeanUtils.copyProperties(t, investInfo);
+                        investInfo.setState(SystemConstant.SAVE_STATE)//默认类型新建
+                                .setCreateTime(new Date())
+                                .setUpdateTime(new Date());
+                        investInfo = this.repalceDictId(investInfo,dictList);
+                        investInfo.setCreateName(baseDTO.getServiceUserName());
+                        investInfo.setCreateAccount(baseDTO.getServiceUserAccount());
+                        investInfoList.add(investInfo);
+                    }
+                } else {
+                    InvestInfo investInfo = new InvestInfo();
+                    BeanUtils.copyProperties(t, investInfo);
+                    investInfo.setState(SystemConstant.SAVE_STATE)//默认类型新建
+                            .setCreateTime(new Date())
+                            .setUpdateTime(new Date());
+                    investInfo = this.repalceDictId(investInfo,dictList);
+                    investInfo.setCreateName(baseDTO.getServiceUserName());
+                    investInfo.setCreateAccount(baseDTO.getServiceUserAccount());
+                    investInfoList.add(investInfo);
+                }
+            });
+            if (!investInfoList.isEmpty()) {
+                this.saveBatch(investInfoList);
+            }
+            return;
+        }
+        List<InvestInfo> updateList = new ArrayList<>();
+        Map<String, List<InvestInfo>> infoMap = infoList.stream().collect(Collectors.groupingBy(InvestInfo::getCardId));
+        list.stream().forEach(t -> {
+            //List<InvestInfo> infos = infoMap.get(t.getCardId());
+            List<InvestInfo> infos = infoMap.containsKey(t.getCardId())?infoMap.get(t.getCardId()):null;
+            if (t.getIsSituation().equals(SystemConstant.IS_SITUATION_YES)) {//有此类情况
+                if (CollectionUtil.isNotEmpty(infos)) {//如果不为空，进行比较
+                    //校验姓名和统一社会信用代码不能为空
+                    if (StringUtils.isNotBlank(t.getName())&&StringUtils.isNotBlank(t.getTitle())  && StringUtils.isNotBlank(t.getCode())) {
+                        //校验国家/省/市
+                        checkArea(t);
+                        InvestInfo info = new InvestInfo();
+                        BeanUtils.copyProperties(t, info);
+                        info.setState(SystemConstant.SAVE_STATE)//默认类型新建
+                                .setUpdateTime(DateUtil.date());
+                        //判断该干部下的其他子项名称和代码是否相同
+                        long nameIndex = infos.stream().filter(e->t.getName().equals(e.getName())).count();
+                        long titleIndex = infos.stream().filter(e->sysDictBizService.getDictId(t.getTitle(),dictList).equals(e.getTitle())).count();
+                        long codeIndex = infos.stream().filter(e->t.getCode().equals(e.getCode())).count();
+                        info = this.repalceDictId(info,dictList);
+                        if(nameIndex==0|titleIndex==0|codeIndex==0){ //一个都不重复
+                            //如果不相同，新增，否则就是覆盖
+                            info.setCreateTime(DateUtil.date());
+                            info.setCreateName(baseDTO.getServiceUserName());
+                            info.setCreateAccount(baseDTO.getServiceUserAccount());
+                            investInfoList.add(info);
+                        }else{ //有重复数据了
+                            InvestInfo existInfo = infos.stream().filter(e->t.getName().equals(e.getName())
+                                    &&sysDictBizService.getDictId(t.getTitle(),dictList).equals(e.getTitle())
+                                    &&t.getCode().equals(e.getCode())).findAny().orElse(null);
+                            if(Objects.nonNull(existInfo)){
+                                info.setId(existInfo.getId());
+                                updateList.add(info);
+                            }
+                        }
+                        /*if (!t.getName().equals(e.getName()) &&!info.getTitle().equals(e.getTitle())&& !t.getCode().equals(e.getCode())) {
+                            //如果不相同，新增，否则就是覆盖
+                            info.setCreateTime(DateUtil.date());
+                            investInfoList.add(info);
+                        } else {
+                            info.setId(e.getId());
+                            updateList.add(info);
+                        }*/
+                    }
+                    /*infos.stream().forEach(e -> {
+                        //校验姓名和统一社会信用代码不能为空
+                        if (StringUtils.isNotBlank(t.getName())&&StringUtils.isNotBlank(t.getTitle())  && StringUtils.isNotBlank(t.getCode())) {
+                            //校验国家/省/市
+                            checkArea(t);
+                            InvestInfo info = new InvestInfo();
+                            BeanUtils.copyProperties(t, info);
+                            info.setState(SystemConstant.SAVE_STATE)//默认类型新建
+                                    .setUpdateTime(DateUtil.date());
+                            info = this.repalceDictId(info,dictList);
+                            //判断该干部下的其他子项名称和代码是否相同
+                            if (!t.getName().equals(e.getName()) &&!info.getTitle().equals(e.getTitle())&& !t.getCode().equals(e.getCode())) {
+                                //如果不相同，新增，否则就是覆盖
+                                info.setCreateTime(DateUtil.date());
+                                investInfoList.add(info);
+                            } else {
+                                info.setId(e.getId());
+                                updateList.add(info);
+                            }
+                        }
+                    });*/
+                } else {
+                    if (StringUtils.isNotBlank(t.getName()) && StringUtils.isNotBlank(t.getCode())) {
+                        //校验国家/省/市
+                        checkArea(t);
+                        //数据库为空，直接add
+                        InvestInfo info = new InvestInfo();
+                        BeanUtils.copyProperties(t, info);
+                        info.setState(SystemConstant.SAVE_STATE)//默认类型新建
+                                .setCreateTime(DateUtil.date())
+                                .setUpdateTime(DateUtil.date());
+                        info.setCreateName(baseDTO.getServiceUserName());
+                        info.setCreateAccount(baseDTO.getServiceUserAccount());
+                        investInfoList.add(info);
+                    }
+                }
+            } else {
+                //说明无此类情况
+                InvestInfo info = new InvestInfo();
+                BeanUtils.copyProperties(t, info);
+                info.setState(SystemConstant.SAVE_STATE)//默认类型新建
+                        .setUpdateTime(DateUtil.date());
+                info = this.repalceDictId(info,dictList);
+                //数据库中如果不存在数据
+                if (CollectionUtil.isEmpty(infos)) {
+                    info.setCreateTime(DateUtil.date());
+                    info.setCreateName(baseDTO.getServiceUserName());
+                    info.setCreateAccount(baseDTO.getServiceUserAccount());
+                    investInfoList.add(info);
+                } else {
+                    //覆盖
+                    info.setId(infos.get(0).getId());
+                    updateList.add(info);
+                }
+            }
+
+        });
+        if (!investInfoList.isEmpty()) {
+            this.saveBatch(investInfoList);
+        }
+        if (!updateList.isEmpty()) {
+            this.updateBatchById(updateList);
+        }
     }
 
     private List<InvestmentDTO>  repalceDictValue(List<InvestmentDTO> list,List<SysDictBiz> dictList){

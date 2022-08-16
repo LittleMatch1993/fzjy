@@ -6,6 +6,7 @@ import com.alibaba.excel.exception.ExcelAnalysisException;
 import com.alibaba.excel.metadata.CellData;
 import com.cisdi.transaction.config.excel.ExcelImportValid;
 import com.cisdi.transaction.config.excel.ExceptionCustom;
+import com.cisdi.transaction.domain.dto.BaseDTO;
 import com.cisdi.transaction.domain.dto.CommunityServiceDTO;
 import com.cisdi.transaction.service.MechanismInfoService;
 import com.google.common.collect.Sets;
@@ -32,11 +33,14 @@ public class ImportCommunityServiceExcelListener extends AnalysisEventListener<C
 
     private MechanismInfoService mechanismInfoService;
 
+    private BaseDTO baseDTO;
+
     public ImportCommunityServiceExcelListener() {
     }
 
-    public ImportCommunityServiceExcelListener(MechanismInfoService mechanismInfoService) {
+    public ImportCommunityServiceExcelListener(MechanismInfoService mechanismInfoService, BaseDTO baseDTO) {
         this.mechanismInfoService = mechanismInfoService;
+        this.baseDTO = baseDTO;
     }
 
     private List<String> columns= Arrays.asList(
@@ -90,7 +94,7 @@ public class ImportCommunityServiceExcelListener extends AnalysisEventListener<C
     private void saveData() {
         log.info("{}条数据，开始存储数据库！", list.size());
         if (list.size() > 0) {
-            mechanismInfoService.saveBatchInvestInfo(list);
+            mechanismInfoService.saveBatchInvestInfo(list,baseDTO);
         }
         log.info("存储数据库成功！");
     }

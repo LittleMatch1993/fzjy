@@ -376,6 +376,151 @@ public class PrivateEquityServiceImpl extends ServiceImpl<PrivateEquityMapper, P
         return list;
     }
 
+    @Override
+    public void saveBatchInvestmentInfo(List<EquityFundsDTO> list, BaseDTO baseDTO) {
+        List<SysDictBiz> dictList = sysDictBizService.selectList();
+        List<PrivateEquity> privateEquity = new ArrayList<>();
+        List<String> cardIds = list.stream().distinct().map(t -> t.getCardId()).collect(Collectors.toList());
+        List<PrivateEquity> infoList = this.lambdaQuery().in(PrivateEquity::getCardId, cardIds).list();
+        if (infoList.isEmpty()) {
+            list.stream().forEach(t -> {
+                if (t.getIsSituation().equals(SystemConstant.IS_SITUATION_YES)) {
+                    if (StringUtils.isNotBlank(t.getName()) && StringUtils.isNotBlank(t.getCode())) {
+                        PrivateEquity investInfo = new PrivateEquity();
+                        BeanUtils.copyProperties(t, investInfo);
+                        investInfo.setState(SystemConstant.SAVE_STATE)//默认类型新建
+                                .setCreateTime(new Date())
+                                .setUpdateTime(new Date());
+                        //字典替换
+                        investInfo = this.replaceDictId(investInfo,dictList);
+                        investInfo.setCreateName(baseDTO.getServiceUserName());
+                        investInfo.setCreateAccount(baseDTO.getServiceUserAccount());
+                        privateEquity.add(investInfo);
+                    }
+                } else {
+                    PrivateEquity investInfo = new PrivateEquity();
+                    BeanUtils.copyProperties(t, investInfo);
+                    investInfo.setState(SystemConstant.SAVE_STATE)//默认类型新建
+                            .setCreateTime(new Date())
+                            .setUpdateTime(new Date());
+                    //字典替换
+                    investInfo = this.replaceDictId(investInfo,dictList);
+                    investInfo.setCreateName(baseDTO.getServiceUserName());
+                    investInfo.setCreateAccount(baseDTO.getServiceUserAccount());
+                    privateEquity.add(investInfo);
+                }
+            });
+            if (!privateEquity.isEmpty()) {
+                this.saveBatch(privateEquity);
+            }
+            return;
+        }
+        List<PrivateEquity> updateList = new ArrayList<>();
+        Map<String, List<PrivateEquity>> infoMap = infoList.stream().collect(Collectors.groupingBy(PrivateEquity::getCardId));
+        list.stream().forEach(t -> {
+            //List<PrivateEquity> infos = infoMap.get(t.getCardId());
+            List<PrivateEquity> infos = infoMap.containsKey(t.getCardId())?infoMap.get(t.getCardId()):null;
+            if (t.getIsSituation().equals(SystemConstant.IS_SITUATION_YES)) {
+                if (CollectionUtil.isNotEmpty(infos)) {//如果不为空，进行比较
+                    //有此类情况
+                    //校验姓名和统一社会信用代码不能为空
+                    if (StringUtils.isNotBlank(t.getName())&&StringUtils.isNotBlank(t.getTitle())  && StringUtils.isNotBlank(t.getCode())) {
+                        //校验国家/省/市
+                        PrivateEquity info = new PrivateEquity();
+                        BeanUtils.copyProperties(t, info);
+                        info.setState(SystemConstant.SAVE_STATE)//默认类型新建
+                                .setUpdateTime(DateUtil.date());
+                        //判断该干部下的其他子项名称和代码是否相同
+                        long nameIndex = infos.stream().filter(e->t.getName().equals(e.getName())).count();
+                        long titleIndex = infos.stream().filter(e->sysDictBizService.getDictId(t.getTitle(),dictList).equals(e.getTitle())).count();
+                        long codeIndex = infos.stream().filter(e->t.getCode().equals(e.getCode())).count();
+                        info = this.replaceDictId(info,dictList);
+                        if(nameIndex==0|titleIndex==0|codeIndex==0){ //一个都不重复
+                            //如果不相同，新增，否则就是覆盖
+                            info.setCreateTime(DateUtil.date());
+                            info.setCreateName(baseDTO.getServiceUserName());
+                            info.setCreateAccount(baseDTO.getServiceUserAccount());
+                            privateEquity.add(info);
+                        }else{ //有重复数据了
+                            PrivateEquity existInfo = infos.stream().filter(e->t.getName().equals(e.getName())
+                                    &&sysDictBizService.getDictId(t.getTitle(),dictList).equals(e.getTitle())
+                                    &&t.getCode().equals(e.getCode())).findAny().orElse(null);
+                            if(Objects.nonNull(existInfo)){
+                                info.setId(existInfo.getId());
+                                updateList.add(info);
+                            }
+                        }
+                        /*if (!t.getName().equals(e.getName()) &&!info.getTitle().equals(e.getTitle())&& !t.getCode().equals(e.getCode())) {
+                            //如果不相同，新增，否则就是覆盖
+                            info.setCreateTime(DateUtil.date());
+                            investInfoList.add(info);
+                        } else {
+                            info.setId(e.getId());
+                            updateList.add(info);
+                        }*/
+                    }
+                    /*infos.stream().forEach(e -> {
+                        //判断该干部下的其他子项名称和代码是否相同，不相同则添加数据库
+                        if (StringUtils.isNotBlank(t.getName()) && StringUtils.isNotBlank(t.getTitle()) && StringUtils.isNotBlank(t.getRegistrationNumber())) {
+                            PrivateEquity info = new PrivateEquity();
+                            BeanUtils.copyProperties(t, info);
+                            info.setState(SystemConstant.SAVE_STATE)//默认类型新建
+                                    .setUpdateTime(new Date());
+                            //字典替换
+                            info = this.replaceDictId(info,dictList);
+                            if (!t.getName().equals(e.getName()) || !info.getTitle().equals(e.getTitle())||!t.getRegistrationNumber().equals(e.getRegistrationNumber())) {
+                                info.setCreateTime(new Date());
+                                privateEquity.add(info);
+                            } else {
+                                info.setId(e.getId());
+                                updateList.add(info);
+                            }
+                        }
+                    });*/
+                } else {
+                    if (StringUtils.isNotBlank(t.getName()) && StringUtils.isNotBlank(t.getCode())) {
+                        //数据库为空，直接add
+                        PrivateEquity info = new PrivateEquity();
+                        BeanUtils.copyProperties(t, info);
+                        info.setState(SystemConstant.SAVE_STATE)//默认类型新建
+                                .setCreateTime(new Date())
+                                .setUpdateTime(new Date());
+                        //字典替换
+                        info = this.replaceDictId(info,dictList);
+                        info.setCreateName(baseDTO.getServiceUserName());
+                        info.setCreateAccount(baseDTO.getServiceUserAccount());
+                        privateEquity.add(info);
+                    }
+                }
+            } else {
+                //说明无此类情况
+                PrivateEquity info = new PrivateEquity();
+                BeanUtils.copyProperties(t, info);
+                info.setState(SystemConstant.SAVE_STATE)//默认类型新建
+                        .setUpdateTime(new Date());
+                //字典替换
+                info = this.replaceDictId(info,dictList);
+                // 数据库中如果不存在数据
+                if (CollectionUtil.isEmpty(infos)) {
+                    info.setCreateTime(new Date());
+                    info.setCreateName(baseDTO.getServiceUserName());
+                    info.setCreateAccount(baseDTO.getServiceUserAccount());
+                    privateEquity.add(info);//可添加到数据库中
+                } else {
+                    info.setId(infos.get(0).getId());
+                    updateList.add(info);
+                }
+            }
+
+        });
+        if (!privateEquity.isEmpty()) {
+            this.saveBatch(privateEquity);
+        }
+        if (!updateList.isEmpty()) {
+            this.updateBatchById(updateList);
+        }
+    }
+
     private List<EquityFundsDTO> replaceDictValue(List<EquityFundsDTO> list,List<SysDictBiz> dictList){
             list.parallelStream().forEach(t->{
                 System.out.println("123--"+t.getTitle());

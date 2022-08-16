@@ -6,6 +6,7 @@ import com.alibaba.excel.exception.ExcelAnalysisException;
 import com.alibaba.excel.metadata.CellData;
 import com.cisdi.transaction.config.excel.ExcelImportValid;
 import com.cisdi.transaction.config.excel.ExceptionCustom;
+import com.cisdi.transaction.domain.dto.BaseDTO;
 import com.cisdi.transaction.domain.dto.InvestmentDTO;
 import com.cisdi.transaction.service.InvestInfoService;
 import lombok.extern.slf4j.Slf4j;
@@ -38,8 +39,11 @@ public class ImportInvestmentExcelListener extends AnalysisEventListener<Investm
     public ImportInvestmentExcelListener() {
     }
 
-    public ImportInvestmentExcelListener(InvestInfoService investInfoService) {
+    private BaseDTO baseDTO;
+
+    public ImportInvestmentExcelListener(InvestInfoService investInfoService, BaseDTO baseDTO) {
         this.investInfoService = investInfoService;
+        this.baseDTO=baseDTO;
     }
 
     private List<String> columns= Arrays.asList(
@@ -94,7 +98,7 @@ public class ImportInvestmentExcelListener extends AnalysisEventListener<Investm
     private void saveData() {
         log.info("{}条数据，开始存储数据库！", list.size());
         if (list.size()>0){
-            investInfoService.saveBatchInvestmentInfo(list);
+            investInfoService.saveBatchInvestmentInfo(list,baseDTO);
         }
         log.info("存储数据库成功！");
     }

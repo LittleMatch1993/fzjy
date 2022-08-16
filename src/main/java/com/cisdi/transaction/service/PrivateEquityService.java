@@ -45,6 +45,7 @@ public interface PrivateEquityService extends IService<PrivateEquity> {
      * 批量导入新增
      * @param list
      */
+    @Deprecated
     void saveBatchInvestmentInfo(List<EquityFundsDTO> list);
 
     /**
@@ -52,4 +53,15 @@ public interface PrivateEquityService extends IService<PrivateEquity> {
      * @return
      */
     List<EquityFundsDTO> exportEquityFundsExcel(List<String> ids);
+
+    /**
+     *
+     * @param list
+     * @param baseDTO
+     */
+    /**
+     * 批量导入新增
+     * @param list
+     */
+    void saveBatchInvestmentInfo(List<EquityFundsDTO> list, BaseDTO baseDTO);
 }

@@ -2,6 +2,7 @@ package com.cisdi.transaction.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.cisdi.transaction.config.base.ResultMsgUtil;
+import com.cisdi.transaction.domain.dto.BaseDTO;
 import com.cisdi.transaction.domain.dto.CommunityServiceDTO;
 import com.cisdi.transaction.domain.dto.MechanismInfoDTO;
 import com.cisdi.transaction.domain.dto.SubmitDto;
@@ -55,4 +56,9 @@ public interface MechanismInfoService extends IService<MechanismInfo> {
      */
     List<CommunityServiceDTO> exportCommunityServiceExcel(List<String> ids);
 
+    /**
+     * 批量导入新增
+     * @param list
+     */
+    void saveBatchInvestInfo(List<CommunityServiceDTO> list, BaseDTO baseDTO);
 }

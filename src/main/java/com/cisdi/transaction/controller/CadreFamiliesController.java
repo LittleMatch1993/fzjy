@@ -308,7 +308,7 @@ public class CadreFamiliesController {
 
     @ApiOperation("家属投资企业或者担任高级职务导入功能")
     @PostMapping("/importInvestmentExcel")
-    public ResultMsgUtil<Object> importInvestmentExcel(@RequestPart("file") MultipartFile file) {
+    public ResultMsgUtil<Object> importInvestmentExcel(@RequestPart("file") MultipartFile file,@RequestBody BaseDTO baseDTO) {
         try {
             /**
              *  inputStream   文件流
@@ -316,7 +316,7 @@ public class CadreFamiliesController {
              *  new SubjectExcelListener(subjectService)   监听器(主要功能都在监听器里，比如读取添加等操作)
              *  SubjectExcelListener  没有交给Spring进行管理，所有不能在此方法使用    @Autowired 注入，所以使用  SubjectExcelListener(subjectService)   传入方式
              */
-            EasyExcel.read(file.getInputStream(), InvestmentDTO.class, new ImportInvestmentExcelListener(investInfoService)).sheet().headRowNumber(3).doRead();
+            EasyExcel.read(file.getInputStream(), InvestmentDTO.class, new ImportInvestmentExcelListener(investInfoService,baseDTO)).sheet().headRowNumber(3).doRead();
             return ResultMsgUtil.success();
         } catch (Exception e) {
             e.printStackTrace();
@@ -346,9 +346,9 @@ public class CadreFamiliesController {
 
     @ApiOperation("开办有偿社会中介和法律服务机构或者从业的情况导入功能")
     @PostMapping(value = "/importCommunityServiceExcel")
-    public ResultMsgUtil<Object> importCommunityServiceExcel(@RequestPart("file") MultipartFile file) {
+    public ResultMsgUtil<Object> importCommunityServiceExcel(@RequestPart("file") MultipartFile file,BaseDTO baseDTO) {
         try {
-            EasyExcel.read(file.getInputStream(), CommunityServiceDTO.class, new ImportCommunityServiceExcelListener(mechanismInfoService)).sheet().headRowNumber(3).doRead();
+            EasyExcel.read(file.getInputStream(), CommunityServiceDTO.class, new ImportCommunityServiceExcelListener(mechanismInfoService,baseDTO)).sheet().headRowNumber(3).doRead();
             return ResultMsgUtil.success();
         } catch (Exception e) {
             e.printStackTrace();
@@ -379,9 +379,9 @@ public class CadreFamiliesController {
 
     @ApiOperation("家属投资私募股权投资基金或者担任高级职务的情况导入功能")
     @PostMapping(value = "/importEquityFundsExcel")
-    public ResultMsgUtil<Object> importEquityFundsExcel(@RequestPart("file") MultipartFile file) {
+    public ResultMsgUtil<Object> importEquityFundsExcel(@RequestPart("file") MultipartFile file,@RequestBody BaseDTO baseDTO) {
         try {
-            EasyExcel.read(file.getInputStream(), EquityFundsDTO.class, new ImportEquityFundsExcelListener(privateEquityService)).sheet().headRowNumber(3).doRead();
+            EasyExcel.read(file.getInputStream(), EquityFundsDTO.class, new ImportEquityFundsExcelListener(privateEquityService,baseDTO)).sheet().headRowNumber(3).doRead();
             return ResultMsgUtil.success();
         } catch (Exception e) {
             e.printStackTrace();
