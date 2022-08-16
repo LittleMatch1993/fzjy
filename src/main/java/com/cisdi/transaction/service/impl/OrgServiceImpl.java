@@ -215,10 +215,14 @@ public class OrgServiceImpl extends ServiceImpl<OrgMapper, Org> implements OrgSe
 
     private List<Org>  repalceDictId(List<Org> list, List<SysDictBiz> dictList){
         list.parallelStream().forEach(dto->{
+            String s1 = dto.getAsgleadfg();
+            String s2 = dto.getAsglead();
+            s1 = "0".equals(s1)?"否":"是";
+            s2 = "0".equals(s2)?"否":"是";
             //字典对应项
-            String asgleadfg = sysDictBizService.getDictId(dto.getAsgleadfg(), dictList);
-            String asglead = sysDictBizService.getDictId(dto.getAsglead(), dictList);
-            dto.setAsglead(asgleadfg);
+            String asgleadfg = sysDictBizService.getDictId(s1, dictList);
+            String asglead = sysDictBizService.getDictId(s2, dictList);
+            dto.setAsglead(asglead);
             dto.setAsgleadfg(asgleadfg);
 
         });

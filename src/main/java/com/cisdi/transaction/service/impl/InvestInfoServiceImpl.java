@@ -134,7 +134,6 @@ public class InvestInfoServiceImpl extends ServiceImpl<InvestInfoMapper, InvestI
                     return ResultMsgUtil.failure("添加家属信息失败");
                 }
             }
-            banDealInfoService.deleteBanDealInfoByRefId(ids);
             //获取干部的基本信息
             List<String> cardIds = infoList.stream().map(InvestInfo::getCardId).collect(Collectors.toList());
            // List<GbBasicInfo> gbList = gbBasicInfoService.selectBatchByCardIds(cardIds);
@@ -152,7 +151,7 @@ public class InvestInfoServiceImpl extends ServiceImpl<InvestInfoMapper, InvestI
                 //this.updateState(ids, SystemConstant.SAVE_STATE);
                 return ResultMsgUtil.failure("没有找到干部组织信息");
             }
-
+            banDealInfoService.deleteBanDealInfoByRefId(ids);
             //向禁止交易信息表中添加数据 并进行验证 及其他逻辑处理
             ResultMsgUtil<Map<String, Object>> mapResult = banDealInfoService.insertBanDealInfoOfInvestInfo(infoList, gbOrgList);
             //处理提交数据后

@@ -406,7 +406,7 @@ public class MinIoUtil {
         inputStream.close();
         // 返回生成文件名、访问路径
         String url = getObjectUrl(bucketName, minFileName, DEFAULT_EXPIRY);
-        //url = url.replace(uploadUrl, downloadUrl);
+        url = url.replace(endpoint, downloadUrl);
         return  url;
     }
 
