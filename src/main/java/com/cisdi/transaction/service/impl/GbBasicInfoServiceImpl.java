@@ -28,6 +28,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
@@ -196,8 +197,44 @@ public class GbBasicInfoServiceImpl extends ServiceImpl<GbBasicInfoMapper, GbBas
         if (Objects.isNull(org)){
             return null;
         }
+        String asglevel = org.getAsglevel();
+        if(StrUtil.isNotEmpty(asglevel)&&asglevel.equals("1")){
+
+        }
         String pathNamecode = org.getAsgpathnamecode();
         return this.baseMapper.selectByPathNameCode(pathNamecode);
+    }
+
+    @Override
+    public List<GbOrgInfo> selectByOrgCodeAndCardIds(String orgCode, List<String> cardIds) {
+        if (StrUtil.isEmpty(orgCode)){
+            return null;
+        }
+        Org org = orgService.selectByOrgancode(orgCode);
+        if (Objects.isNull(org)){
+            return null;
+        }
+        String asglevel = org.getAsglevel();
+        List<GbOrgInfo> list = new ArrayList<>();
+        if(StrUtil.isNotEmpty(asglevel)&&asglevel.equals("1")){
+            list =  this.baseMapper.selectByCardIds(cardIds);
+        }else{
+            String pathNamecode = org.getAsgpathnamecode();
+            list =this.baseMapper.selectByPathNameCodeAndCardIds(cardIds,pathNamecode);
+        }
+        List<GbOrgInfo> gbOrgInfoList = new ArrayList<>();
+        Map<String, List<GbOrgInfo>> map = list.stream().collect(Collectors.groupingBy(go -> go.getCardId() + "_" +go.getUnit() + "_" + go.getPostType()));
+        for (Map.Entry<String, List<GbOrgInfo>> m : map.entrySet()) {
+            String key = m.getKey();//key 身份证_单位_职务类型
+            List<GbOrgInfo> tempList = m.getValue();
+            System.out.println("key:" + m.getKey() + " value:" + m.getValue());
+            GbOrgInfo gbOrgInfo = tempList.get(0);//默认取第一个值 作为新数据保存
+            //将多个职务用都好链接并保存之新数据中
+            String newPost = tempList.stream().map(GbOrgInfo::getPost).collect(Collectors.joining(","));
+            gbOrgInfo.setPost(newPost);
+            gbOrgInfoList.add(gbOrgInfo); //数据中部门id不存在
+        }
+        return gbOrgInfoList;
     }
 
     @Override

@@ -8,6 +8,7 @@ import com.cisdi.transaction.domain.dto.InvestmentDTO;
 import com.cisdi.transaction.domain.dto.SubmitDto;
 import com.cisdi.transaction.domain.model.BanDealInfo;
 import com.cisdi.transaction.domain.model.InvestInfo;
+import com.cisdi.transaction.domain.vo.KVVO;
 
 import java.util.List;
 
@@ -24,6 +25,19 @@ public interface InvestInfoService extends IService<InvestInfo> {
      * @return
      */
     boolean  updateState(List<String> ids, String state);
+    /**
+     * 批量修改的tips不同相同的值
+     * @param kvList
+     * @return
+     */
+    int  updateTips(List<KVVO> kvList);
+
+    /**
+     * 批量修改的tips相同的值
+     * @param kvList
+     * @return
+     */
+    boolean  updateBathTips(List<KVVO> kvList);
 
     /**
      * 查询干部姓名 身份证号 社会信用代码数据条数

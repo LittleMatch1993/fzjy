@@ -30,8 +30,8 @@ import java.util.*;
 @Component
 public class MinIoUtil {
 
-    /*@Value("${minio.downloadUrl}")
-    private  String downloadUrl;*/
+    @Value("${minio.downloadUrl:https://jsbqy.minmetals.com.cn/minio}")
+    private  String downloadUrl;
 
     @Value("${minio.endpoint}")
     private  String endpoint;

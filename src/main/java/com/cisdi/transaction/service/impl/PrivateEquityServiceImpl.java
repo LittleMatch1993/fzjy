@@ -3,12 +3,14 @@ package com.cisdi.transaction.service.impl;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.date.DateUtil;
+import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.cisdi.transaction.config.base.ResultMsgUtil;
 import com.cisdi.transaction.constant.SqlConstant;
 import com.cisdi.transaction.constant.SystemConstant;
 import com.cisdi.transaction.domain.dto.*;
 import com.cisdi.transaction.domain.model.*;
+import com.cisdi.transaction.domain.vo.KVVO;
 import com.cisdi.transaction.mapper.master.PrivateEquityMapper;
 import com.cisdi.transaction.service.BanDealInfoService;
 import com.cisdi.transaction.service.PrivateEquityService;
@@ -58,6 +60,26 @@ public class PrivateEquityServiceImpl extends ServiceImpl<PrivateEquityMapper, P
     public int countByNameAndCardIdAndCode(String name, String cardId, String code) {
         Integer count = this.lambdaQuery().eq(PrivateEquity::getName, name).eq(PrivateEquity::getCardId, cardId).eq(PrivateEquity::getCode, code).count();
         return Objects.isNull(count) ? 0 : count.intValue();
+    }
+
+    @Override
+    public int updateTips(List<KVVO> kvList) {
+        int i = this.baseMapper.updateTips(kvList);
+        return i;
+    }
+
+    @Override
+    public boolean updateBathTips(List<KVVO> kvList) {
+        if(CollectionUtil.isEmpty(kvList)){
+            return false;
+        }
+        String tips = kvList.get(0).getName();
+        List<String> ids = kvList.stream().map(e -> e.getId()).collect(Collectors.toList());
+        UpdateWrapper<PrivateEquity> updateWrapper  = new UpdateWrapper<>();
+        updateWrapper.lambda().set(PrivateEquity::getTips,tips)
+                .in(PrivateEquity::getId,ids);
+        boolean b = this.update(updateWrapper);
+        return b;
     }
 
     @Transactional(rollbackFor = Exception.class)
@@ -140,21 +162,21 @@ public class PrivateEquityServiceImpl extends ServiceImpl<PrivateEquityMapper, P
 
             banDealInfoService.deleteBanDealInfoByRefId(ids);
             //获取干部的基本信息
-            //List<String> cardIds = infoList.stream().map(PrivateEquity::getCardId).collect(Collectors.toList());
+            List<String> cardIds = infoList.stream().map(PrivateEquity::getCardId).collect(Collectors.toList());
            // List<GbBasicInfo> gbList = gbBasicInfoService.selectBatchByCardIds(cardIds);
             //获取干部组织的基本信息
             List<GbOrgInfo> gbOrgList = null;
             try {
                 //gbOrgList = gbBasicInfoService.selectGbOrgInfoByCardIds(cardIds);
                 String orgCode = subDto.getOrgCode();
-                gbOrgList = gbBasicInfoService.selectByOrgCode(orgCode);
+                gbOrgList = gbBasicInfoService.selectByOrgCodeAndCardIds(orgCode,cardIds);
             }catch (Exception e){
                 e.printStackTrace();
-                this.updateState(ids, SystemConstant.SAVE_STATE);
+                //this.updateState(ids, SystemConstant.SAVE_STATE);
                 return ResultMsgUtil.failure("干部组织信息查询失败");
             }
             if(CollectionUtil.isEmpty(gbOrgList)){
-                this.updateState(ids, SystemConstant.SAVE_STATE);
+                //this.updateState(ids, SystemConstant.SAVE_STATE);
                 return ResultMsgUtil.failure("没有找到干部组织信息");
             }
             //向禁止交易信息表中添加数据 并进行验证 及其他逻辑处理
@@ -163,15 +185,18 @@ public class PrivateEquityServiceImpl extends ServiceImpl<PrivateEquityMapper, P
             Map<String, Object> data = mapResult.getData();
             String banDeal = data.get("banDeal").toString();
             List<String> submitIds = (List<String>)data.get("submitIds");
+            List<KVVO> submitFailId = (List<KVVO>)data.get("submitFailId"); //无法提交的数据id
             StringJoiner sj = new StringJoiner(",");
-            if(CollectionUtil.isNotEmpty(submitIds)){
-                this.updateState(submitIds,SystemConstant.VALID_STATE);
+            if(CollectionUtil.isNotEmpty(submitFailId)){
+                this.updateBathTips(submitFailId);
             }
             if(!Boolean.valueOf(banDeal)){
                 sj.add("提交数据失败");
+                return ResultMsgUtil.failure(sj.toString());
             }else{
                 sj.add("提交数据成功");
                 if(CollectionUtil.isNotEmpty(submitIds)){
+                    this.updateState(submitIds,SystemConstant.VALID_STATE);
                     int beferIndex = infoList.size();
                     int afterIndex = submitIds.size();
                     sj.add(",其中"+(beferIndex-afterIndex)+"数据提交失败");

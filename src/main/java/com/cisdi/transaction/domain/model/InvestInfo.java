@@ -214,5 +214,10 @@ public class InvestInfo {
      */
     private  String orgCode;
 
+    /**
+     * 提示
+     */
+    private  String tips;
+
 
 }

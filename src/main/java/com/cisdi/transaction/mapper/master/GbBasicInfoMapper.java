@@ -37,17 +37,13 @@ public interface GbBasicInfoMapper extends BaseMapper<GbBasicInfo> {
      * @param ids
      * @return
      */
-    @Select("<script>select  a.name,a.card_id,a.unit,\n" +
-            " \n" +
-            "  c.asgorgancode \"unit_code\",\n" +
-            "  c.asglevel \"level\",\n" +
-            "department,\n" +
-            "(select  asgorgancode from `69654103_org` b where b.asgorganname like concat(\"%\",a.unit,\"_\", a.department)) \"department_code\",\n" +
-            "post,post_type from `69654103_gb_basic_info` a left join \n" +
-            "(select  asgorgancode,asgorganname,asglevel from `69654103_org`) c\n" +
-            "\n" +
-            "\n" +
-            "on c.asgorganname =a.unit where a.card_id in\n" +
+    @Select("<script>select a.name,a.card_id,a.unit, c.asgorgancode \"unit_code\",  c.asglevel \"level\",\n" +
+            "            department,\n" +
+            "          \n" +
+            "            post,post_type,a.allot_type from `69654103_gb_basic_info` a left join  \n" +
+            "            (select  asgorgancode,asgorganname,asglevel from `69654103_org`) c \n" +
+            "                     \n" +
+            "            on c.asgorganname =a.unit where a.card_id in\n" +
             "<foreach item='item' index='index' collection='ids' open='(' separator=',' close=')'>\n" +
             "  #{item}\n" +
             "</foreach>\n</script>")
@@ -79,6 +75,99 @@ public interface GbBasicInfoMapper extends BaseMapper<GbBasicInfo> {
             "                        AND t3.sort = t4.sort \n" +
             "                        INNER JOIN ( SELECT DISTINCT asgorganname,asgorgancode FROM 69654103_org WHERE asgpathnamecode LIKE concat(#{pathNameCode},'%')) t5 ON t5.asgorganname = t3.unit")
     public  List<GbOrgInfo> selectByPathNameCode(String pathNameCode);
+
+
+    /**
+     * 按权限查询
+     * @param cardIds 干部身份证id
+     * @param pathNameCode 可见部门的部门编码链
+     * @return
+     */
+    @Select("   SELECT \n" +
+            "                DISTINCT t3.*,t5.asgorgancode 'unit_code' \n" +
+            "        FROM \n" +
+            "                ( \n" +
+            "                        SELECT \n" +
+            "                                t1.*, \n" +
+            "                                t2.sort \n" +
+            "                        FROM \n" +
+            "                                69654103_gb_basic_info t1 \n" +
+            "                                        LEFT JOIN sys_dict_biz t2 ON t1.post_type = t2.id where t1.card_id in \n" +
+            "<foreach item='item' index='index' collection='ids' open='(' separator=',' close=')'>\n" +
+            "  #{item}\n" +
+            "</foreach>\n"+
+            "                        ) t3 \n" +
+            "                        INNER JOIN ( \n" +
+            "                        SELECT \n" +
+            "                                gbi.card_id, \n" +
+            "                                min( sdb.sort ) sort \n" +
+            "                        FROM \n" +
+            "                                69654103_gb_basic_info gbi \n" +
+            "                                        LEFT JOIN sys_dict_biz sdb ON gbi.post_type = sdb.id \n" +
+            "                        GROUP BY \n" +
+            "                                gbi.card_id \n" +
+            "                        HAVING \n" +
+            "                                sort >= 4 \n" +
+            "                        ) t4 ON t3.card_id = t4.card_id \n" +
+            "                        AND t3.sort = t4.sort \n" +
+            "                        INNER JOIN ( SELECT DISTINCT asgorganname,asgorgancode FROM 69654103_org WHERE asgpathnamecode LIKE concat(#{pathNameCode},'%')) t5 ON t5.asgorganname = t3.unit")
+    public  List<GbOrgInfo> selectByPathNameCodeAndCardIds(@Param("ids")List<String> cardIds,@Param("pathNameCode") String pathNameCode);
+
+    /*@Select("   SELECT \n" +
+            "                DISTINCT t3.*,t5.asgorgancode 'unit_code' \n" +
+            "        FROM \n" +
+            "                ( \n" +
+            "                        SELECT \n" +
+            "                                t1.*, \n" +
+            "                                t2.sort \n" +
+            "                        FROM \n" +
+            "                                69654103_gb_basic_info t1 \n" +
+            "                                        LEFT JOIN sys_dict_biz t2 ON t1.post_type = t2.id where t1.card_id in \n" +
+            "<foreach item='item' index='index' collection='ids' open='(' separator=',' close=')'>\n" +
+            "  #{item}\n" +
+            "</foreach>\n"+
+            "                        ) t3 \n" +
+            "                        INNER JOIN ( \n" +
+            "                        SELECT \n" +
+            "                                gbi.card_id, \n" +
+            "                                min( sdb.sort ) sort \n" +
+            "                        FROM \n" +
+            "                                69654103_gb_basic_info gbi \n" +
+            "                                        LEFT JOIN sys_dict_biz sdb ON gbi.post_type = sdb.id \n" +
+            "                        GROUP BY \n" +
+            "                                gbi.card_id \n" +
+            "                        HAVING \n" +
+            "                                sort >= 4 \n" +
+            "                        ) t4 ON t3.card_id = t4.card_id \n" +
+            "                        AND t3.sort = t4.sort \n" +
+            "                        INNER JOIN ( SELECT DISTINCT asgorganname,asgorgancode FROM 69654103_org ) t5 ON t5.asgorganname = t3.unit")
+    public  List<GbOrgInfo> selectAllByCardIds(@Param("ids")List<String> cardIds);*/
+    @Select("   SELECT \n" +
+            "                DISTINCT t3.*,t5.asgorgancode 'unit_code' \n" +
+            "        FROM \n" +
+            "                ( \n" +
+            "                        SELECT \n" +
+            "                                t1.*, \n" +
+            "                                t2.sort \n" +
+            "                        FROM \n" +
+            "                                69654103_gb_basic_info t1 \n" +
+            "                                        LEFT JOIN sys_dict_biz t2 ON t1.post_type = t2.id \n" +
+            "                        ) t3 \n" +
+            "                        INNER JOIN ( \n" +
+            "                        SELECT \n" +
+            "                                gbi.card_id, \n" +
+            "                                min( sdb.sort ) sort \n" +
+            "                        FROM \n" +
+            "                                69654103_gb_basic_info gbi \n" +
+            "                                        LEFT JOIN sys_dict_biz sdb ON gbi.post_type = sdb.id \n" +
+            "                        GROUP BY \n" +
+            "                                gbi.card_id \n" +
+            "                        HAVING \n" +
+            "                                sort >= 4 \n" +
+            "                        ) t4 ON t3.card_id = t4.card_id \n" +
+            "                        AND t3.sort = t4.sort \n" +
+            "                        INNER JOIN ( SELECT DISTINCT asgorganname,asgorgancode FROM 69654103_org WHERE asgpathnamecode LIKE concat(#{pathNameCode},'%')) t5 ON t5.asgorganname = t3.unit")
+    public  List<GbBasicInfo> selectGbBasicInfoByPathNameCodePage(String pathNameCode,Integer pageSize,Integer pageNum);
 
     @Select(" <script>  SELECT \n" +
             "                DISTINCT t3.* \n" +

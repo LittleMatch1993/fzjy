@@ -259,4 +259,10 @@ public class PrivateEquity {
      * 组织代码
      */
     private  String orgCode;
+
+
+    /**
+     * 提示
+     */
+    private  String tips;
 }

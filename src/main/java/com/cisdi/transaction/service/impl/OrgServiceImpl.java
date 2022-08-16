@@ -186,7 +186,7 @@ public class OrgServiceImpl extends ServiceImpl<OrgMapper, Org> implements OrgSe
         String asglevel = org.getAsglevel();
         if(StrUtil.isNotEmpty(asglevel)&&asglevel.equals("1")){ //看所有
             if(StrUtil.isNotEmpty(name)){
-                queryWrapper.lambda().like(Org::getAsgorganname, name+"公司");
+                queryWrapper.lambda().like(Org::getAsgorganname, name+"%公司");
             }else{
                 queryWrapper.lambda().likeLeft(Org::getAsgorganname, "公司").last(SqlConstant.ONE_SQL_YB);;
             }
@@ -194,7 +194,7 @@ public class OrgServiceImpl extends ServiceImpl<OrgMapper, Org> implements OrgSe
             String pathnamecode = org.getAsgpathnamecode();
             if(StrUtil.isNotEmpty(name)){
                 queryWrapper.lambda().likeRight(Org::getAsgpathnamecode,pathnamecode);
-                queryWrapper.lambda().like(Org::getAsgorganname, name+"公司");
+                queryWrapper.lambda().likeLeft(Org::getAsgorganname, name+"%公司");
             }else{
                 queryWrapper.lambda().likeLeft(Org::getAsgorganname, "公司");
                 queryWrapper.lambda().likeRight(Org::getAsgpathnamecode,pathnamecode).last(SqlConstant.ONE_SQL_YB);
@@ -202,6 +202,15 @@ public class OrgServiceImpl extends ServiceImpl<OrgMapper, Org> implements OrgSe
         }
 
         return this.baseMapper.selectList(queryWrapper);
+    }
+
+    @Override
+    public Org getOrgByUnitCodeAndDepartmentName(String unitCode, String departmentName) {
+         List<Org> org = this.baseMapper.getOrgByUnitCodeAndDepartmentName(unitCode, departmentName);
+         if(CollectionUtil.isEmpty(org)){
+             return null;
+         }
+         return org.get(0);
     }
 
     private List<Org>  repalceDictId(List<Org> list, List<SysDictBiz> dictList){

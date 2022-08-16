@@ -219,4 +219,10 @@ public class MechanismInfo {
     private  String orgCode;
 
 
+    /**
+     * 提示
+     */
+    private  String tips;
+
+
 }
