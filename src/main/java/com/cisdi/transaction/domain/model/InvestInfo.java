@@ -80,102 +80,127 @@ public class InvestInfo {
     /**
      * 姓名
      */
+    @TableField(updateStrategy =FieldStrategy.IGNORED )
     private String name;
     /**
      * 称谓
      */
+    @TableField(updateStrategy =FieldStrategy.IGNORED )
     private String title;
     /**
      * 统一社会信用代码
      */
+    @TableField(updateStrategy =FieldStrategy.IGNORED )
     private String code;
     /**
      * 企业或其他市场主体名称
      */
+    @TableField(updateStrategy =FieldStrategy.IGNORED )
     private String enterpriseName;
     /**
      * 成立日期
      */
+    @TableField(updateStrategy =FieldStrategy.IGNORED )
     private String establishTime;
     /**
      * 经营范围
      */
+    @TableField(updateStrategy =FieldStrategy.IGNORED )
     private String operatScope;
     /**
      * 注册地（国家）
      */
+    @TableField(updateStrategy =FieldStrategy.IGNORED )
     private String registerCountry;
     /**
      * 注册地（省份）
      */
+    @TableField(updateStrategy =FieldStrategy.IGNORED )
     private String registerProvince;
     /**
      * 注册地（市）
      */
+    @TableField(updateStrategy =FieldStrategy.IGNORED )
     private String city;
     /**
      * 经营地
      */
+    @TableField(updateStrategy =FieldStrategy.IGNORED )
     private String operatAddr;
     /**
      * 企业或其他市场主体类型
      */
+    @TableField(updateStrategy =FieldStrategy.IGNORED )
     private String enterpriseType;
     /**
      * 注册资本（金）或资金数额（出资额）（人民币万元）
      */
+    @TableField(updateStrategy =FieldStrategy.IGNORED )
     private String registerCapital;
     /**
      * 企业状态
      */
+    @TableField(updateStrategy =FieldStrategy.IGNORED )
     private String enterpriseState;
     /**
      * 是否为股东（合伙人、所有人）
      */
+    @TableField(updateStrategy =FieldStrategy.IGNORED )
     private String shareholder;
     /**
      * 个人认缴出资额或个人出资额（人民币万元
      */
+    @TableField(updateStrategy =FieldStrategy.IGNORED )
     private String personalCapital;
     /**
      * 个人认缴出资比例或个人出资比例（%）
      */
+    @TableField(updateStrategy =FieldStrategy.IGNORED )
     private String personalRatio;
     /**
      * 投资时间
      */
+    @TableField(updateStrategy =FieldStrategy.IGNORED )
     private String investTime;
     /**
      * 是否担任高级职务
      */
+    @TableField(updateStrategy =FieldStrategy.IGNORED )
     private String seniorPosition;
     /**
      * 担任高级职务名称
      */
+    @TableField(updateStrategy =FieldStrategy.IGNORED )
     private String seniorPositionName;
     /**
      * 担任高级职务的开始时间
      */
+    @TableField(updateStrategy =FieldStrategy.IGNORED )
     private String seniorPositionStartTime;
     /**
      * 担任高级职务的结束时间
      */
+    @TableField(updateStrategy =FieldStrategy.IGNORED )
     private String seniorPositionEndTime;
     /**
      * 该企业或其他市场主体是否与报告人所在单位
      */
+    @TableField(updateStrategy =FieldStrategy.IGNORED )
     private String isRelation;
     /**
      * 备注
      */
+    @TableField(updateStrategy =FieldStrategy.IGNORED )
     private String remarks;
     /**
      * 填报类型
      */
+    @TableField(updateStrategy =FieldStrategy.IGNORED )
     private String tbType;
     /**
      * 年度
      */
+    @TableField(updateStrategy =FieldStrategy.IGNORED )
     private String year;
     /**
      * 状态
@@ -213,6 +238,11 @@ public class InvestInfo {
      * 组织代码
      */
     private  String orgCode;
+
+    /**
+     * 提示
+     */
+    private  String tips;
 
 
 }

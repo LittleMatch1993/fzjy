@@ -1,5 +1,6 @@
 package com.cisdi.transaction.config.task;
 
+import cn.hutool.core.date.DateUtil;
 import com.cisdi.transaction.service.GbBasicInfoService;
 import com.cisdi.transaction.service.OrgService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,16 +30,20 @@ public class MultithreadScheduleTask {
     //@PostConstruct      //项目启动执行1次
     @Scheduled(fixedDelay = 72000000) //两小时执行一次
     public  void syncOrgInfo(){
+        long i = DateUtil.date().getTime();
         System.out.println("执行组织同步定时任务");
         orgService.syncDa();
-        System.out.println("执行组织同步定时任务完成");
+        long j = DateUtil.date().getTime();
+        System.out.println("执行组织同步定时任务完成:"+(j-i));
     }
 
    // @PostConstruct      //项目启动执行一次
     @Scheduled(fixedDelay = 72000000) //两小时执行一次
     public  void syncGbBasicInfo(){
+        long i = DateUtil.date().getTime();
         System.out.println("执行干部信息定时任务");
         gbBasicInfoService.syncData();
-        System.out.println("执行干部信息定时任务完成");
+        long j = DateUtil.date().getTime();
+        System.out.println("执行干部信息定时任务完成+"+(j-i));
     }
 }

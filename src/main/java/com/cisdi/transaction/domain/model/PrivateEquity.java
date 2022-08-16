@@ -1,8 +1,6 @@
 package com.cisdi.transaction.domain.model;
 
-import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableId;
-import com.baomidou.mybatisplus.annotation.TableName;
+import com.baomidou.mybatisplus.annotation.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -98,126 +96,151 @@ public class PrivateEquity {
     /**
      * 姓名
      */
+    @TableField(updateStrategy = FieldStrategy.IGNORED )
     private String  name;
 
     /**
      * 称谓
      */
+    @TableField(updateStrategy =FieldStrategy.IGNORED )
     private String  title;
 
     /**
      * 投资的私募股权投资基金产品名称
      */
+    @TableField(updateStrategy =FieldStrategy.IGNORED )
     private String  privateequityName;
 
     /**
      * 编码
      */
+    @TableField(updateStrategy =FieldStrategy.IGNORED )
     private String  code;
 
     /**
      * 基金总实缴金额（人民币万元）
      */
+    @TableField(updateStrategy =FieldStrategy.IGNORED )
     private String  money;
 
     /**
      * 个人实缴金额（人民币万元）
      */
+    @TableField(updateStrategy =FieldStrategy.IGNORED )
     private String  personalMoney;
 
     /**
      * 基金投向
      */
+    @TableField(updateStrategy =FieldStrategy.IGNORED )
     private String  investDirection;
 
     /**
      * 基金合同签署日
      */
+    @TableField(updateStrategy =FieldStrategy.IGNORED )
     private String  contractTime;
 
     /**
      * 基金合同约定的到期日
      */
+    @TableField(updateStrategy =FieldStrategy.IGNORED )
     private String  contractExpireTime;
 
     /**
      * 私募股权投资基金管理人名称
      */
+    @TableField(updateStrategy =FieldStrategy.IGNORED )
     private String  manager;
 
     /**
      * 登记编号
      */
+    @TableField(updateStrategy =FieldStrategy.IGNORED )
     private String  registrationNumber;
 
     /**
      * 是否为该基金管理人的实际控制人
      */
+    @TableField(updateStrategy =FieldStrategy.IGNORED )
     private String  controller;
 
     /**
      * 是否为该基金管理人的股东（合伙人）
      */
+    @TableField(updateStrategy =FieldStrategy.IGNORED )
     private String  shareholder;
 
     /**
      * 认缴金额（人民币万元）
      */
+    @TableField(updateStrategy =FieldStrategy.IGNORED )
     private String  subscriptionMoney;
 
     /**
      * 认缴比例（%）
      */
+    @TableField(updateStrategy =FieldStrategy.IGNORED )
     private String  subscriptionRatio;
 
     /**
      * 认缴时间
      */
+    @TableField(updateStrategy =FieldStrategy.IGNORED )
     private String  subscriptionTime;
 
     /**
      * 是否担任该基金管理人高级职
      */
+    @TableField(updateStrategy =FieldStrategy.IGNORED )
     private String  practice;
 
     /**
      * 所担任的高级职务名称
      */
+    @TableField(updateStrategy =FieldStrategy.IGNORED )
     private String  postName;
 
     /**
      * 担任高级职务的开始时间
      */
+    @TableField(updateStrategy =FieldStrategy.IGNORED )
     private String  inductionStartTime;
 
     /**
      * 担任高级职务的结束时间
      */
+    @TableField(updateStrategy =FieldStrategy.IGNORED )
     private String  inductionEndTime;
 
     /**
      *基金管理人的经营范围
      */
+    @TableField(updateStrategy =FieldStrategy.IGNORED )
     private String  managerOperatScope;
 
     /**
      * 是否与报告人所在单位（系统）直接发生过经济关系
      */
+    @TableField(updateStrategy =FieldStrategy.IGNORED )
     private String  isRelation;
 
     /**
      * 备注
      */
+    @TableField(updateStrategy =FieldStrategy.IGNORED )
     private String  remarks;
 
     /**
      * 填报类型
      */
+    @TableField(updateStrategy =FieldStrategy.IGNORED )
     private String  tbType;
 
     /**
      * 年度
      */
+    @TableField(updateStrategy =FieldStrategy.IGNORED )
     private String  year;
 
     /**
@@ -259,4 +282,10 @@ public class PrivateEquity {
      * 组织代码
      */
     private  String orgCode;
+
+
+    /**
+     * 提示
+     */
+    private  String tips;
 }

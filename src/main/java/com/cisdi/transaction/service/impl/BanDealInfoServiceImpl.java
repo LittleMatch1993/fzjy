@@ -16,6 +16,7 @@ import com.cisdi.transaction.constant.SystemConstant;
 import com.cisdi.transaction.domain.dto.BanDealInfoDTO;
 import com.cisdi.transaction.domain.dto.SubmitDto;
 import com.cisdi.transaction.domain.model.*;
+import com.cisdi.transaction.domain.vo.KVVO;
 import com.cisdi.transaction.domain.vo.ProhibitTransactionExcelVO;
 import com.cisdi.transaction.mapper.master.BanDealInfoMapper;
 import com.cisdi.transaction.mapper.slave.PurchaseBanDealInfoMapper;
@@ -51,6 +52,9 @@ public class BanDealInfoServiceImpl extends ServiceImpl<BanDealInfoMapper, BanDe
 
     @Autowired
     private SpouseBasicInfoService spouseBasicInfoService;
+
+    @Autowired
+    private OrgService orgService;
     @Value("${wk.url}")
     private String url;
 
@@ -153,7 +157,8 @@ public class BanDealInfoServiceImpl extends ServiceImpl<BanDealInfoMapper, BanDe
         Map<String, List<GbOrgInfo>> gbOrgMap = gbOrgList.stream().collect(Collectors.groupingBy(GbOrgInfo::getCardId));
         List<BanDealInfo> banDealInfoList = new ArrayList<>(); //保存禁止交易数据
         List<SysDictBiz> dictList = sysDictBizService.selectList();
-        List<String>  submitId = new ArrayList<>(); //提交失败的数据id
+        List<String>  submitId = new ArrayList<>(); //提交成功的数据id
+        List<KVVO>  submitFailId = new ArrayList<>(); //无法提交数据的数据id及失败信息
         for (InvestInfo info : infoList) {
             String gbCardId = info.getCardId();//干部的身份证
             List<GbOrgInfo> gbOrgInfoList = !gbOrgMap.containsKey(gbCardId) ? null : ((List<GbOrgInfo>) gbOrgMap.get(gbCardId));//是否在干部表中查询到干部数据
@@ -205,12 +210,9 @@ public class BanDealInfoServiceImpl extends ServiceImpl<BanDealInfoMapper, BanDe
                             purchaseName = "中国五矿集团有限公司";
                         } else if ("总部处长".equals(sysDictBizService.getDictValue(banPostType,dictList))) {
                             whether = SystemConstant.WHETHER_NO;//是否继承关系
-                            /*purchaseCode = Objects.isNull(gbOrgInfo) ? "" : gbOrgInfo.getDeparmentCode();//禁止交易采购单位代码
-                            purchaseName = Objects.isNull(gbOrgInfo) ? "" : gbOrgInfo.getDeparment();*/
-
-                            purchaseCode = Objects.isNull(gbOrgInfo) ? "" : gbOrgInfo.getOrgCode();//禁止交易采购单位代码
-                            purchaseName = Objects.isNull(gbOrgInfo) ? "" : gbOrgInfo.getUnit();
-                            ;//禁止交易采购单位名称
+                            Org org = orgService.getOrgByUnitCodeAndDepartmentName(gbOrgInfo.getUnitCode(),gbOrgInfo.getDeparment());
+                            purchaseCode = Objects.isNull(org) ? "" : org.getAsgorgancode();//禁止交易采购单位代码
+                            purchaseName = Objects.isNull(org) ? "" : org.getAsgorganname();
                         }
                         bandealInfo.setIsExtends(whether);//是否继承关系
                         bandealInfo.setBanPurchaseCode(purchaseCode);//禁止交易采购单位代码
@@ -226,6 +228,11 @@ public class BanDealInfoServiceImpl extends ServiceImpl<BanDealInfoMapper, BanDe
                     banDealInfoList.add(bandealInfo);
                 }
                 submitId.add(info.getId());
+            }else{
+                KVVO vo = new KVVO();
+                vo.setId(info.getId());
+                vo.setName("未找到干部信息");
+                submitFailId.add(vo);
             }
         }
         //社会企业信用代码验证
@@ -235,7 +242,8 @@ public class BanDealInfoServiceImpl extends ServiceImpl<BanDealInfoMapper, BanDe
         //新增操作记录
         boolean deal = banDealInfoRecordService.insertBanDealInfoRecord(newBanDealInfoList, SystemConstant.OPERATION_TYPE_ADD); //新增
         Map<String,Object> map = new HashMap();
-        map.put("submitIds",submitId); //记录不能提交的数据
+        map.put("submitIds",submitId); //记录已提交的数据
+        map.put("submitFailId",submitFailId); //记录无法提交的数据
         map.put("banDeal",b); //禁止交易数据是否提交成功
         map.put("banDealRecord",deal); //禁止交易记录数据是否提交成功
         return ResultMsgUtil.success(map);
@@ -248,6 +256,7 @@ public class BanDealInfoServiceImpl extends ServiceImpl<BanDealInfoMapper, BanDe
         Map<String, List<GbOrgInfo>> gbOrgMap = gbOrgList.stream().collect(Collectors.groupingBy(GbOrgInfo::getCardId));
         List<BanDealInfo> banDealInfoList = new ArrayList<>();
         List<String>  submitId = new ArrayList<>(); //提交的数据id
+        List<KVVO>  submitFailId = new ArrayList<>(); //无法提交数据的数据id及失败信息
         for (PrivateEquity info : infoList) {
             String gbCardId = info.getCardId();//干部的身份证
             List<GbOrgInfo> gbOrgInfoList = !gbOrgMap.containsKey(gbCardId) ? null : ((List<GbOrgInfo>) gbOrgMap.get(gbCardId));//是否在干部表中查询到干部数据
@@ -291,9 +300,9 @@ public class BanDealInfoServiceImpl extends ServiceImpl<BanDealInfoMapper, BanDe
                             purchaseName = "中国五矿集团有限公司";
                         } else if ("总部处长".equals(sysDictBizService.getDictValue(banPostType,dictList))) {
                             whether = sysDictBizService.getDictId(SystemConstant.WHETHER_NO,dictList);//是否继承关系
-                            purchaseCode = Objects.isNull(gbOrgInfo) ? "" : gbOrgInfo.getDeparmentCode();//禁止交易采购 部门代码
-                            purchaseName = Objects.isNull(gbOrgInfo) ? "" : gbOrgInfo.getDeparment();;//禁止交易采购部门名称
-
+                            Org org = orgService.getOrgByUnitCodeAndDepartmentName(gbOrgInfo.getUnitCode(),gbOrgInfo.getDeparment());
+                            purchaseCode = Objects.isNull(org) ? "" : org.getAsgorgancode();//禁止交易采购单位代码
+                            purchaseName = Objects.isNull(org) ? "" : org.getAsgorganname();
                         }
                         bandealInfo.setIsExtends(whether);//是否继承关系
                         bandealInfo.setBanPurchaseCode(purchaseCode);//禁止交易采购单位代码
@@ -309,6 +318,11 @@ public class BanDealInfoServiceImpl extends ServiceImpl<BanDealInfoMapper, BanDe
                     banDealInfoList.add(bandealInfo);
                 }
                 submitId.add(info.getId());
+            }else{
+                KVVO vo = new KVVO();
+                vo.setId(info.getId());
+                vo.setName("未找到干部信息");
+                submitFailId.add(vo);
             }
         }
         //社会企业信用代码验证 13-3表不验证
@@ -320,6 +334,7 @@ public class BanDealInfoServiceImpl extends ServiceImpl<BanDealInfoMapper, BanDe
 
         Map<String,Object> map = new HashMap();
         map.put("submitIds",submitId); //记录能提交的数据
+        map.put("submitFailId",submitFailId); //记录无法提交的数据
         map.put("banDeal",b); //禁止交易数据是否提交成功
         map.put("banDealRecord",deal); //禁止交易记录数据是否提交成功
         return ResultMsgUtil.success(map);
@@ -330,6 +345,7 @@ public class BanDealInfoServiceImpl extends ServiceImpl<BanDealInfoMapper, BanDe
     public ResultMsgUtil<Map<String,Object>> insertBanDealInfoOfMechanismInfo(List<MechanismInfo> infoList, List<GbOrgInfo> gbOrgList) {
         List<SysDictBiz> dictList = sysDictBizService.selectList();
         List<String>  submitId = new ArrayList<>(); //提交失败的数据id
+        List<KVVO>  submitFailId = new ArrayList<>(); //无法提交数据的数据id及失败信息
         Map<String, List<GbOrgInfo>> gbOrgMap = gbOrgList.stream().collect(Collectors.groupingBy(GbOrgInfo::getCardId));
         List<BanDealInfo> banDealInfoList = new ArrayList<>();
         for (MechanismInfo info : infoList) {
@@ -375,9 +391,10 @@ public class BanDealInfoServiceImpl extends ServiceImpl<BanDealInfoMapper, BanDe
                             purchaseName = "中国五矿集团有限公司";
                         } else if ("总部处长".equals(sysDictBizService.getDictValue(banPostType,dictList))) {
                             whether = SystemConstant.WHETHER_NO;//是否继承关系
-                            purchaseCode = Objects.isNull(gbOrgInfo) ? "" : gbOrgInfo.getDeparmentCode();//禁止交易采购单位代码
-                            purchaseName = Objects.isNull(gbOrgInfo) ? "" : gbOrgInfo.getDeparment();
-                            ;//禁止交易采购单位名称
+                            Org org = orgService.getOrgByUnitCodeAndDepartmentName(gbOrgInfo.getUnitCode(),gbOrgInfo.getDeparment());
+                            purchaseCode = Objects.isNull(org) ? "" : org.getAsgorgancode();//禁止交易采购单位代码
+                            purchaseName = Objects.isNull(org) ? "" : org.getAsgorganname();//禁止交易采购单位名称
+
                         }
                         bandealInfo.setIsExtends(whether);//是否继承关系
                         bandealInfo.setBanPurchaseCode(purchaseCode);//禁止交易采购单位代码
@@ -393,6 +410,11 @@ public class BanDealInfoServiceImpl extends ServiceImpl<BanDealInfoMapper, BanDe
                     banDealInfoList.add(bandealInfo);
                 }
                 submitId.add(info.getId());
+            }else{
+                KVVO vo = new KVVO();
+                vo.setId(info.getId());
+                vo.setName("未找到干部信息");
+                submitFailId.add(vo);
             }
 
         }
@@ -405,6 +427,7 @@ public class BanDealInfoServiceImpl extends ServiceImpl<BanDealInfoMapper, BanDe
         boolean deal = banDealInfoRecordService.insertBanDealInfoRecord(newBanDealInfoList, SystemConstant.OPERATION_TYPE_ADD); //新增
         Map<String,Object> map = new HashMap();
         map.put("submitIds",submitId); //记录不能提交的数据
+        map.put("submitFailId",submitFailId); //记录无法提交的数据
         map.put("banDeal",b); //禁止交易数据是否提交成功
         map.put("banDealRecord",deal); //禁止交易记录数据是否提交成功
         return ResultMsgUtil.success(map);

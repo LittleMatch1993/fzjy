@@ -4,6 +4,7 @@ import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.StrUtil;
+import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.cisdi.transaction.config.base.ResultMsgUtil;
 import com.cisdi.transaction.constant.SqlConstant;
@@ -13,6 +14,7 @@ import com.cisdi.transaction.domain.dto.InvestInfoDTO;
 import com.cisdi.transaction.domain.dto.InvestmentDTO;
 import com.cisdi.transaction.domain.dto.SubmitDto;
 import com.cisdi.transaction.domain.model.*;
+import com.cisdi.transaction.domain.vo.KVVO;
 import com.cisdi.transaction.mapper.master.InvestInfoMapper;
 import com.cisdi.transaction.service.*;
 import com.cisdi.transaction.util.ThreadLocalUtils;
@@ -57,7 +59,26 @@ public class InvestInfoServiceImpl extends ServiceImpl<InvestInfoMapper, InvestI
         List<InvestInfo> list = ids.stream().map(e -> new InvestInfo().setId(e).setState(state)).collect(Collectors.toList());
         boolean b = this.updateBatchById(list);
         return b;
+    }
 
+    @Override
+    public int updateTips(List<KVVO> kvList) {
+        int i = this.baseMapper.updateTips(kvList);
+        return i;
+    }
+
+    @Override
+    public boolean updateBathTips(List<KVVO> kvList) {
+        if(CollectionUtil.isEmpty(kvList)){
+            return false;
+        }
+        String tips = kvList.get(0).getName();
+        List<String> ids = kvList.stream().map(e -> e.getId()).collect(Collectors.toList());
+        UpdateWrapper<InvestInfo> updateWrapper  = new UpdateWrapper<>();
+        updateWrapper.lambda().set(InvestInfo::getTips,tips)
+                .in(InvestInfo::getId,ids);
+        boolean b = this.update(updateWrapper);
+        return b;
     }
 
     @Override
@@ -109,11 +130,10 @@ public class InvestInfoServiceImpl extends ServiceImpl<InvestInfoMapper, InvestI
                     spouseBasicInfoService.saveBatch(sbiList);
                 }catch (Exception e){
                     e.printStackTrace();
-                    this.updateState(ids, SystemConstant.SAVE_STATE);
+                   // this.updateState(ids, SystemConstant.SAVE_STATE);
                     return ResultMsgUtil.failure("添加家属信息失败");
                 }
             }
-            banDealInfoService.deleteBanDealInfoByRefId(ids);
             //获取干部的基本信息
             List<String> cardIds = infoList.stream().map(InvestInfo::getCardId).collect(Collectors.toList());
            // List<GbBasicInfo> gbList = gbBasicInfoService.selectBatchByCardIds(cardIds);
@@ -122,31 +142,34 @@ public class InvestInfoServiceImpl extends ServiceImpl<InvestInfoMapper, InvestI
             try {
                 //gbOrgList = gbBasicInfoService.selectGbOrgInfoByCardIds(cardIds);
                 String orgCode = subDto.getOrgCode();
-                gbOrgList = gbBasicInfoService.selectByOrgCode(orgCode);
+                gbOrgList = gbBasicInfoService.selectByOrgCodeAndCardIds(orgCode,cardIds);
             }catch (Exception e){
                 e.printStackTrace();
                 return ResultMsgUtil.failure("干部组织信息查询失败");
             }
             if(CollectionUtil.isEmpty(gbOrgList)){
-                this.updateState(ids, SystemConstant.SAVE_STATE);
+                //this.updateState(ids, SystemConstant.SAVE_STATE);
                 return ResultMsgUtil.failure("没有找到干部组织信息");
             }
-
+            banDealInfoService.deleteBanDealInfoByRefId(ids);
             //向禁止交易信息表中添加数据 并进行验证 及其他逻辑处理
             ResultMsgUtil<Map<String, Object>> mapResult = banDealInfoService.insertBanDealInfoOfInvestInfo(infoList, gbOrgList);
             //处理提交数据后
             Map<String, Object> data = mapResult.getData();
             String banDeal = data.get("banDeal").toString();
             List<String> submitIds = (List<String>)data.get("submitIds");
+            List<KVVO> submitFailId = (List<KVVO>)data.get("submitFailId"); //无法提交的数据id
             StringJoiner sj = new StringJoiner(",");
-            if(CollectionUtil.isNotEmpty(submitIds)){
-                this.updateState(submitIds,SystemConstant.VALID_STATE);
+            if(CollectionUtil.isNotEmpty(submitFailId)){
+                this.updateBathTips(submitFailId);
             }
             if(!Boolean.valueOf(banDeal)){
                 sj.add("提交数据失败");
+                return ResultMsgUtil.failure(sj.toString());
             }else{
                 sj.add("提交数据成功");
                 if(CollectionUtil.isNotEmpty(submitIds)){
+                    this.updateState(submitIds,SystemConstant.VALID_STATE);
                     int beferIndex = infoList.size();
                     int afterIndex = submitIds.size();
                     int index = beferIndex-afterIndex;
@@ -188,13 +211,13 @@ public class InvestInfoServiceImpl extends ServiceImpl<InvestInfoMapper, InvestI
         info.setCreateName(dto.getServiceUserName());
         info.setOrgCode(dto.getOrgCode());
         info.setOrgName(dto.getOrgName());
+        info = this.valid(info);
         //新增
         this.save(info);
     }
 
     @Override
     public void overrideInvestInfo(String id ,InvestInfoDTO dto) {
-
         InvestInfo info = new InvestInfo();
         BeanUtil.copyProperties(dto,info);
         info.setId(id);
@@ -210,8 +233,58 @@ public class InvestInfoServiceImpl extends ServiceImpl<InvestInfoMapper, InvestI
         info.setCreateName(dto.getServiceUserName());
         info.setOrgCode(dto.getOrgCode());
         info.setOrgName(dto.getOrgName());
+        info = this.valid(info);
         this.save(info);
 
+    }
+
+    private InvestInfo  valid(InvestInfo info){
+        List<SysDictBiz> dictList = sysDictBizService.selectList();
+        if("无此类情况".equals(sysDictBizService.getDictValue(info.getIsSituation(),dictList))){
+            info.setName(null);
+            info.setTitle(null);
+            info.setCode(null);
+            info.setEnterpriseName(null);
+            info.setEstablishTime(null);
+            info.setOperatScope(null);
+            info.setRegisterCountry(null);
+            info.setRegisterProvince(null);
+            info.setCity(null);
+            info.setOperatAddr(null);
+            info.setEnterpriseType(null);
+            info.setRegisterCapital(null);
+            info.setEnterpriseState(null);
+            info.setShareholder(null);
+            info.setPersonalCapital(null);
+            info.setPersonalRatio(null);
+            info.setInvestTime(null);
+            info.setSeniorPosition(null);
+            info.setSeniorPositionName(null);
+            info.setSeniorPositionStartTime(null);
+            info.setSeniorPositionEndTime(null);
+            info.setIsRelation(null);
+            info.setRemarks(null);
+            info.setTbType(null);
+            info.setYear(null);
+        }else{
+            //是否为股东（合伙人、所有人）
+            if("否".equals(sysDictBizService.getDictValue(info.getShareholder(),dictList))){
+                info.setPersonalCapital(null);
+                info.setPersonalRatio(null);
+                info.setInvestTime(null);
+            }
+            //是否担任高级职务
+            if("否".equals(sysDictBizService.getDictValue(info.getSeniorPosition(),dictList))){
+                info.setSeniorPositionName(null);
+                info.setSeniorPositionStartTime(null);
+                info.setSeniorPositionEndTime(null);
+            }
+            //该企业或其他市场主体是否与报告人所在单位（系统）直接发生过商品、劳务、服务等经济关系
+            if("否".equals(sysDictBizService.getDictValue(info.getIsRelation(),dictList))){
+                info.setRemarks(null);
+            }
+        }
+        return info;
     }
 
     @Override
@@ -262,6 +335,7 @@ public class InvestInfoServiceImpl extends ServiceImpl<InvestInfoMapper, InvestI
         info.setState(SystemConstant.SAVE_STATE);
         info.setUpdateTime(DateUtil.date());
         info.setUpdaterId(dto.getServiceUserId());
+        info = this.valid(info);
         this.updateById(info);
     }
 

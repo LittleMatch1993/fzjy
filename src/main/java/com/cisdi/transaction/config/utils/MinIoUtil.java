@@ -30,8 +30,8 @@ import java.util.*;
 @Component
 public class MinIoUtil {
 
-    /*@Value("${minio.downloadUrl}")
-    private  String downloadUrl;*/
+    @Value("${minio.downloadUrl:https://jsbqy.minmetals.com.cn/minio}")
+    private  String downloadUrl;
 
     @Value("${minio.endpoint}")
     private  String endpoint;
@@ -406,7 +406,7 @@ public class MinIoUtil {
         inputStream.close();
         // 返回生成文件名、访问路径
         String url = getObjectUrl(bucketName, minFileName, DEFAULT_EXPIRY);
-        //url = url.replace(uploadUrl, downloadUrl);
+        url = url.replace(endpoint, downloadUrl);
         return  url;
     }
 

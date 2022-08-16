@@ -8,6 +8,7 @@ import com.cisdi.transaction.config.utils.ExportExcelUtils;
 import com.cisdi.transaction.config.utils.MinIoUtil;
 import com.cisdi.transaction.domain.dto.CadreDTO;
 import com.cisdi.transaction.domain.dto.CadreFamilyExportDto;
+import com.cisdi.transaction.domain.dto.InstitutionalFrameworkDTO;
 import com.cisdi.transaction.domain.dto.InvestmentDTO;
 import com.cisdi.transaction.domain.model.GbBasicInfo;
 import com.cisdi.transaction.domain.vo.CadreExcelVO;
@@ -57,6 +58,17 @@ public class CadreController{
     @Value("${minio.bucketName}")
     private String bucketName;
 
+
+    @ApiOperation("更新干部信息")
+    @PostMapping("/syncGbInfo")
+    public ResultMsgUtil<Object> syncGbInfo() {
+        try {
+            gbBasicInfoService.syncData();
+        }catch (Exception e){
+            ResultMsgUtil.failure("数据同步失败，请稍后再试");
+        }
+        return ResultMsgUtil.success();
+    }
     /**
      * 根据干部姓名获取信息
      *

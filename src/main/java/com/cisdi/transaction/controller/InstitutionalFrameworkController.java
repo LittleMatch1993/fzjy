@@ -53,6 +53,20 @@ public class InstitutionalFrameworkController {
     @Value("${minio.bucketName}")
     private String bucketName;
 
+
+    @ApiOperation("更新组织信息")
+    @PostMapping("/syncOrg")
+    public ResultMsgUtil<Object> syncOrg() {
+        try {
+            orgService.syncDa();
+        }catch (Exception e){
+            e.printStackTrace();
+            return ResultMsgUtil.failure("数据同步失败，请稍后再试");
+        }
+
+        return ResultMsgUtil.success();
+    }
+
     @ApiOperation("新增组织机构信息")
     @PostMapping("/saveInfo")
     public ResultMsgUtil<Object> saveInfo(@RequestBody @Valid InstitutionalFrameworkDTO dto) {

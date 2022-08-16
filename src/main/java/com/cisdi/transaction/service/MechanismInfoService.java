@@ -7,6 +7,7 @@ import com.cisdi.transaction.domain.dto.CommunityServiceDTO;
 import com.cisdi.transaction.domain.dto.MechanismInfoDTO;
 import com.cisdi.transaction.domain.dto.SubmitDto;
 import com.cisdi.transaction.domain.model.MechanismInfo;
+import com.cisdi.transaction.domain.vo.KVVO;
 
 import java.util.List;
 
@@ -20,6 +21,19 @@ public interface MechanismInfoService extends IService<MechanismInfo> {
 
     int  countByNameAndCardIdAndCode(String name,String cardId,String code);
 
+    /**
+     * 批量修改的tips不同相同的值
+     * @param kvList
+     * @return
+     */
+    int  updateTips(List<KVVO> kvList);
+
+    /**
+     * 批量修改的tips相同的值
+     * @param kvList
+     * @return
+     */
+    boolean  updateBathTips(List<KVVO> kvList);
     /**
      * 覆盖重复数据
      * @param id 以存在的数据id

@@ -3,12 +3,14 @@ package com.cisdi.transaction.service.impl;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.date.DateUtil;
+import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.cisdi.transaction.config.base.ResultMsgUtil;
 import com.cisdi.transaction.constant.SqlConstant;
 import com.cisdi.transaction.constant.SystemConstant;
 import com.cisdi.transaction.domain.dto.*;
 import com.cisdi.transaction.domain.model.*;
+import com.cisdi.transaction.domain.vo.KVVO;
 import com.cisdi.transaction.mapper.master.PrivateEquityMapper;
 import com.cisdi.transaction.service.BanDealInfoService;
 import com.cisdi.transaction.service.PrivateEquityService;
@@ -60,6 +62,26 @@ public class PrivateEquityServiceImpl extends ServiceImpl<PrivateEquityMapper, P
         return Objects.isNull(count) ? 0 : count.intValue();
     }
 
+    @Override
+    public int updateTips(List<KVVO> kvList) {
+        int i = this.baseMapper.updateTips(kvList);
+        return i;
+    }
+
+    @Override
+    public boolean updateBathTips(List<KVVO> kvList) {
+        if(CollectionUtil.isEmpty(kvList)){
+            return false;
+        }
+        String tips = kvList.get(0).getName();
+        List<String> ids = kvList.stream().map(e -> e.getId()).collect(Collectors.toList());
+        UpdateWrapper<PrivateEquity> updateWrapper  = new UpdateWrapper<>();
+        updateWrapper.lambda().set(PrivateEquity::getTips,tips)
+                .in(PrivateEquity::getId,ids);
+        boolean b = this.update(updateWrapper);
+        return b;
+    }
+
     @Transactional(rollbackFor = Exception.class)
     @Override
     public void overrideInvestInfo(String id, PrivateEquityDTO dto) {
@@ -78,6 +100,7 @@ public class PrivateEquityServiceImpl extends ServiceImpl<PrivateEquityMapper, P
         info.setCreateName(dto.getServiceUserName());
         info.setOrgCode(dto.getOrgCode());
         info.setOrgName(dto.getOrgName());
+        info = this.valid(info);
         this.save(info);
     }
 
@@ -140,21 +163,21 @@ public class PrivateEquityServiceImpl extends ServiceImpl<PrivateEquityMapper, P
 
             banDealInfoService.deleteBanDealInfoByRefId(ids);
             //获取干部的基本信息
-            //List<String> cardIds = infoList.stream().map(PrivateEquity::getCardId).collect(Collectors.toList());
+            List<String> cardIds = infoList.stream().map(PrivateEquity::getCardId).collect(Collectors.toList());
            // List<GbBasicInfo> gbList = gbBasicInfoService.selectBatchByCardIds(cardIds);
             //获取干部组织的基本信息
             List<GbOrgInfo> gbOrgList = null;
             try {
                 //gbOrgList = gbBasicInfoService.selectGbOrgInfoByCardIds(cardIds);
                 String orgCode = subDto.getOrgCode();
-                gbOrgList = gbBasicInfoService.selectByOrgCode(orgCode);
+                gbOrgList = gbBasicInfoService.selectByOrgCodeAndCardIds(orgCode,cardIds);
             }catch (Exception e){
                 e.printStackTrace();
-                this.updateState(ids, SystemConstant.SAVE_STATE);
+                //this.updateState(ids, SystemConstant.SAVE_STATE);
                 return ResultMsgUtil.failure("干部组织信息查询失败");
             }
             if(CollectionUtil.isEmpty(gbOrgList)){
-                this.updateState(ids, SystemConstant.SAVE_STATE);
+                //this.updateState(ids, SystemConstant.SAVE_STATE);
                 return ResultMsgUtil.failure("没有找到干部组织信息");
             }
             //向禁止交易信息表中添加数据 并进行验证 及其他逻辑处理
@@ -163,15 +186,18 @@ public class PrivateEquityServiceImpl extends ServiceImpl<PrivateEquityMapper, P
             Map<String, Object> data = mapResult.getData();
             String banDeal = data.get("banDeal").toString();
             List<String> submitIds = (List<String>)data.get("submitIds");
+            List<KVVO> submitFailId = (List<KVVO>)data.get("submitFailId"); //无法提交的数据id
             StringJoiner sj = new StringJoiner(",");
-            if(CollectionUtil.isNotEmpty(submitIds)){
-                this.updateState(submitIds,SystemConstant.VALID_STATE);
+            if(CollectionUtil.isNotEmpty(submitFailId)){
+                this.updateBathTips(submitFailId);
             }
             if(!Boolean.valueOf(banDeal)){
                 sj.add("提交数据失败");
+                return ResultMsgUtil.failure(sj.toString());
             }else{
                 sj.add("提交数据成功");
                 if(CollectionUtil.isNotEmpty(submitIds)){
+                    this.updateState(submitIds,SystemConstant.VALID_STATE);
                     int beferIndex = infoList.size();
                     int afterIndex = submitIds.size();
                     sj.add(",其中"+(beferIndex-afterIndex)+"数据提交失败");
@@ -181,7 +207,56 @@ public class PrivateEquityServiceImpl extends ServiceImpl<PrivateEquityMapper, P
         }
         return ResultMsgUtil.success(resutStr);
     }
+    private PrivateEquity  valid(PrivateEquity info){
+        List<SysDictBiz> dictList = sysDictBizService.selectList();
+        if("无此类情况".equals(sysDictBizService.getDictValue(info.getIsSituation(),dictList))){
+            info.setName(null);
+            info.setTitle(null);
+            info.setCode(null);
+            info.setPrivateequityName(null);
+            info.setMoney(null);
+            info.setPersonalMoney(null);
+            info.setInvestDirection(null);
+            info.setContractTime(null);
+            info.setContractExpireTime(null);
+            info.setManager(null);
+            info.setRegistrationNumber(null);
+            info.setController(null);
+            info.setShareholder(null);
+            info.setSubscriptionMoney(null);
+            info.setSubscriptionRatio(null);
+            info.setSubscriptionTime(null);
+            info.setPractice(null);
+            info.setPostName(null);
+            info.setInductionStartTime(null);
+            info.setInductionEndTime(null);
+            info.setManagerOperatScope(null);
+            info.setIsRelation(null);
+            info.setRemarks(null);
+            info.setTbType(null);
+            info.setYear(null);
+        }else{
+            //是否为股东（合伙人、所有人）
+            if("否".equals(sysDictBizService.getDictValue(info.getShareholder(),dictList))){
+                info.setSubscriptionMoney(null);
+                info.setSubscriptionRatio(null);
+                info.setSubscriptionTime(null);
+            }
+            //是否为该基金管理人的实际控制人
 
+            //是否担任该基金管理人高级职务
+            if("否".equals(sysDictBizService.getDictValue(info.getPractice(),dictList))){
+                info.setPostName(null);
+                info.setInductionStartTime(null);
+                info.setInductionEndTime(null);
+            }
+            //是否与报告人所在单位（系统）直接发生过经济关系
+            if("否".equals(sysDictBizService.getDictValue(info.getIsRelation(),dictList))){
+                info.setRemarks(null);
+            }
+        }
+        return info;
+    }
     @Override
     public void savePrivateEquity(PrivateEquityDTO dto) {
       /*  PrivateEquity one = null;
@@ -207,6 +282,7 @@ public class PrivateEquityServiceImpl extends ServiceImpl<PrivateEquityMapper, P
         equity.setCreateName(dto.getServiceUserName());
         equity.setOrgCode(dto.getOrgCode());
         equity.setOrgName(dto.getOrgName());
+        equity = this.valid(equity);
         //新增
         this.save(equity);
       /*  if (one == null) {
@@ -226,6 +302,7 @@ public class PrivateEquityServiceImpl extends ServiceImpl<PrivateEquityMapper, P
         equity.setState(SystemConstant.SAVE_STATE);
         equity.setUpdateTime(DateUtil.date());
         equity.setUpdaterId(dto.getServiceUserId());
+        equity = this.valid(equity);
         this.updateById(equity);
     }
 

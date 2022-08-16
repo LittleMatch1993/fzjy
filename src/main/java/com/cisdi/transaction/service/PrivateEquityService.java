@@ -5,6 +5,7 @@ import com.cisdi.transaction.config.base.ResultMsgUtil;
 import com.cisdi.transaction.domain.dto.*;
 import com.cisdi.transaction.domain.model.InvestInfo;
 import com.cisdi.transaction.domain.model.PrivateEquity;
+import com.cisdi.transaction.domain.vo.KVVO;
 
 import java.util.List;
 
@@ -17,6 +18,20 @@ public interface PrivateEquityService extends IService<PrivateEquity> {
     boolean updateState(List<String> ids, String state);
 
     int  countByNameAndCardIdAndCode(String name,String cardId,String code);
+
+    /**
+     * 批量修改的tips不同相同的值
+     * @param kvList
+     * @return
+     */
+    int  updateTips(List<KVVO> kvList);
+
+    /**
+     * 批量修改的tips相同的值
+     * @param kvList
+     * @return
+     */
+    boolean  updateBathTips(List<KVVO> kvList);
     /**
      * 覆盖重复数据
      * @param id 以存在的数据id

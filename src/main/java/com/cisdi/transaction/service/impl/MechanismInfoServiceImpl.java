@@ -4,6 +4,7 @@ import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.StrUtil;
+import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.cisdi.transaction.config.base.ResultMsgUtil;
 import com.cisdi.transaction.constant.SqlConstant;
@@ -13,6 +14,7 @@ import com.cisdi.transaction.domain.dto.CommunityServiceDTO;
 import com.cisdi.transaction.domain.dto.MechanismInfoDTO;
 import com.cisdi.transaction.domain.dto.SubmitDto;
 import com.cisdi.transaction.domain.model.*;
+import com.cisdi.transaction.domain.vo.KVVO;
 import com.cisdi.transaction.mapper.master.MechanismInfoMapper;
 import com.cisdi.transaction.service.*;
 import com.cisdi.transaction.util.ThreadLocalUtils;
@@ -67,6 +69,26 @@ public class MechanismInfoServiceImpl extends ServiceImpl<MechanismInfoMapper, M
     }
 
     @Override
+    public int updateTips(List<KVVO> kvList) {
+        int i = this.baseMapper.updateTips(kvList);
+        return i;
+    }
+
+    @Override
+    public boolean updateBathTips(List<KVVO> kvList) {
+        if(CollectionUtil.isEmpty(kvList)){
+            return false;
+        }
+        String tips = kvList.get(0).getName();
+        List<String> ids = kvList.stream().map(e -> e.getId()).collect(Collectors.toList());
+        UpdateWrapper<MechanismInfo> updateWrapper  = new UpdateWrapper<>();
+        updateWrapper.lambda().set(MechanismInfo::getTips,tips)
+                .in(MechanismInfo::getId,ids);
+        boolean b = this.update(updateWrapper);
+        return b;
+    }
+
+    @Override
     public void overrideInvestInfo(String id, MechanismInfoDTO dto) {
         MechanismInfo info = new MechanismInfo();
         BeanUtil.copyProperties(dto,info);
@@ -78,6 +100,7 @@ public class MechanismInfoServiceImpl extends ServiceImpl<MechanismInfoMapper, M
         info.setUpdateTime(DateUtil.date());
         info.setTenantId(dto.getServiceLesseeId());
         info.setCreatorId(dto.getServiceUserId());
+        info = this.valid(info);
         this.save(info);
     }
 
@@ -133,12 +156,12 @@ public class MechanismInfoServiceImpl extends ServiceImpl<MechanismInfoMapper, M
                     spouseBasicInfoService.saveBatch(sbiList);
                 }catch (Exception e){
                     e.printStackTrace();
-                    this.updateState(ids, SystemConstant.SAVE_STATE);
+                    //.updateState(ids, SystemConstant.SAVE_STATE);
                     return ResultMsgUtil.failure("添加家属信息失败");
                 }
             }
             //获取干部的基本信息
-           // List<String> cardIds = infoList.stream().map(MechanismInfo::getCardId).collect(Collectors.toList());
+           List<String> cardIds = infoList.stream().map(MechanismInfo::getCardId).collect(Collectors.toList());
            // List<GbBasicInfo> gbList = gbBasicInfoService.selectBatchByCardIds(cardIds);
             //获取干部组织的基本信息
             //获取干部组织的基本信息
@@ -146,13 +169,13 @@ public class MechanismInfoServiceImpl extends ServiceImpl<MechanismInfoMapper, M
             try {
                 //gbOrgList = gbBasicInfoService.selectGbOrgInfoByCardIds(cardIds);
                 String orgCode = submitDto.getOrgCode();
-                gbOrgList = gbBasicInfoService.selectByOrgCode(orgCode);
+                gbOrgList = gbBasicInfoService.selectByOrgCodeAndCardIds(orgCode,cardIds);
             }catch (Exception e){
                 e.printStackTrace();
                 return ResultMsgUtil.failure("干部组织信息查询失败");
             }
             if(CollectionUtil.isEmpty(gbOrgList)){
-                this.updateState(ids, SystemConstant.SAVE_STATE);
+                //this.updateState(ids, SystemConstant.SAVE_STATE);
                 return ResultMsgUtil.failure("没有找到干部组织信息");
             }
             //向禁止交易信息表中添加数据 并进行验证 及其他逻辑处理
@@ -162,15 +185,18 @@ public class MechanismInfoServiceImpl extends ServiceImpl<MechanismInfoMapper, M
             Map<String, Object> data = mapResult.getData();
             String banDeal = data.get("banDeal").toString();
             List<String> submitIds = (List<String>)data.get("submitIds");
+            List<KVVO> submitFailId = (List<KVVO>)data.get("submitFailId"); //无法提交的数据id
             StringJoiner sj = new StringJoiner(",");
-            if(CollectionUtil.isNotEmpty(submitIds)){
-                this.updateState(submitIds,SystemConstant.VALID_STATE);
+            if(CollectionUtil.isNotEmpty(submitFailId)){
+                this.updateBathTips(submitFailId);
+                return ResultMsgUtil.failure(sj.toString());
             }
             if(!Boolean.valueOf(banDeal)){
                 sj.add("提交数据失败");
             }else{
                 sj.add("提交数据成功");
                 if(CollectionUtil.isNotEmpty(submitIds)){
+                    this.updateState(submitIds,SystemConstant.VALID_STATE);
                     int beferIndex = infoList.size();
                     int afterIndex = submitIds.size();
                     sj.add(",其中"+(beferIndex-afterIndex)+"数据提交失败");
@@ -180,7 +206,54 @@ public class MechanismInfoServiceImpl extends ServiceImpl<MechanismInfoMapper, M
         }
         return ResultMsgUtil.success();
     }
-
+    private MechanismInfo  valid(MechanismInfo info){
+        List<SysDictBiz> dictList = sysDictBizService.selectList();
+        if("无此类情况".equals(sysDictBizService.getDictValue(info.getIsSituation(),dictList))){
+            info.setName(null);
+            info.setTitle(null);
+            info.setQualificationName(null);
+            info.setQualificationCode(null);
+            info.setOrganizationName(null);
+            info.setCode(null);
+            info.setOperatScope(null);
+            info.setEstablishTime(null);
+            info.setRegisterCountry(null);
+            info.setRegisterProvince(null);
+            info.setCity(null);
+            info.setOperatAddr(null);
+            info.setOrganizationType(null);
+            info.setRegisterCapital(null);
+            info.setOperatState(null);
+            info.setShareholder(null);
+            info.setPersonalCapital(null);
+            info.setPersonalRatio(null);
+            info.setJoinTime(null);
+            info.setPractice(null);
+            info.setPostName(null);
+            info.setInductionTime(null);
+            info.setIsRelation(null);
+            info.setRemarks(null);
+            info.setTbType(null);
+            info.setYear(null);
+        }else{
+            //是否为股东（合伙人、所有人）
+            if("否".equals(sysDictBizService.getDictValue(info.getShareholder(),dictList))){
+                info.setPersonalCapital(null);
+                info.setPersonalRatio(null);
+                info.setJoinTime(null);
+            }
+            //是否在该机构中从业
+            if("否".equals(sysDictBizService.getDictValue(info.getPractice(),dictList))){
+                info.setPostName(null);
+                info.setInductionTime(null);
+            }
+            //该企业或其他市场主体是否与报告人所在单位（系统）直接发生过商品、劳务、服务等经济关系
+            if("否".equals(sysDictBizService.getDictValue(info.getIsRelation(),dictList))){
+                info.setRemarks(null);
+            }
+        }
+        return info;
+    }
     @Override
     public void saveMechanismInfo(MechanismInfoDTO dto) {
       /*  MechanismInfo one = null;
@@ -208,6 +281,7 @@ public class MechanismInfoServiceImpl extends ServiceImpl<MechanismInfoMapper, M
         info.setCreateName(dto.getServiceUserName());
         info.setOrgCode(dto.getOrgCode());
         info.setOrgName(dto.getOrgName());
+        info = this.valid(info);
         this.save(info);
     /*    if (one == null) {
             //新增
@@ -258,6 +332,7 @@ public class MechanismInfoServiceImpl extends ServiceImpl<MechanismInfoMapper, M
         info.setState(SystemConstant.SAVE_STATE);
         info.setUpdateTime(DateUtil.date());
         info.setUpdaterId(dto.getServiceUserId());
+        info = this.valid(info);
         this.updateById(info);
     }
 

@@ -36,7 +36,7 @@ public interface GbBasicInfoService extends IService<GbBasicInfo> {
 
     /**
      * 导出
-     * @param dto
+     * @param ids
      */
     List<CadreExcelVO> export(List<String> ids);
 
@@ -47,6 +47,14 @@ public interface GbBasicInfoService extends IService<GbBasicInfo> {
      */
     List<GbOrgInfo> selectGbOrgInfoByCardIds(List<String> ids);
     List<GbOrgInfo> selectByOrgCode(String orgCode);
+
+    /**
+     * 获取指定干部的组织部门信息
+     * @param orgCode
+     * @param cardIds 干部身份证id
+     * @return
+     */
+    List<GbOrgInfo> selectByOrgCodeAndCardIds(String orgCode,List<String> cardIds);
 
     List<GbOrgInfo> selectByOrgCodeAndGbName(String orgCode,String name);
 }
