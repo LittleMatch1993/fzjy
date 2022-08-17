@@ -3,6 +3,7 @@ package com.cisdi.transaction.service.impl;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.date.DateUtil;
+import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.cisdi.transaction.config.base.ResultMsgUtil;
@@ -67,6 +68,38 @@ public class PrivateEquityServiceImpl extends ServiceImpl<PrivateEquityMapper, P
     public int countByNameAndCardIdAndCode(String name, String cardId, String code) {
         Integer count = this.lambdaQuery().eq(PrivateEquity::getName, name).eq(PrivateEquity::getCardId, cardId).eq(PrivateEquity::getCode, code).count();
         return Objects.isNull(count) ? 0 : count.intValue();
+    }
+
+    @Override
+    public void addFamilyInfo(PrivateEquity info) {
+        List<SpouseBasicInfo> sbiList = new ArrayList<>();
+        String cardId = info.getCardId();
+        String name = info.getName();
+        String title = info.getTitle();
+        if(StrUtil.isEmpty(cardId)||StrUtil.isEmpty(name)||StrUtil.isEmpty(title)){
+            return;
+        }
+        long i = spouseBasicInfoService.selectCount(cardId, name, title);
+        if (i > 0) { //i>0 说明当前数据重复了
+            return;
+        }
+        SpouseBasicInfo temp = new SpouseBasicInfo();
+        temp.setCreateTime(DateUtil.date());
+        temp.setUpdateTime(DateUtil.date());
+        temp.setCadreName(info.getGbName());
+        temp.setCadreCardId(cardId);
+        temp.setName(name);
+        temp.setTitle(title);
+        sbiList.add(temp);
+        if (CollectionUtil.isNotEmpty(sbiList)) {
+            //添加干部配偶，子女及其配偶数据
+            try {
+                spouseBasicInfoService.saveBatch(sbiList);
+            } catch (Exception e) {
+                e.printStackTrace();
+                // this.updateState(ids, SystemConstant.SAVE_STATE)
+            }
+        }
     }
 
     @Override
@@ -153,43 +186,6 @@ public class PrivateEquityServiceImpl extends ServiceImpl<PrivateEquityMapper, P
        // boolean b = this.updateState(ids, SystemConstant.VALID_STATE);
         boolean b = true;
         if (b) { //配偶、子女及其配偶投资私募股权投资基金或者担任高级职务的情况 表数据改为有效状态 并且修改成功 往 配偶，子女及其配偶表中添加数据。
-            // 配偶，子女及其配偶表中添加数据。如果 干部身份证号 姓名 称谓 重复则不添加
-            List<SpouseBasicInfo> sbInfoList = spouseBasicInfoService.selectAll();//查询所有干部家属信息
-            List<SpouseBasicInfo> sbiList = new ArrayList<>();
-           // List<String> tempList = new ArrayList<>();// 存储无此类情况的数据
-            for (PrivateEquity info : infoList) {
-                //无此类情况不提交数据
-                String isSitution = info.getIsSituation();
-                /*if("无此类情况".equals(sysDictBizService.getDictValue(isSitution,dictList))){
-                    tempList.add(info.getId());
-                    continue;
-                }*/
-                String cardId = info.getCardId();
-                String name = info.getName();
-                String title = info.getTitle();
-                int i = spouseBasicInfoService.selectCount(cardId, name, title, sbInfoList);
-                if (i > 0) { //i>0 说明当前数据重复了
-                    continue;
-                }
-                SpouseBasicInfo temp = new SpouseBasicInfo();
-                temp.setCreateTime(DateUtil.date());
-                temp.setUpdateTime(DateUtil.date());
-                temp.setCadreName(info.getGbName());
-                temp.setCadreCardId(cardId);
-                temp.setName(name);
-                temp.setTitle(title);
-                sbiList.add(temp);
-            }
-            if (CollectionUtil.isNotEmpty(sbiList)) {
-                //添加干部配偶，子女及其配偶数据
-                try {
-                    spouseBasicInfoService.saveBatch(sbiList);
-                }catch (Exception e){
-                    e.printStackTrace();
-                    return ResultMsgUtil.failure("添加家属信息失败");
-                }
-            }
-
             //获取干部的基本信息
             List<String> cardIds = infoList.stream().map(PrivateEquity::getCardId).collect(Collectors.toList());
            // List<GbBasicInfo> gbList = gbBasicInfoService.selectBatchByCardIds(cardIds);
@@ -292,18 +288,6 @@ public class PrivateEquityServiceImpl extends ServiceImpl<PrivateEquityMapper, P
     }
     @Override
     public void savePrivateEquity(PrivateEquityDTO dto) {
-      /*  PrivateEquity one = null;
-        if (dto.getIsSituation().equals(SystemConstant.IS_SITUATION_YES)) {
-            if (StringUtils.isNotBlank(dto.getName()) && StringUtils.isNotBlank(dto.getCode())) {
-                one = this.lambdaQuery().eq(PrivateEquity::getCardId, dto.getCardId()).eq(PrivateEquity::getName, dto.getName())
-                        .eq(PrivateEquity::getCode, dto.getCode()).last(SqlConstant.ONE_SQL).one();
-            } else {
-                throw new RuntimeException("有此类情况下，请填写完整");
-            }
-        } else {
-            one = this.lambdaQuery().eq(PrivateEquity::getCardId, dto.getCardId()).eq(PrivateEquity::getIsRelation, SystemConstant.IS_SITUATION_NO)
-                    .last(SqlConstant.ONE_SQL).one();
-        }*/
         PrivateEquity equity = new PrivateEquity();
         BeanUtil.copyProperties(dto,equity,new String[]{"id"});
         equity.setState(SystemConstant.SAVE_STATE);
@@ -318,14 +302,7 @@ public class PrivateEquityServiceImpl extends ServiceImpl<PrivateEquityMapper, P
         equity = this.valid(equity);
         //新增
         this.save(equity);
-      /*  if (one == null) {
-            //新增
-            this.save(equity);
-        } else {
-            //覆盖
-            equity.setId(one.getId());
-            this.updateById(equity);
-        }*/
+        addFamilyInfo(equity);
     }
 
     @Override
@@ -337,6 +314,7 @@ public class PrivateEquityServiceImpl extends ServiceImpl<PrivateEquityMapper, P
         equity.setUpdaterId(dto.getServiceUserId());
         equity = this.valid(equity);
         this.updateById(equity);
+        addFamilyInfo(equity);
     }
 
     @Override

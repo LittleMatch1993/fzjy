@@ -98,22 +98,7 @@ public class BanDealInfoServiceImpl extends ServiceImpl<BanDealInfoMapper, BanDe
         this.save(info);
 
         //加入干部家属信息
-        List<SpouseBasicInfo> sbInfoList = spouseBasicInfoService.selectAll();//查询所有干部家属信息
-        int i = spouseBasicInfoService.selectCount(info.getCardId(), info.getName(),info.getRelation(), sbInfoList);
-        if (i == 0) { //i>0 说明当前数据重复了
-            List<SpouseBasicInfo> sbiList = new ArrayList<>();
-            SpouseBasicInfo temp = new SpouseBasicInfo();
-            temp.setCreateTime(DateUtil.date());
-            temp.setUpdateTime(DateUtil.date());
-            temp.setCadreName(info.getName());
-            temp.setCadreCardId(info.getCardId());
-            temp.setName(info.getFamilyName());
-            temp.setTitle(info.getRelation());
-            sbiList.add(temp);
-            //添加干部配偶，子女及其配偶数据
-            spouseBasicInfoService.saveBatch(sbiList);
-        }
-
+        this.addFamilyInfo(info);
         //新增操作记录
         List<BanDealInfo> infoList = new ArrayList<>();
         infoList.add(info);
@@ -139,6 +124,38 @@ public class BanDealInfoServiceImpl extends ServiceImpl<BanDealInfoMapper, BanDe
         List<BanDealInfo> infoList = new ArrayList<>();
         infoList.add(info);
         banDealInfoRecordService.insertBanDealInfoRecord(infoList, SystemConstant.OPERATION_TYPE_EDIT); //编辑
+    }
+
+    @Override
+    public void addFamilyInfo(BanDealInfo info) {
+        List<SpouseBasicInfo> sbiList = new ArrayList<>();
+        String cardId = info.getCardId(); //身份证号
+        String name = info.getFamilyName(); //家属姓名
+        String title = info.getRelation(); //关系
+        if(StrUtil.isEmpty(cardId)||StrUtil.isEmpty(name)||StrUtil.isEmpty(title)){
+            return;
+        }
+        long i = spouseBasicInfoService.selectCount(cardId, name, title);
+        if (i > 0) { //i>0 说明当前数据重复了
+            return;
+        }
+        SpouseBasicInfo temp = new SpouseBasicInfo();
+        temp.setCreateTime(DateUtil.date());
+        temp.setUpdateTime(DateUtil.date());
+        temp.setCadreName(info.getName());
+        temp.setCadreCardId(cardId);
+        temp.setName(name);
+        temp.setTitle(title);
+        sbiList.add(temp);
+        if (CollectionUtil.isNotEmpty(sbiList)) {
+            //添加干部配偶，子女及其配偶数据
+            try {
+                spouseBasicInfoService.saveBatch(sbiList);
+            } catch (Exception e) {
+                e.printStackTrace();
+                // this.updateState(ids, SystemConstant.SAVE_STATE)
+            }
+        }
     }
 
     /**

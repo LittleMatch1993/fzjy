@@ -64,6 +64,11 @@ public class GbBasicInfoThree {
          * 职务类型
          */
         private String postType;
+
+        /**
+         * 原职务类型
+         */
+        private String oldPostType;
         /**
          * 创建人
          */

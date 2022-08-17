@@ -6,6 +6,7 @@ import com.cisdi.transaction.domain.dto.BaseDTO;
 import com.cisdi.transaction.domain.dto.CommunityServiceDTO;
 import com.cisdi.transaction.domain.dto.MechanismInfoDTO;
 import com.cisdi.transaction.domain.dto.SubmitDto;
+import com.cisdi.transaction.domain.model.InvestInfo;
 import com.cisdi.transaction.domain.model.MechanismInfo;
 import com.cisdi.transaction.domain.vo.ExportReturnMessageVO;
 import com.cisdi.transaction.domain.vo.ExportReturnVO;
@@ -47,6 +48,12 @@ public interface MechanismInfoService extends IService<MechanismInfo> {
     MechanismInfo getRepeatInvestInfo(String name, String cardId, String code);
 
     ResultMsgUtil<String> submitMechanismInfo(SubmitDto submitDto);
+
+    /**
+     * 新增家属信息
+     * @param info
+     */
+    void addFamilyInfo(MechanismInfo info);
 
     /**
      * 新增

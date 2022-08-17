@@ -23,6 +23,11 @@ public interface BanDealInfoService extends IService<BanDealInfo> {
 
     public void insertBanDealInfo(BanDealInfoDTO infoDto);
     public void editBanDealInfo(BanDealInfoDTO infoDto);
+    /**
+     * 新增家属信息
+     * @param info
+     */
+    void addFamilyInfo(BanDealInfo info);
 
     /**
      * 通过 投资企业或担任高级职务情况 向禁止交易表中添加数据

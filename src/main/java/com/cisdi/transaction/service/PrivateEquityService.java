@@ -21,6 +21,12 @@ public interface PrivateEquityService extends IService<PrivateEquity> {
     int  countByNameAndCardIdAndCode(String name,String cardId,String code);
 
     /**
+     * 新增家属信息
+     * @param info
+     */
+    void addFamilyInfo(PrivateEquity info);
+
+    /**
      * 批量修改的tips不同相同的值
      * @param kvList
      * @return

@@ -59,6 +59,12 @@ public interface InvestInfoService extends IService<InvestInfo> {
     void saveInvestInfo(InvestInfoDTO dto);
 
     /**
+     * 新增家属信息
+     * @param info
+     */
+    void addFamilyInfo(InvestInfo info);
+
+    /**
      * 覆盖重复数据
      * @param id 以存在的数据id
      * @param dto 需要更新的数据

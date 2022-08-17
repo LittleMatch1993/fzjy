@@ -93,6 +93,11 @@ public class GbBasicInfo {
      */
     private  String orgCode;
 
+    /**
+     * 原职务类型
+     */
+    private  String oldPostType;
+
 
 
 

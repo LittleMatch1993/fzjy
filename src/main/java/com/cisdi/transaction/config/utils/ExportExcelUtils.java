@@ -25,11 +25,11 @@ import java.util.List;
 public class ExportExcelUtils {
 
     public static MultipartFile exportExcel(HttpServletResponse response, String fileName, Class clazz, List list){
-        response.addHeader("Content-Disposition", "filename=" + fileName+".xlsx");
+        //response.addHeader("Content-Disposition", "filename=" + fileName+".xlsx");
         //设置类型
-        response.setContentType("application/octet-stream");
+        //response.setContentType("application/octet-stream");
         //response.setContentType("application/vnd.ms-excel");
-        response.setCharacterEncoding("utf-8");
+        //response.setCharacterEncoding("utf-8");
         //XWPFDocument转FileItem
         //sizeThreshold :缓存大小
         //repository:临时文件存储位置

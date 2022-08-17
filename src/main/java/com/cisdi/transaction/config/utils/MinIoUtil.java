@@ -31,7 +31,7 @@ import java.util.*;
 @Component
 public class MinIoUtil {
 
-    @Value("${minio.downloadUrl:no")
+    @Value("${minio.downloadUrl:no}")
     private  String downloadUrl;
 
     @Value("${minio.endpoint}")
@@ -397,11 +397,12 @@ public class MinIoUtil {
         //String minFileName = directory + minFileName(fileName);
         String minFileName = directory + fileName;
         System.out.println(minFileName);
+        String contentType = "application/vnd.ms-excel";
         //上传文件到指定目录
         client.putObject(PutObjectArgs.builder()
                 .bucket(bucketName)
                 .object(minFileName)
-                .contentType(file.getContentType())
+                .contentType(contentType)
                 .stream(inputStream, inputStream.available(), -1)
                 .build());
         inputStream.close();

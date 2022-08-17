@@ -14,7 +14,7 @@ import java.util.List;
  */
 public interface GbBasicInfoThreeMapper extends BaseMapper<GbBasicInfoThree> {
 
-    @Select("select name,card_id,unit,department,post,\n" +
+    @Select("select name,card_id,unit,department,post, post_type 'old_post_type',\n" +
             "case \n" +
             "when post_type='党委管干部班子正职（一把手）' then '党委管干部正职'\n" +
             "when post_type='党组管干部正职' then '党组管干部正职'\n" +

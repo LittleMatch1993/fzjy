@@ -150,43 +150,6 @@ public class MechanismInfoServiceImpl extends ServiceImpl<MechanismInfoMapper, M
         //boolean b = this.updateState(ids, "有效");
         boolean b = true;
         if (b) { //配偶、子女及其配偶开办有偿社会中介和法律服务机构或者从业的情况 表数据改为有效状态 并且修改成功 往 配偶，子女及其配偶表中添加数据。
-            // 配偶，子女及其配偶表中添加数据。如果 干部身份证号 姓名 称谓 重复则不添加
-            List<SpouseBasicInfo> sbInfoList = spouseBasicInfoService.selectAll();//查询所有干部家属信息
-            List<SpouseBasicInfo> sbiList = new ArrayList<>();
-            //List<String> tempList = new ArrayList<>();// 存储无此类情况的数据
-            for (MechanismInfo info : infoList) {
-                //无此类情况不提交数据
-                /*String isSitution = info.getIsSituation();
-                if("无此类情况".equals(sysDictBizService.getDictValue(isSitution,dictList))){
-                    tempList.add(info.getId());
-                    continue;
-                }*/
-                String cardId = info.getCardId();
-                String name = info.getName();
-                String title = info.getTitle();
-                int i = spouseBasicInfoService.selectCount(cardId, name, title, sbInfoList);
-                if (i > 0) { //i>0 说明当前数据重复了
-                    continue;
-                }
-                SpouseBasicInfo temp = new SpouseBasicInfo();
-                temp.setCreateTime(DateUtil.date());
-                temp.setUpdateTime(DateUtil.date());
-                temp.setCadreName(info.getGbName());
-                temp.setCadreCardId(cardId);
-                temp.setName(name);
-                temp.setTitle(title);
-                sbiList.add(temp);
-            }
-            if (CollectionUtil.isNotEmpty(sbiList)) {
-                //添加干部配偶，子女及其配偶数据
-                try {
-                    spouseBasicInfoService.saveBatch(sbiList);
-                }catch (Exception e){
-                    e.printStackTrace();
-                    //.updateState(ids, SystemConstant.SAVE_STATE);
-                    return ResultMsgUtil.failure("添加家属信息失败");
-                }
-            }
             //获取干部的基本信息
            List<String> cardIds = infoList.stream().map(MechanismInfo::getCardId).collect(Collectors.toList());
            // List<GbBasicInfo> gbList = gbBasicInfoService.selectBatchByCardIds(cardIds);
@@ -236,6 +199,39 @@ public class MechanismInfoServiceImpl extends ServiceImpl<MechanismInfoMapper, M
         }
         return ResultMsgUtil.success();
     }
+
+    @Override
+    public void addFamilyInfo(MechanismInfo info) {
+        String cardId = info.getCardId();
+        String name = info.getName();
+        String title = info.getTitle();
+        if(StrUtil.isEmpty(cardId)||StrUtil.isEmpty(name)||StrUtil.isEmpty(title)){
+            return;
+        }
+        long i = spouseBasicInfoService.selectCount(cardId, name, title);
+        if (i > 0) { //i>0 说明当前数据重复了
+            return;
+        }
+        List<SpouseBasicInfo> sbiList = new ArrayList<>();
+        SpouseBasicInfo temp = new SpouseBasicInfo();
+        temp.setCreateTime(DateUtil.date());
+        temp.setUpdateTime(DateUtil.date());
+        temp.setCadreName(info.getGbName());
+        temp.setCadreCardId(cardId);
+        temp.setName(name);
+        temp.setTitle(title);
+        sbiList.add(temp);
+        if (CollectionUtil.isNotEmpty(sbiList)) {
+            //添加干部配偶，子女及其配偶数据
+            try {
+                spouseBasicInfoService.saveBatch(sbiList);
+            } catch (Exception e) {
+                e.printStackTrace();
+                // this.updateState(ids, SystemConstant.SAVE_STATE)
+            }
+        }
+    }
+
     private MechanismInfo  valid(MechanismInfo info){
         List<SysDictBiz> dictList = sysDictBizService.selectList();
         if("无此类情况".equals(sysDictBizService.getDictValue(info.getIsSituation(),dictList))){
@@ -286,18 +282,7 @@ public class MechanismInfoServiceImpl extends ServiceImpl<MechanismInfoMapper, M
     }
     @Override
     public void saveMechanismInfo(MechanismInfoDTO dto) {
-      /*  MechanismInfo one = null;
-        if (dto.getIsSituation().equals(SystemConstant.IS_SITUATION_YES)) {
-            if (StringUtils.isNotBlank(dto.getName()) && StringUtils.isNotBlank(dto.getCode())) {
-                one = this.lambdaQuery().eq(MechanismInfo::getCardId, dto.getCardId()).eq(MechanismInfo::getName, dto.getName())
-                        .eq(MechanismInfo::getCode, dto.getCode()).last(SqlConstant.ONE_SQL).one();
-            } else {
-                throw new RuntimeException("有此类情况下，请填写完整");
-            }
-        } else {
-            one = this.lambdaQuery().eq(MechanismInfo::getCardId, dto.getCardId()).eq(MechanismInfo::getIsRelation, SystemConstant.IS_SITUATION_NO)
-                    .last(SqlConstant.ONE_SQL).one();
-        }*/
+
         MechanismInfo info = new MechanismInfo();
         BeanUtil.copyProperties(dto,info,new String[]{"id"});
         //校验国家/省份/市
@@ -313,14 +298,7 @@ public class MechanismInfoServiceImpl extends ServiceImpl<MechanismInfoMapper, M
         info.setOrgName(dto.getOrgName());
         info = this.valid(info);
         this.save(info);
-    /*    if (one == null) {
-            //新增
-            this.save(info);
-        } else {
-            //覆盖
-            info.setId(one.getId());
-            this.updateById(info);
-        }*/
+       addFamilyInfo(info);
     }
 
     private void checkArea(MechanismInfoDTO dto, MechanismInfo mechanismInfo) {
@@ -364,6 +342,7 @@ public class MechanismInfoServiceImpl extends ServiceImpl<MechanismInfoMapper, M
         info.setUpdaterId(dto.getServiceUserId());
         info = this.valid(info);
         this.updateById(info);
+        addFamilyInfo(info);
     }
 
     @Override
