@@ -49,7 +49,7 @@ public interface BanDealInfoService extends IService<BanDealInfo> {
      * 提交禁止交易信息
      * @param ids 提交数据id
      */
-    public void submitBanDealInfo(List<String> ids);
+    public ResultMsgUtil<Object>  submitBanDealInfo(List<String> ids);
 
     /**
      * 批量验证企业社会信用代码是否正确,否则在数据提示列提示

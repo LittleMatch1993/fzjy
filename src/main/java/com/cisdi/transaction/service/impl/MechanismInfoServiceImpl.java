@@ -62,8 +62,10 @@ public class MechanismInfoServiceImpl extends ServiceImpl<MechanismInfoMapper, M
 
     @Override
     public boolean updateState(List<String> ids, String state) {
-        List<MechanismInfo> list = ids.stream().map(e -> new MechanismInfo().setId(e).setState(state)).collect(Collectors.toList());
-        boolean b = this.updateBatchById(list);
+        UpdateWrapper<MechanismInfo> updateWrapper = new UpdateWrapper<>();
+        updateWrapper.lambda().set(MechanismInfo::getState,state).in(MechanismInfo::getId,ids);
+
+        boolean b = this.update(updateWrapper);
         return b;
     }
 
@@ -131,14 +133,25 @@ public class MechanismInfoServiceImpl extends ServiceImpl<MechanismInfoMapper, M
         if (count > 0) {
             return ResultMsgUtil.failure("当前表中的有效数据不能重复提交到禁止交易信息表中!");
         }
+        List<SysDictBiz> dictList = sysDictBizService.selectList();
+        long j = infoList.stream().filter(e -> "无此类情况".equals(sysDictBizService.getDictValue(e.getIsSituation(),dictList))).count();
+        if (j > 0) {
+            return ResultMsgUtil.failure("当前表中的无此类情况数据不能提交到禁止交易信息表中!");
+        }
         //boolean b = this.updateState(ids, "有效");
         boolean b = true;
-
         if (b) { //配偶、子女及其配偶开办有偿社会中介和法律服务机构或者从业的情况 表数据改为有效状态 并且修改成功 往 配偶，子女及其配偶表中添加数据。
             // 配偶，子女及其配偶表中添加数据。如果 干部身份证号 姓名 称谓 重复则不添加
             List<SpouseBasicInfo> sbInfoList = spouseBasicInfoService.selectAll();//查询所有干部家属信息
             List<SpouseBasicInfo> sbiList = new ArrayList<>();
+            //List<String> tempList = new ArrayList<>();// 存储无此类情况的数据
             for (MechanismInfo info : infoList) {
+                //无此类情况不提交数据
+                /*String isSitution = info.getIsSituation();
+                if("无此类情况".equals(sysDictBizService.getDictValue(isSitution,dictList))){
+                    tempList.add(info.getId());
+                    continue;
+                }*/
                 String cardId = info.getCardId();
                 String name = info.getName();
                 String title = info.getTitle();
@@ -183,6 +196,10 @@ public class MechanismInfoServiceImpl extends ServiceImpl<MechanismInfoMapper, M
                 //this.updateState(ids, SystemConstant.SAVE_STATE);
                 return ResultMsgUtil.failure("没有找到干部组织信息");
             }
+           /* if(CollectionUtil.isNotEmpty(tempList)){
+                infoList = infoList.stream().filter(e->tempList.contains(e.getId())).collect(Collectors.toList());
+                ids = infoList.stream().map(MechanismInfo::getCardId).collect(Collectors.toList());
+            }*/
             //向禁止交易信息表中添加数据 并进行验证 及其他逻辑处理
             banDealInfoService.deleteBanDealInfoByRefId(ids);
             ResultMsgUtil<Map<String, Object>> mapResult = banDealInfoService.insertBanDealInfoOfMechanismInfo(infoList,gbOrgList);
@@ -194,7 +211,6 @@ public class MechanismInfoServiceImpl extends ServiceImpl<MechanismInfoMapper, M
             StringJoiner sj = new StringJoiner(",");
             if(CollectionUtil.isNotEmpty(submitFailId)){
                 this.updateBathTips(submitFailId);
-                return ResultMsgUtil.failure(sj.toString());
             }
             if(!Boolean.valueOf(banDeal)){
                 sj.add("提交数据失败");
