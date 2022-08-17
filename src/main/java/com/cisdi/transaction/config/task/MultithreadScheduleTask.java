@@ -32,13 +32,13 @@ public class MultithreadScheduleTask {
     public  void syncOrgInfo(){
         long i = DateUtil.date().getTime();
         System.out.println("执行组织同步定时任务");
-        orgService.syncDa();
+        //orgService.syncDa();
         long j = DateUtil.date().getTime();
         System.out.println("执行组织同步定时任务完成:"+(j-i));
     }
 
    // @PostConstruct      //项目启动执行一次
-    @Scheduled(fixedDelay = 7200000) //两小时执行一次
+    @Scheduled(fixedDelay = 72000000) //两小时执行一次
     public  void syncGbBasicInfo(){
         long i = DateUtil.date().getTime();
         System.out.println("执行干部信息定时任务");

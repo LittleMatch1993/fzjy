@@ -56,8 +56,11 @@ public class InvestInfoServiceImpl extends ServiceImpl<InvestInfoMapper, InvestI
     @Transactional
     @Override
     public boolean updateState(List<String> ids, String state) {
-        List<InvestInfo> list = ids.stream().map(e -> new InvestInfo().setId(e).setState(state)).collect(Collectors.toList());
-        boolean b = this.updateBatchById(list);
+        List<PrivateEquity> list = ids.stream().map(e -> new PrivateEquity().setId(e).setState(state)).collect(Collectors.toList());
+        UpdateWrapper<InvestInfo> updateWrapper = new UpdateWrapper<>();
+        updateWrapper.lambda().set(InvestInfo::getState,state).in(InvestInfo::getId,ids);
+
+        boolean b = this.update(updateWrapper);
         return b;
     }
 
@@ -100,6 +103,11 @@ public class InvestInfoServiceImpl extends ServiceImpl<InvestInfoMapper, InvestI
         if (count > 0) {
             return ResultMsgUtil.failure("当前表中的有效数据不能重复提交到禁止交易信息表中!");
         }
+        List<SysDictBiz> dictList = sysDictBizService.selectList();
+        long j = infoList.stream().filter(e -> "无此类情况".equals(sysDictBizService.getDictValue(e.getIsSituation(),dictList))).count();
+        if (j > 0) {
+            return ResultMsgUtil.failure("当前表中的无此类情况数据不能提交到禁止交易信息表中!");
+        }
         //boolean b = this.updateState(ids, SystemConstant.VALID_STATE);
         boolean b = true;
 
@@ -107,7 +115,15 @@ public class InvestInfoServiceImpl extends ServiceImpl<InvestInfoMapper, InvestI
             // 配偶，子女及其配偶表中添加数据。如果 干部身份证号 姓名 称谓 重复则不添加
             List<SpouseBasicInfo> sbInfoList = spouseBasicInfoService.selectAll();//查询所有干部家属信息
             List<SpouseBasicInfo> sbiList = new ArrayList<>();
+           // List<String> tempList = new ArrayList<>();// 存储无此类情况的数据
+
             for (InvestInfo info : infoList) {
+                //无此类情况不提交数据
+                String isSitution = info.getIsSituation();
+                /*if("无此类情况".equals(sysDictBizService.getDictValue(isSitution,dictList))){
+                    tempList.add(info.getId());
+                    continue;
+                }*/
                 String cardId = info.getCardId();
                 String name = info.getName();
                 String title = info.getTitle();
@@ -151,6 +167,10 @@ public class InvestInfoServiceImpl extends ServiceImpl<InvestInfoMapper, InvestI
                 //this.updateState(ids, SystemConstant.SAVE_STATE);
                 return ResultMsgUtil.failure("没有找到干部组织信息");
             }
+            /*if(CollectionUtil.isNotEmpty(tempList)){
+                infoList = infoList.stream().filter(e->tempList.contains(e.getId())).collect(Collectors.toList());
+                ids = infoList.stream().map(InvestInfo::getCardId).collect(Collectors.toList());
+            }*/
             banDealInfoService.deleteBanDealInfoByRefId(ids);
             //向禁止交易信息表中添加数据 并进行验证 及其他逻辑处理
             ResultMsgUtil<Map<String, Object>> mapResult = banDealInfoService.insertBanDealInfoOfInvestInfo(infoList, gbOrgList);
@@ -280,9 +300,9 @@ public class InvestInfoServiceImpl extends ServiceImpl<InvestInfoMapper, InvestI
                 info.setSeniorPositionEndTime(null);
             }
             //该企业或其他市场主体是否与报告人所在单位（系统）直接发生过商品、劳务、服务等经济关系
-            if("否".equals(sysDictBizService.getDictValue(info.getIsRelation(),dictList))){
+            /*if("否".equals(sysDictBizService.getDictValue(info.getIsRelation(),dictList))){
                 info.setRemarks(null);
-            }
+            }*/
         }
         return info;
     }

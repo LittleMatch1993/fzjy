@@ -51,8 +51,10 @@ public class PrivateEquityServiceImpl extends ServiceImpl<PrivateEquityMapper, P
 
     @Override
     public boolean updateState(List<String> ids, String state) {
-        List<PrivateEquity> list = ids.stream().map(e -> new PrivateEquity().setId(e).setState(state)).collect(Collectors.toList());
-        boolean b = this.updateBatchById(list);
+        UpdateWrapper<PrivateEquity> updateWrapper = new UpdateWrapper<>();
+        updateWrapper.lambda().set(PrivateEquity::getState,state).in(PrivateEquity::getId,ids);
+
+        boolean b = this.update(updateWrapper);
         return b;
     }
 
@@ -126,15 +128,28 @@ public class PrivateEquityServiceImpl extends ServiceImpl<PrivateEquityMapper, P
         if (count > 0) {
             return ResultMsgUtil.failure("当前表中的有效数据不能重复提交到禁止交易信息表中!");
         }
+        List<SysDictBiz> dictList = sysDictBizService.selectList();
+
+        long j = infoList.stream().filter(e -> "无此类情况".equals(sysDictBizService.getDictValue(e.getIsSituation(),dictList))).count();
+        if (j > 0) {
+            return ResultMsgUtil.failure("当前表中的无此类情况数据不能提交到禁止交易信息表中!");
+        }
+
 
        // boolean b = this.updateState(ids, SystemConstant.VALID_STATE);
         boolean b = true;
-
         if (b) { //配偶、子女及其配偶投资私募股权投资基金或者担任高级职务的情况 表数据改为有效状态 并且修改成功 往 配偶，子女及其配偶表中添加数据。
             // 配偶，子女及其配偶表中添加数据。如果 干部身份证号 姓名 称谓 重复则不添加
             List<SpouseBasicInfo> sbInfoList = spouseBasicInfoService.selectAll();//查询所有干部家属信息
             List<SpouseBasicInfo> sbiList = new ArrayList<>();
+           // List<String> tempList = new ArrayList<>();// 存储无此类情况的数据
             for (PrivateEquity info : infoList) {
+                //无此类情况不提交数据
+                String isSitution = info.getIsSituation();
+                /*if("无此类情况".equals(sysDictBizService.getDictValue(isSitution,dictList))){
+                    tempList.add(info.getId());
+                    continue;
+                }*/
                 String cardId = info.getCardId();
                 String name = info.getName();
                 String title = info.getTitle();
@@ -161,7 +176,6 @@ public class PrivateEquityServiceImpl extends ServiceImpl<PrivateEquityMapper, P
                 }
             }
 
-            banDealInfoService.deleteBanDealInfoByRefId(ids);
             //获取干部的基本信息
             List<String> cardIds = infoList.stream().map(PrivateEquity::getCardId).collect(Collectors.toList());
            // List<GbBasicInfo> gbList = gbBasicInfoService.selectBatchByCardIds(cardIds);
@@ -180,7 +194,12 @@ public class PrivateEquityServiceImpl extends ServiceImpl<PrivateEquityMapper, P
                 //this.updateState(ids, SystemConstant.SAVE_STATE);
                 return ResultMsgUtil.failure("没有找到干部组织信息");
             }
+            /*if(CollectionUtil.isNotEmpty(tempList)){
+                infoList = infoList.stream().filter(e->tempList.contains(e.getId())).collect(Collectors.toList());
+                ids = infoList.stream().map(PrivateEquity::getCardId).collect(Collectors.toList());
+            }*/
             //向禁止交易信息表中添加数据 并进行验证 及其他逻辑处理
+            banDealInfoService.deleteBanDealInfoByRefId(ids);
             ResultMsgUtil<Map<String, Object>> mapResult = banDealInfoService.insertBanDealInfoOfPrivateEquity(infoList, gbOrgList);
             //处理提交数据后
             Map<String, Object> data = mapResult.getData();

@@ -435,10 +435,14 @@ public class BanDealInfoServiceImpl extends ServiceImpl<BanDealInfoMapper, BanDe
 
     @Transactional
     @Override
-    public void submitBanDealInfo(List<String> ids) {
+    public ResultMsgUtil<Object>  submitBanDealInfo(List<String> ids) {
         boolean b = false;
         List<BanDealInfo> infoList = this.lambdaQuery().in(BanDealInfo::getId, ids).list();
         if (CollectionUtil.isNotEmpty(infoList)) {
+            long count = infoList.stream().filter(e -> SystemConstant.VALID_STATE.equals(e.getState())).count();
+            if (count > 0) {
+                return ResultMsgUtil.failure("当前表中的有效数据不能重复提交到禁止交易信息表中!");
+            }
             //验证社会统一信用代码 不符合则在数据校验提示列中显示
             infoList = this.validBatchCompanyCode(infoList);
             //验证证供应商名称 信用代码  禁止交易采购单位代码是否都有。没有则置为无效，否则设置为有效
@@ -451,6 +455,7 @@ public class BanDealInfoServiceImpl extends ServiceImpl<BanDealInfoMapper, BanDe
             //推送有效数据给采购平台
            //purchaseBanDealInfoSevice.pushDatchDataForPurchase(infoList);
         }
+        return ResultMsgUtil.success("提交成功");
     }
 
     @Override

@@ -27,6 +27,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.net.BindException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -79,7 +80,8 @@ public class OrgServiceImpl extends ServiceImpl<OrgMapper, Org> implements OrgSe
     @Override
     public void syncDa() {
         JSONObject obj = new JSONObject();
-
+        String stringDate = DateUtil.format(new Date(), "yyyyMMdd");
+        System.out.println("当前时间"+stringDate);
         //换成配置文件
         obj.put("app_id", "sphy");
         obj.put("table_name", "");
@@ -88,30 +90,36 @@ public class OrgServiceImpl extends ServiceImpl<OrgMapper, Org> implements OrgSe
         obj.put("secretKey", "50857140b5b84ddeeef5f62709b32fac");
         String result = HttpUtils.sendPostOfAuth(url, obj);
         JSONObject jb = JSONObject.parseObject(result);
-        String code = jb.getString("code");
-        boolean b = jb.containsKey("data");
-        List<Org> orgs = new ArrayList<>();
-        if ("1".equals(code) && b) {
+        boolean b1 = jb.containsKey("code");
+        if(b1){
+            String code = jb.getString("code");
+            boolean b = jb.containsKey("data");
+            List<Org> orgs = new ArrayList<>();
+            if ("1".equals(code) && b) {
 
-            JSONArray data = jb.getJSONArray("data");
-            for (int i = 0; i < data.size(); i++) {
-                JSONObject josnObj = data.getJSONObject(i);
-                Org org = JSONObject.parseObject(josnObj.toString(), Org.class);
-                String asgId = josnObj.getString("asgId");
-                org.setId(asgId);
-                org.setCreateTime(DateUtil.date());
-                org.setUpdateTime(DateUtil.date());
-                orgs.add(org);
+                JSONArray data = jb.getJSONArray("data");
+                for (int i = 0; i < data.size(); i++) {
+                    JSONObject josnObj = data.getJSONObject(i);
+                    Org org = JSONObject.parseObject(josnObj.toString(), Org.class);
+                    String asgId = josnObj.getString("asgId");
+                    org.setId(asgId);
+                    org.setCreateTime(DateUtil.date());
+                    org.setUpdateTime(DateUtil.date());
+                    orgs.add(org);
+                }
+
             }
+            if (CollectionUtil.isNotEmpty(orgs)) {
+                List<SysDictBiz> dictList = sysDictBizService.selectList();
+                orgs = this.repalceDictId(orgs,dictList);
+                this.remove(null);
+                this.saveBatch(orgs);
+            }
+            System.out.println("service执行组织同步定时任务完成");
+        }else{
+            System.out.println("没有成功返回数据");
+        }
 
-        }
-        if (CollectionUtil.isNotEmpty(orgs)) {
-            this.remove(null);
-            List<SysDictBiz> dictList = sysDictBizService.selectList();
-            orgs = this.repalceDictId(orgs,dictList);
-            this.saveBatch(orgs);
-        }
-        System.out.println("service执行组织同步定时任务完成");
     }
 
     @Override

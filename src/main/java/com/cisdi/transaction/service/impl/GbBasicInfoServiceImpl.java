@@ -25,6 +25,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -148,23 +149,27 @@ public class GbBasicInfoServiceImpl extends ServiceImpl<GbBasicInfoMapper, GbBas
         return list;
     }
 
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public void syncData() {
         //删除所有数据重新添加
 
-        this.baseMapper.delete(null);
         List<GbBasicInfo> dataList = new ArrayList<>();
         List<GbBasicInfoThree> gbBasicInfoThrees = gbBasicInfoThreeService.selectGbBasicInfo();
-        for (GbBasicInfoThree gbBasicInfoThree : gbBasicInfoThrees) {
-            GbBasicInfo info = new GbBasicInfo();
-            BeanUtil.copyProperties(gbBasicInfoThree, info);
-            info.setCreateTime(DateUtil.date());
-            info.setUpdateTime(DateUtil.date());
-            dataList.add(info);
+        if(CollectionUtil.isNotEmpty(gbBasicInfoThrees)){
+            for (GbBasicInfoThree gbBasicInfoThree : gbBasicInfoThrees) {
+                GbBasicInfo info = new GbBasicInfo();
+                BeanUtil.copyProperties(gbBasicInfoThree, info);
+                info.setCreateTime(DateUtil.date());
+                info.setUpdateTime(DateUtil.date());
+                dataList.add(info);
+            }
+            List<SysDictBiz> dictList = sysDictBizService.selectList();
+            this.baseMapper.delete(null);
+            dataList = this.repalceDictId(dataList,dictList);
+            this.saveBatch(dataList);
         }
-        List<SysDictBiz> dictList = sysDictBizService.selectList();
-        dataList = this.repalceDictId(dataList,dictList);
-        this.saveBatch(dataList);
+
     }
 
     @Override
