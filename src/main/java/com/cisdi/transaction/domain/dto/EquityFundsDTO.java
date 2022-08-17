@@ -134,4 +134,8 @@ public class EquityFundsDTO {
     @ExcelProperty(value = "有无此类情况")
     @ExcelValid(message = "有无此类情况为空")
     private String isSituation;
+
+    private Integer columnNumber;
+
+    private String message;
 }

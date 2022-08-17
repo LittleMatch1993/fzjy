@@ -5,6 +5,7 @@ import com.cisdi.transaction.config.base.ResultMsgUtil;
 import com.cisdi.transaction.domain.dto.*;
 import com.cisdi.transaction.domain.model.InvestInfo;
 import com.cisdi.transaction.domain.model.PrivateEquity;
+import com.cisdi.transaction.domain.vo.ExportReturnVO;
 import com.cisdi.transaction.domain.vo.KVVO;
 
 import java.util.List;
@@ -78,5 +79,5 @@ public interface PrivateEquityService extends IService<PrivateEquity> {
      * 批量导入新增
      * @param list
      */
-    void saveBatchInvestmentInfo(List<EquityFundsDTO> list, BaseDTO baseDTO);
+    void saveBatchInvestmentInfo(List<EquityFundsDTO> list, BaseDTO baseDTO, ExportReturnVO exportReturnVO);
 }

@@ -7,6 +7,8 @@ import com.cisdi.transaction.domain.dto.CommunityServiceDTO;
 import com.cisdi.transaction.domain.dto.MechanismInfoDTO;
 import com.cisdi.transaction.domain.dto.SubmitDto;
 import com.cisdi.transaction.domain.model.MechanismInfo;
+import com.cisdi.transaction.domain.vo.ExportReturnMessageVO;
+import com.cisdi.transaction.domain.vo.ExportReturnVO;
 import com.cisdi.transaction.domain.vo.KVVO;
 
 import java.util.List;
@@ -74,5 +76,5 @@ public interface MechanismInfoService extends IService<MechanismInfo> {
      * 批量导入新增
      * @param list
      */
-    void saveBatchInvestInfo(List<CommunityServiceDTO> list, BaseDTO baseDTO);
+    void saveBatchInvestInfo(List<CommunityServiceDTO> list, BaseDTO baseDTO, ExportReturnVO exportReturnVO);
 }

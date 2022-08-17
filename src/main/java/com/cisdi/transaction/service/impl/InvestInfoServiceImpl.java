@@ -7,13 +7,13 @@ import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.cisdi.transaction.config.base.ResultMsgUtil;
+import com.cisdi.transaction.config.utils.NumberUtils;
 import com.cisdi.transaction.constant.SqlConstant;
 import com.cisdi.transaction.constant.SystemConstant;
-import com.cisdi.transaction.domain.dto.BaseDTO;
-import com.cisdi.transaction.domain.dto.InvestInfoDTO;
-import com.cisdi.transaction.domain.dto.InvestmentDTO;
-import com.cisdi.transaction.domain.dto.SubmitDto;
+import com.cisdi.transaction.domain.dto.*;
 import com.cisdi.transaction.domain.model.*;
+import com.cisdi.transaction.domain.vo.ExportReturnMessageVO;
+import com.cisdi.transaction.domain.vo.ExportReturnVO;
 import com.cisdi.transaction.domain.vo.KVVO;
 import com.cisdi.transaction.mapper.master.InvestInfoMapper;
 import com.cisdi.transaction.service.*;
@@ -23,10 +23,12 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * 投资企业或担任高级职务情况
@@ -356,7 +358,7 @@ public class InvestInfoServiceImpl extends ServiceImpl<InvestInfoMapper, InvestI
                         investInfo.setState(SystemConstant.SAVE_STATE)//默认类型新建
                                 .setCreateTime(new Date())
                                 .setUpdateTime(new Date());
-                        investInfo = this.repalceDictId(investInfo,dictList);
+                        this.repalceDictId(investInfo,dictList);
                         investInfoList.add(investInfo);
                     }
                 } else {
@@ -365,7 +367,7 @@ public class InvestInfoServiceImpl extends ServiceImpl<InvestInfoMapper, InvestI
                     investInfo.setState(SystemConstant.SAVE_STATE)//默认类型新建
                             .setCreateTime(new Date())
                             .setUpdateTime(new Date());
-                    investInfo = this.repalceDictId(investInfo,dictList);
+                    this.repalceDictId(investInfo,dictList);
                     investInfoList.add(investInfo);
                 }
             });
@@ -393,7 +395,7 @@ public class InvestInfoServiceImpl extends ServiceImpl<InvestInfoMapper, InvestI
                         long nameIndex = infos.stream().filter(e->t.getName().equals(e.getName())).count();
                         long titleIndex = infos.stream().filter(e->sysDictBizService.getDictId(t.getTitle(),dictList).equals(e.getTitle())).count();
                         long codeIndex = infos.stream().filter(e->t.getCode().equals(e.getCode())).count();
-                        info = this.repalceDictId(info,dictList);
+                        this.repalceDictId(info,dictList);
                         if(nameIndex==0|titleIndex==0|codeIndex==0){ //一个都不重复
                             //如果不相同，新增，否则就是覆盖
                             info.setCreateTime(DateUtil.date());
@@ -456,7 +458,7 @@ public class InvestInfoServiceImpl extends ServiceImpl<InvestInfoMapper, InvestI
                 BeanUtils.copyProperties(t, info);
                 info.setState(SystemConstant.SAVE_STATE)//默认类型新建
                         .setUpdateTime(DateUtil.date());
-                info = this.repalceDictId(info,dictList);
+                this.repalceDictId(info,dictList);
                 //数据库中如果不存在数据
                 if (CollectionUtil.isEmpty(infos)) {
                     info.setCreateTime(DateUtil.date());
@@ -477,26 +479,30 @@ public class InvestInfoServiceImpl extends ServiceImpl<InvestInfoMapper, InvestI
         }
     }
 
-    private void checkArea(InvestmentDTO dto) {
+    private String checkArea(InvestmentDTO dto) {
         //校验国家/省份/市是否合法
         //国家
             if (StringUtils.isBlank(dto.getRegisterCountry())) {
-                throw new RuntimeException("在有此类情况下，注册地国家信息不能为空");
+//                throw new RuntimeException("在有此类情况下，注册地国家信息不能为空");
+                return "在有此类情况下，注册地国家信息不能为空";
             }
             GlobalCityInfo country = globalCityInfoService.lambdaQuery().eq(GlobalCityInfo::getName, dto.getRegisterCountry()).last(SqlConstant.ONE_SQL).one();
             if (country == null) {
-                throw new RuntimeException(dto.getRegisterCountry() + ":" + "国家不存在");
+//                throw new RuntimeException(dto.getRegisterCountry() + ":" + "国家不存在");
+                return dto.getRegisterCountry() + ":" + "国家不存在";
             }
             //如果是中国下的，校验省份和市
             if (country.getAreaCode().equals(SystemConstant.CHINA_AREA_CODE)) {
                 if (StringUtils.isBlank(dto.getRegisterProvince()) || StringUtils.isBlank(dto.getCity())) {
-                    throw new RuntimeException(dto.getRegisterCountry() + ":" + "国家下的省份或地级市信息不能为空");
+//                    throw new RuntimeException(dto.getRegisterCountry() + ":" + "国家下的省份或地级市信息不能为空");
+                    return dto.getRegisterCountry() + ":" + "国家下的省份或地级市信息不能为空";
                 }
                 //省份及城市
                 List<GlobalCityInfo> infoList = globalCityInfoService.lambdaQuery().in(GlobalCityInfo::getName, dto.getRegisterProvince(), dto.getCity()).list();
 
                 if (infoList.isEmpty()) {
-                    throw new RuntimeException(dto.getRegisterCountry() + ":" + "国家下的省份和地级市不存在");
+//                    throw new RuntimeException(dto.getRegisterCountry() + ":" + "国家下的省份和地级市不存在");
+                    return dto.getRegisterCountry() + ":" + "国家下的省份和地级市不存在";
                 }
                 //Map<String, GlobalCityInfo> infoMap = infoList.stream().collect(Collectors.toMap(GlobalCityInfo::getParentId, Function.identity()));
                 //Map<String, List<GlobalCityInfo>> collect = infoList.stream().collect(Collectors.groupingBy(GlobalCityInfo::getParentId));
@@ -508,7 +514,8 @@ public class InvestInfoServiceImpl extends ServiceImpl<InvestInfoMapper, InvestI
                                 && StrUtil.isNotEmpty(e.getCountryId())).findAny().orElse(null);
                 //infoMap.
                 if (Objects.isNull(province)) {
-                    throw new RuntimeException(dto.getRegisterCountry() + ":" + "国家下的省份不匹配");
+//                    throw new RuntimeException(dto.getRegisterCountry() + ":" + "国家下的省份不匹配");
+                    return dto.getRegisterCountry() + ":" + "国家下的省份不匹配";
                 }
                 //
                 String provinceId = province.getCountryId(); //省份地区号
@@ -518,10 +525,11 @@ public class InvestInfoServiceImpl extends ServiceImpl<InvestInfoMapper, InvestI
                 long i = cityList.stream().filter(e -> e.getName().equals(dto.getCity())).count();
                 //GlobalCityInfo city = infoMap.get(info.getCountryId());//地级市
                 if (i == 0) {
-                    throw new RuntimeException(dto.getRegisterProvince() + ":" + "省份下的地级市不匹配");
+//                    throw new RuntimeException(dto.getRegisterProvince() + ":" + "省份下的地级市不匹配");
+                    return dto.getRegisterProvince() + ":" + "省份下的地级市不匹配";
                 }
             }
-
+            return null;
 
     }
 
@@ -539,7 +547,13 @@ public class InvestInfoServiceImpl extends ServiceImpl<InvestInfoMapper, InvestI
     }
 
     @Override
-    public void saveBatchInvestmentInfo(List<InvestmentDTO> list, BaseDTO baseDTO) {
+    public void saveBatchInvestmentInfo(List<InvestmentDTO> lists, BaseDTO baseDTO, ExportReturnVO exportReturnVO) {
+        //过滤掉必填校验未通过的字段
+        List<InvestmentDTO> list = lists.stream().filter(e -> StringUtils.isBlank(e.getMessage())).collect(Collectors.toList());
+        list=checkParams(list,exportReturnVO);
+        if (CollectionUtils.isEmpty(list)){
+            return;
+        }
         List<SysDictBiz> dictList = sysDictBizService.selectList();
         List<InvestInfo> investInfoList = new ArrayList<>();
 
@@ -550,16 +564,29 @@ public class InvestInfoServiceImpl extends ServiceImpl<InvestInfoMapper, InvestI
                 if (t.getIsSituation().equals(SystemConstant.IS_SITUATION_YES)) {
                     if (StringUtils.isNotBlank(t.getName()) && StringUtils.isNotBlank(t.getCode())) {
                         //校验国家/省/市
-                        checkArea(t);
-                        InvestInfo investInfo = new InvestInfo();
-                        BeanUtils.copyProperties(t, investInfo);
-                        investInfo.setState(SystemConstant.SAVE_STATE)//默认类型新建
-                                .setCreateTime(new Date())
-                                .setUpdateTime(new Date());
-                        investInfo = this.repalceDictId(investInfo,dictList);
-                        investInfo.setCreateName(baseDTO.getServiceUserName());
-                        investInfo.setCreateAccount(baseDTO.getServiceUserAccount());
-                        investInfoList.add(investInfo);
+                        String returnMessage = checkArea(t);
+                        if (StringUtils.isBlank(returnMessage)){
+                            InvestInfo investInfo = new InvestInfo();
+                            BeanUtils.copyProperties(t, investInfo);
+                            investInfo.setState(SystemConstant.SAVE_STATE)//默认类型新建
+                                    .setCreateTime(new Date())
+                                    .setUpdateTime(new Date());
+                            String checkDict = this.repalceDictId(investInfo,dictList);
+                            if (StringUtils.isBlank(checkDict)){
+                                investInfo.setCreateName(baseDTO.getServiceUserName());
+                                investInfo.setCreateAccount(baseDTO.getServiceUserAccount());
+                                investInfoList.add(investInfo);
+
+                            }else {
+                                exportReturnVO.setFailNumber(exportReturnVO.getFailNumber()+1);
+                                exportReturnVO.getFailMessage().add(new ExportReturnMessageVO(t.getColumnNumber(),checkDict));
+                            }
+
+                        }else {
+                            exportReturnVO.setFailNumber(exportReturnVO.getFailNumber()+1);
+                            exportReturnVO.getFailMessage().add(new ExportReturnMessageVO(t.getColumnNumber(),returnMessage));
+                        }
+
                     }
                 } else {
                     InvestInfo investInfo = new InvestInfo();
@@ -567,10 +594,17 @@ public class InvestInfoServiceImpl extends ServiceImpl<InvestInfoMapper, InvestI
                     investInfo.setState(SystemConstant.SAVE_STATE)//默认类型新建
                             .setCreateTime(new Date())
                             .setUpdateTime(new Date());
-                    investInfo = this.repalceDictId(investInfo,dictList);
-                    investInfo.setCreateName(baseDTO.getServiceUserName());
-                    investInfo.setCreateAccount(baseDTO.getServiceUserAccount());
-                    investInfoList.add(investInfo);
+                    String checkDict = this.repalceDictId(investInfo,dictList);
+                    if (StringUtils.isBlank(checkDict)){
+                        investInfo.setCreateName(baseDTO.getServiceUserName());
+                        investInfo.setCreateAccount(baseDTO.getServiceUserAccount());
+                        investInfoList.add(investInfo);
+                        exportReturnVO.setSuccessNumber(exportReturnVO.getSuccessNumber()+1);
+                    }else {
+                        exportReturnVO.setFailNumber(exportReturnVO.getFailNumber()+1);
+                        exportReturnVO.getFailMessage().add(new ExportReturnMessageVO(t.getColumnNumber(),checkDict));
+                    }
+
                 }
             });
             if (!investInfoList.isEmpty()) {
@@ -588,37 +622,55 @@ public class InvestInfoServiceImpl extends ServiceImpl<InvestInfoMapper, InvestI
                     //校验姓名和统一社会信用代码不能为空
                     if (StringUtils.isNotBlank(t.getName())&&StringUtils.isNotBlank(t.getTitle())  && StringUtils.isNotBlank(t.getCode())) {
                         //校验国家/省/市
-                        checkArea(t);
-                        InvestInfo info = new InvestInfo();
-                        BeanUtils.copyProperties(t, info);
-                        info.setState(SystemConstant.SAVE_STATE)//默认类型新建
-                                .setUpdateTime(DateUtil.date());
-                        //判断该干部下的其他子项名称和代码是否相同
-                        long nameIndex = infos.stream().filter(e->t.getName().equals(e.getName())).count();
-                        long titleIndex = infos.stream().filter(e->sysDictBizService.getDictId(t.getTitle(),dictList).equals(e.getTitle())).count();
-                        long codeIndex = infos.stream().filter(e->t.getCode().equals(e.getCode())).count();
-                        info = this.repalceDictId(info,dictList);
-                        if(nameIndex==0|titleIndex==0|codeIndex==0){ //一个都不重复
-                            //如果不相同，新增，否则就是覆盖
-                            info.setCreateTime(DateUtil.date());
-                            info.setCreateName(baseDTO.getServiceUserName());
-                            info.setCreateAccount(baseDTO.getServiceUserAccount());
-                            investInfoList.add(info);
-                        }else{ //有重复数据了
-                            InvestInfo existInfo = infos.stream().filter(e->t.getName().equals(e.getName())
-                                    &&sysDictBizService.getDictId(t.getTitle(),dictList).equals(e.getTitle())
-                                    &&t.getCode().equals(e.getCode())).findAny().orElse(null);
-                            String title = info.getTitle();
-                            if(Objects.nonNull(existInfo)){
-                                info.setId(existInfo.getId());
-                                updateList.add(info);
-                            }else if (investInfoList.isEmpty()||investInfoList.stream().filter(privateEquity1 -> t.getName().equals(privateEquity1.getName())&&t.getCode().equals(privateEquity1.getCode())&&title.equals(privateEquity1.getTitle())).count()==0){
-                                info.setCreateTime(DateUtil.date());
-                                info.setCreateName(baseDTO.getServiceUserName());
-                                info.setCreateAccount(baseDTO.getServiceUserAccount());
-                                investInfoList.add(info);
+                        String returnMessage = checkArea(t);
+                        if (StringUtils.isBlank(returnMessage)){
+                            InvestInfo info = new InvestInfo();
+                            BeanUtils.copyProperties(t, info);
+                            info.setState(SystemConstant.SAVE_STATE)//默认类型新建
+                                    .setUpdateTime(DateUtil.date());
+                            //判断该干部下的其他子项名称和代码是否相同
+                            long nameIndex = infos.stream().filter(e->t.getName().equals(e.getName())).count();
+                            long titleIndex = infos.stream().filter(e->sysDictBizService.getDictId(t.getTitle(),dictList).equals(e.getTitle())).count();
+                            long codeIndex = infos.stream().filter(e->t.getCode().equals(e.getCode())).count();
+                            String checkDict = this.repalceDictId(info,dictList);
+                            if (StringUtils.isBlank(checkDict)){
+                                if(nameIndex==0|titleIndex==0|codeIndex==0){ //一个都不重复
+                                    //如果不相同，新增，否则就是覆盖
+                                    info.setCreateTime(DateUtil.date());
+                                    info.setCreateName(baseDTO.getServiceUserName());
+                                    info.setCreateAccount(baseDTO.getServiceUserAccount());
+                                    investInfoList.add(info);
+                                    exportReturnVO.setSuccessNumber(exportReturnVO.getSuccessNumber()+1);
+                                }else{ //有重复数据了
+                                    InvestInfo existInfo = infos.stream().filter(e->t.getName().equals(e.getName())
+                                            &&sysDictBizService.getDictId(t.getTitle(),dictList).equals(e.getTitle())
+                                            &&t.getCode().equals(e.getCode())).findAny().orElse(null);
+                                    String title = info.getTitle();
+                                    if(Objects.nonNull(existInfo)){
+                                        info.setId(existInfo.getId());
+                                        updateList.add(info);
+                                        exportReturnVO.setSuccessNumber(exportReturnVO.getSuccessNumber()+1);
+                                    }else if (investInfoList.isEmpty()||investInfoList.stream().filter(privateEquity1 -> t.getName().equals(privateEquity1.getName())&&t.getCode().equals(privateEquity1.getCode())&&title.equals(privateEquity1.getTitle())).count()==0){
+                                        info.setCreateTime(DateUtil.date());
+                                        info.setCreateName(baseDTO.getServiceUserName());
+                                        info.setCreateAccount(baseDTO.getServiceUserAccount());
+                                        investInfoList.add(info);
+                                        exportReturnVO.setSuccessNumber(exportReturnVO.getSuccessNumber()+1);
+                                    }else {
+                                        exportReturnVO.setFailNumber(exportReturnVO.getFailNumber()+1);
+                                        exportReturnVO.getFailMessage().add(new ExportReturnMessageVO(t.getColumnNumber(),"数据重复"));
+                                    }
+                                }
+                            }else {
+                                exportReturnVO.setFailNumber(exportReturnVO.getFailNumber()+1);
+                                exportReturnVO.getFailMessage().add(new ExportReturnMessageVO(t.getColumnNumber(),checkDict));
                             }
+
+                        }else {
+                            exportReturnVO.setFailNumber(exportReturnVO.getFailNumber()+1);
+                            exportReturnVO.getFailMessage().add(new ExportReturnMessageVO(t.getColumnNumber(),returnMessage));
                         }
+
                         /*if (!t.getName().equals(e.getName()) &&!info.getTitle().equals(e.getTitle())&& !t.getCode().equals(e.getCode())) {
                             //如果不相同，新增，否则就是覆盖
                             info.setCreateTime(DateUtil.date());
@@ -656,13 +708,20 @@ public class InvestInfoServiceImpl extends ServiceImpl<InvestInfoMapper, InvestI
                         //数据库为空，直接add
                         InvestInfo info = new InvestInfo();
                         BeanUtils.copyProperties(t, info);
-                        info = this.repalceDictId(info,dictList);
-                        info.setState(SystemConstant.SAVE_STATE)//默认类型新建
-                                .setCreateTime(DateUtil.date())
-                                .setUpdateTime(DateUtil.date());
-                        info.setCreateName(baseDTO.getServiceUserName());
-                        info.setCreateAccount(baseDTO.getServiceUserAccount());
-                        investInfoList.add(info);
+                        String checkDict = this.repalceDictId(info,dictList);
+                        if (StringUtils.isBlank(checkDict)){
+                            info.setState(SystemConstant.SAVE_STATE)//默认类型新建
+                                    .setCreateTime(DateUtil.date())
+                                    .setUpdateTime(DateUtil.date());
+                            info.setCreateName(baseDTO.getServiceUserName());
+                            info.setCreateAccount(baseDTO.getServiceUserAccount());
+                            investInfoList.add(info);
+                            exportReturnVO.setSuccessNumber(exportReturnVO.getSuccessNumber()+1);
+                        }else {
+                            exportReturnVO.setFailNumber(exportReturnVO.getFailNumber()+1);
+                            exportReturnVO.getFailMessage().add(new ExportReturnMessageVO(t.getColumnNumber(),checkDict));
+                        }
+
                     }
                 }
             } else {
@@ -671,18 +730,26 @@ public class InvestInfoServiceImpl extends ServiceImpl<InvestInfoMapper, InvestI
                 BeanUtils.copyProperties(t, info);
                 info.setState(SystemConstant.SAVE_STATE)//默认类型新建
                         .setUpdateTime(DateUtil.date());
-                info = this.repalceDictId(info,dictList);
-                //数据库中如果不存在数据
-                if (CollectionUtil.isEmpty(infos)) {
-                    info.setCreateTime(DateUtil.date());
-                    info.setCreateName(baseDTO.getServiceUserName());
-                    info.setCreateAccount(baseDTO.getServiceUserAccount());
-                    investInfoList.add(info);
-                } else {
-                    //覆盖
-                    info.setId(infos.get(0).getId());
-                    updateList.add(info);
+                String checkDict = this.repalceDictId(info,dictList);
+                if (StringUtils.isBlank(checkDict)){
+                    //数据库中如果不存在数据
+                    if (CollectionUtil.isEmpty(infos)) {
+                        info.setCreateTime(DateUtil.date());
+                        info.setCreateName(baseDTO.getServiceUserName());
+                        info.setCreateAccount(baseDTO.getServiceUserAccount());
+                        investInfoList.add(info);
+                        exportReturnVO.setSuccessNumber(exportReturnVO.getSuccessNumber()+1);
+                    } else {
+                        //覆盖
+                        info.setId(infos.get(0).getId());
+                        exportReturnVO.setSuccessNumber(exportReturnVO.getSuccessNumber()+1);
+                        updateList.add(info);
+                    }
+                }else {
+                    exportReturnVO.setFailNumber(exportReturnVO.getFailNumber()+1);
+                    exportReturnVO.getFailMessage().add(new ExportReturnMessageVO(t.getColumnNumber(),checkDict));
                 }
+
             }
 
         });
@@ -692,6 +759,48 @@ public class InvestInfoServiceImpl extends ServiceImpl<InvestInfoMapper, InvestI
         if (!updateList.isEmpty()) {
             this.updateBatchById(updateList);
         }
+    }
+
+    private List<InvestmentDTO> checkParams(List<InvestmentDTO> list, ExportReturnVO exportReturnVO) {
+        List<String> isOrNotList = Arrays.asList(SystemConstant.WHETHER_YES, SystemConstant.WHETHER_NO);
+        return list.stream().filter(e->{
+            if (SystemConstant.IS_SITUATION_YES.equals(e.getIsSituation())){
+                if (StringUtils.isBlank(e.getName())||StringUtils.isBlank(e.getTitle())||StringUtils.isBlank(e.getEnterpriseName())||StringUtils.isBlank(e.getEnterpriseType())||StringUtils.isBlank(e.getCode())||StringUtils.isBlank(e.getEstablishTime())||StringUtils.isBlank(e.getRegisterCountry())||StringUtils.isBlank(e.getRegisterProvince())||StringUtils.isBlank(e.getCity())
+                ||StringUtils.isBlank(e.getOperatAddr())||StringUtils.isBlank(e.getRegisterCapital())||StringUtils.isBlank(e.getEnterpriseState())||StringUtils.isBlank(e.getOperatScope())||StringUtils.isBlank(e.getShareholder())||StringUtils.isBlank(e.getSeniorPosition())||StringUtils.isBlank(e.getIsRelation())||StringUtils.isBlank(e.getTbType())||StringUtils.isBlank(e.getYear())
+                ){
+                    exportReturnVO.setFailNumber(exportReturnVO.getFailNumber()+1);
+                    exportReturnVO.getFailMessage().add(new ExportReturnMessageVO(e.getColumnNumber(),"有此类情况时以下内容不能为空：姓名,称谓,企业或其他市场主体名称,企业或其他市场主体类型,统一社会信用代码/注册号,成立日期,注册地（国家）,注册地（省）,注册地（市）,注册资本或资金数额,企业状态,经营范围,是否为股东（合伙人、所有人）,是否担任高级职务,该企业或其他市场主体是否与报告人所在单位（系统）直接发生过商品、劳务、服务等经济关系,填报类型,年度。"));
+                    return false;
+                }
+                if (!isOrNotList.contains(e.getShareholder())||!isOrNotList.contains(e.getSeniorPosition())||!isOrNotList.contains(e.getIsRelation())){
+                    exportReturnVO.setFailNumber(exportReturnVO.getFailNumber()+1);
+                    exportReturnVO.getFailMessage().add(new ExportReturnMessageVO(e.getColumnNumber(),"有此类情况时以下内容只能填是否：是否为股东（合伙人、所有人）,是否担任高级职务,该企业或其他市场主体是否与报告人所在单位（系统）直接发生过商品、劳务、服务等经济关系。"));
+                    return false;
+                }
+                if (SystemConstant.WHETHER_YES.equals(e.getShareholder())&&(StringUtils.isBlank(e.getPersonalCapital()))||StringUtils.isBlank(e.getPersonalRatio())||StringUtils.isBlank(e.getInvestTime())){
+                    exportReturnVO.setFailNumber(exportReturnVO.getFailNumber()+1);
+                    exportReturnVO.getFailMessage().add(new ExportReturnMessageVO(e.getColumnNumber(),"是为机构股东（合伙人、所有人等）时以下内容不能为空： 个人认缴出资额或个人出资额,个人认缴出资比例或个人出资比例,投资时间。"));
+                    return false;
+                }
+                if (SystemConstant.WHETHER_YES.equals(e.getSeniorPosition())&&(StringUtils.isBlank(e.getSeniorPositionName())||StringUtils.isBlank(e.getSeniorPositionStartTime())||StringUtils.isBlank(e.getSeniorPositionEndTime()))){
+                    exportReturnVO.setFailNumber(exportReturnVO.getFailNumber()+1);
+                    exportReturnVO.getFailMessage().add(new ExportReturnMessageVO(e.getColumnNumber(),"担任高级职务时以下内容不能为空： 所担任的高级职务名称,担任高级职务的时间。"));
+                    return false;
+                }
+                if (SystemConstant.WHETHER_YES.equals(e.getIsRelation())&&StringUtils.isBlank(e.getRemarks())){
+                    exportReturnVO.setFailNumber(exportReturnVO.getFailNumber()+1);
+                    exportReturnVO.getFailMessage().add(new ExportReturnMessageVO(e.getColumnNumber(),"该企业或其他市场主体是否与报告人所在单位（系统）直接发生过商品、劳务、服务等经济关系时以下内容不能为空：备注。"));
+                    return false;
+                }
+                List<String> numbers = Stream.of(e.getRegisterCapital(), e.getPersonalCapital(), e.getPersonalRatio(), e.getYear()).filter(StringUtils::isNotBlank).collect(Collectors.toList());
+                if (!NumberUtils.isAllNumeric(numbers)){
+                    exportReturnVO.setFailNumber(exportReturnVO.getFailNumber()+1);
+                    exportReturnVO.getFailMessage().add(new ExportReturnMessageVO(e.getColumnNumber(),"以下内容必须为数：注册资本（金）或资金数额（出资额）,个人认缴出资额或个人出资额,个人认缴出资比例或个人出资比例,年度。"));
+                    return false;
+                }
+            }
+            return true;
+        }).collect(Collectors.toList());
     }
 
     private List<InvestmentDTO>  repalceDictValue(List<InvestmentDTO> list,List<SysDictBiz> dictList){
@@ -717,16 +826,58 @@ public class InvestInfoServiceImpl extends ServiceImpl<InvestInfoMapper, InvestI
         return list;
     }
 
-    private InvestInfo repalceDictId(InvestInfo dto,List<SysDictBiz> dictList){
+    private String repalceDictId(InvestInfo dto,List<SysDictBiz> dictList){
         //字典对应项
-        String isSituation = sysDictBizService.getDictId(dto.getIsSituation(),dictList);
-        String title = sysDictBizService.getDictId(dto.getTitle(),dictList);
-        String enterpriseState = sysDictBizService.getDictId(dto.getEnterpriseState(),dictList);
-        String enterpriseType = sysDictBizService.getDictId(dto.getEnterpriseType(),dictList);
-        String shareholder = sysDictBizService.getDictId(dto.getShareholder(),dictList);
-        String seniorPosition = sysDictBizService.getDictId(dto.getSeniorPosition(),dictList);
-        String isRelation = sysDictBizService.getDictId(dto.getIsRelation(),dictList);
+        String isSituation = null;
+        String title = null;
+        String enterpriseState = null;
+        String enterpriseType = null;
+        String shareholder = null;
+        String seniorPosition = null;
+        String isRelation = null;
 
+        if (StringUtils.isNotBlank(dto.getIsSituation())){
+            isSituation=sysDictBizService.getDictId(dto.getIsSituation(),dictList);
+            if (StringUtils.isBlank(isSituation)){
+                return "有无此类情况字典项不存在";
+            }
+        }
+        if (StringUtils.isNotBlank(dto.getTitle())){
+            title=sysDictBizService.getDictId(dto.getTitle(),dictList);
+            if (StringUtils.isBlank(title)){
+                return "称谓字典项不存在";
+            }
+        }
+        if (StringUtils.isNotBlank(dto.getEnterpriseState())){
+            enterpriseState=sysDictBizService.getDictId(dto.getEnterpriseState(),dictList);
+            if (StringUtils.isBlank(enterpriseState)){
+                return "企业状态字典项不存在";
+            }
+        }
+        if (StringUtils.isNotBlank(dto.getEnterpriseType())){
+            enterpriseType=sysDictBizService.getDictId(dto.getEnterpriseType(),dictList);
+            if (StringUtils.isBlank(enterpriseType)){
+                return "企业或其他市场主体类型字典项不存在";
+            }
+        }
+        if (StringUtils.isNotBlank(dto.getShareholder())){
+            shareholder=sysDictBizService.getDictId(dto.getShareholder(),dictList);
+            if (StringUtils.isBlank(shareholder)){
+                return "是否为股东（合伙人、所有人）字典项不存在";
+            }
+        }
+        if (StringUtils.isNotBlank(dto.getSeniorPosition())){
+            seniorPosition=sysDictBizService.getDictId(dto.getSeniorPosition(),dictList);
+            if (StringUtils.isBlank(seniorPosition)){
+                return "是否担任高级职务字典项不存在";
+            }
+        }
+        if (StringUtils.isNotBlank(dto.getIsRelation())){
+            isRelation=sysDictBizService.getDictId(dto.getIsRelation(),dictList);
+            if (StringUtils.isBlank(isRelation)){
+                return "该企业或其他市场主体是否与报告人所在单位字典项不存在";
+            }
+        }
         dto.setIsSituation(isSituation);
         dto.setTitle(title);
         dto.setEnterpriseState(enterpriseState);
@@ -734,6 +885,6 @@ public class InvestInfoServiceImpl extends ServiceImpl<InvestInfoMapper, InvestI
         dto.setShareholder(shareholder);
         dto.setSeniorPosition(seniorPosition);
         dto.setIsRelation(isRelation);
-        return dto;
+        return null;
     }
 }

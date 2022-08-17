@@ -8,6 +8,7 @@ import com.cisdi.transaction.domain.dto.InvestmentDTO;
 import com.cisdi.transaction.domain.dto.SubmitDto;
 import com.cisdi.transaction.domain.model.BanDealInfo;
 import com.cisdi.transaction.domain.model.InvestInfo;
+import com.cisdi.transaction.domain.vo.ExportReturnVO;
 import com.cisdi.transaction.domain.vo.KVVO;
 
 import java.util.List;
@@ -90,5 +91,5 @@ public interface InvestInfoService extends IService<InvestInfo> {
      * 批量导入新增
      * @param list
      */
-    void saveBatchInvestmentInfo(List<InvestmentDTO> list, BaseDTO baseDTO);
+    void saveBatchInvestmentInfo(List<InvestmentDTO> list, BaseDTO baseDTO, ExportReturnVO exportReturnVO);
 }

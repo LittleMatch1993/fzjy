@@ -6,10 +6,13 @@ import cn.hutool.core.date.DateUtil;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.cisdi.transaction.config.base.ResultMsgUtil;
+import com.cisdi.transaction.config.utils.NumberUtils;
 import com.cisdi.transaction.constant.SqlConstant;
 import com.cisdi.transaction.constant.SystemConstant;
 import com.cisdi.transaction.domain.dto.*;
 import com.cisdi.transaction.domain.model.*;
+import com.cisdi.transaction.domain.vo.ExportReturnMessageVO;
+import com.cisdi.transaction.domain.vo.ExportReturnVO;
 import com.cisdi.transaction.domain.vo.KVVO;
 import com.cisdi.transaction.mapper.master.PrivateEquityMapper;
 import com.cisdi.transaction.service.BanDealInfoService;
@@ -22,10 +25,12 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 
 import javax.xml.transform.Result;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * 配偶、子女及其配偶投资私募股权投资基金或者担任高级职务的情况
@@ -322,7 +327,7 @@ public class PrivateEquityServiceImpl extends ServiceImpl<PrivateEquityMapper, P
                                 .setCreateTime(new Date())
                                 .setUpdateTime(new Date());
                         //字典替换
-                        investInfo = this.replaceDictId(investInfo,dictList);
+                        this.replaceDictId(investInfo,dictList);
                         privateEquity.add(investInfo);
                     }
                 } else {
@@ -332,7 +337,7 @@ public class PrivateEquityServiceImpl extends ServiceImpl<PrivateEquityMapper, P
                             .setCreateTime(new Date())
                             .setUpdateTime(new Date());
                     //字典替换
-                    investInfo = this.replaceDictId(investInfo,dictList);
+                    this.replaceDictId(investInfo,dictList);
                     privateEquity.add(investInfo);
                 }
             });
@@ -360,7 +365,7 @@ public class PrivateEquityServiceImpl extends ServiceImpl<PrivateEquityMapper, P
                         long nameIndex = infos.stream().filter(e->t.getName().equals(e.getName())).count();
                         long titleIndex = infos.stream().filter(e->sysDictBizService.getDictId(t.getTitle(),dictList).equals(e.getTitle())).count();
                         long codeIndex = infos.stream().filter(e->t.getCode().equals(e.getCode())).count();
-                        info = this.replaceDictId(info,dictList);
+                        this.replaceDictId(info,dictList);
                         if(nameIndex==0|titleIndex==0|codeIndex==0){ //一个都不重复
                             //如果不相同，新增，否则就是覆盖
                             info.setCreateTime(DateUtil.date());
@@ -410,7 +415,7 @@ public class PrivateEquityServiceImpl extends ServiceImpl<PrivateEquityMapper, P
                                 .setCreateTime(new Date())
                                 .setUpdateTime(new Date());
                         //字典替换
-                        info = this.replaceDictId(info,dictList);
+                        this.replaceDictId(info,dictList);
                         privateEquity.add(info);
                     }
                 }
@@ -421,7 +426,7 @@ public class PrivateEquityServiceImpl extends ServiceImpl<PrivateEquityMapper, P
                 info.setState(SystemConstant.SAVE_STATE)//默认类型新建
                         .setUpdateTime(new Date());
                 //字典替换
-                info = this.replaceDictId(info,dictList);
+                this.replaceDictId(info,dictList);
                 // 数据库中如果不存在数据
                 if (CollectionUtil.isEmpty(infos)) {
                     info.setCreateTime(new Date());
@@ -453,8 +458,55 @@ public class PrivateEquityServiceImpl extends ServiceImpl<PrivateEquityMapper, P
         return list;
     }
 
+    private List<EquityFundsDTO> checkParams(List<EquityFundsDTO> list, ExportReturnVO exportReturnVO) {
+        List<String> isOrNotList = Arrays.asList(SystemConstant.WHETHER_YES, SystemConstant.WHETHER_NO);
+        return list.stream().filter(e->{
+            if (SystemConstant.IS_SITUATION_YES.equals(e.getIsSituation())){
+                if (StringUtils.isBlank(e.getName())||StringUtils.isBlank(e.getTitle())||StringUtils.isBlank(e.getPrivateequityName())||StringUtils.isBlank(e.getCode())||StringUtils.isBlank(e.getMoney())||StringUtils.isBlank(e.getPersonalMoney())||StringUtils.isBlank(e.getContractTime()
+                )||StringUtils.isBlank(e.getContractExpireTime())||StringUtils.isBlank(e.getInvestDirection())||StringUtils.isBlank(e.getManager())||StringUtils.isBlank(e.getRegistrationNumber())||StringUtils.isBlank(e.getShareholder())||StringUtils.isBlank(e.getController())||StringUtils.isBlank(e.getPractice())||StringUtils.isBlank(e.getIsRelation())||StringUtils.isBlank(e.getTbType())||StringUtils.isBlank(e.getYear())){
+                    exportReturnVO.setFailNumber(exportReturnVO.getFailNumber()+1);
+                    exportReturnVO.getFailMessage().add(new ExportReturnMessageVO(e.getColumnNumber(),"有此类情况时以下内容不能为空：姓名,称谓,投资私募股权投资基金的情况,投资的私募股权投资基金产品名称,投资的私募股权投资基金产品编码,基金总实缴金额,个人实缴金额,基金合同签署日,基金合同约定的到期日,基金投向,投资私募股权投资基金管理人或者在其担任高级职务的情况,私募股权投资基金管理人名称,私募股权投资基金登记编号,是否为该基金管理人的股东（合伙人）,是否为该基金管理人的实际控制人,是否担任该基金管理人高级职务,是否与报告人所在单位（系统）直接发生过经济关系,填报类型,年度。"));
+                    return false;
+                }
+                if (!isOrNotList.contains(e.getShareholder())||!isOrNotList.contains(e.getController())||!isOrNotList.contains(e.getPractice())||!isOrNotList.contains(e.getIsRelation())){
+                    exportReturnVO.setFailNumber(exportReturnVO.getFailNumber()+1);
+                    exportReturnVO.getFailMessage().add(new ExportReturnMessageVO(e.getColumnNumber(),"有此类情况时以下内容只能填是否：是否为该基金管理人的实际控制人,是否为机构股东（合伙人、所有人等）,是否在该机构中从业,该企业或其他市场主体是否与报告人所在单位（系统）直接发生过商品、劳务、服务等经济关系。"));
+                    return false;
+                }
+                if (SystemConstant.WHETHER_YES.equals(e.getShareholder())&&(StringUtils.isBlank(e.getSubscriptionMoney()))||StringUtils.isBlank(e.getSubscriptionRatio())||StringUtils.isBlank(e.getSubscriptionTime())){
+                    exportReturnVO.setFailNumber(exportReturnVO.getFailNumber()+1);
+                    exportReturnVO.getFailMessage().add(new ExportReturnMessageVO(e.getColumnNumber(),"为机构股东（合伙人、所有人等）时以下内容不能为空： 认缴金额,认缴比例,认缴时间。"));
+                    return false;
+                }
+                if (SystemConstant.WHETHER_YES.equals(e.getPractice())&&(StringUtils.isBlank(e.getPostName())||StringUtils.isBlank(e.getInductionStartTime())||StringUtils.isBlank(e.getInductionEndTime())||StringUtils.isBlank(e.getManagerOperatScope()))){
+                    exportReturnVO.setFailNumber(exportReturnVO.getFailNumber()+1);
+                    exportReturnVO.getFailMessage().add(new ExportReturnMessageVO(e.getColumnNumber(),"担任该基金管理人高级职务时以下内容不能为空： 所担任的高级职务名称,担任高级职务的开始结束时间,基金管理人的经营范围。"));
+                    return false;
+                }
+                if (SystemConstant.WHETHER_YES.equals(e.getIsRelation())&&StringUtils.isBlank(e.getRemarks())){
+                    exportReturnVO.setFailNumber(exportReturnVO.getFailNumber()+1);
+                    exportReturnVO.getFailMessage().add(new ExportReturnMessageVO(e.getColumnNumber(),"与报告人所在单位（系统）直接发生过经济关系时以下内容不能为空：备注。"));
+                    return false;
+                }
+                List<String> numbers = Stream.of(e.getMoney(), e.getPersonalMoney(), e.getSubscriptionMoney(),e.getSubscriptionRatio(), e.getYear()).filter(StringUtils::isNotBlank).collect(Collectors.toList());
+                if (!NumberUtils.isAllNumeric(numbers)){
+                    exportReturnVO.setFailNumber(exportReturnVO.getFailNumber()+1);
+                    exportReturnVO.getFailMessage().add(new ExportReturnMessageVO(e.getColumnNumber(),"以下内容必须为数：基金总实缴金额,个人实缴金额,认缴金额,认缴比例,年度。"));
+                    return false;
+                }
+            }
+            return true;
+        }).collect(Collectors.toList());
+    }
+
     @Override
-    public void saveBatchInvestmentInfo(List<EquityFundsDTO> list, BaseDTO baseDTO) {
+    public void saveBatchInvestmentInfo(List<EquityFundsDTO> lists, BaseDTO baseDTO, ExportReturnVO exportReturnVO) {
+        //过滤掉必填校验未通过的字段
+        List<EquityFundsDTO> list = lists.stream().filter(e -> StringUtils.isBlank(e.getMessage())).collect(Collectors.toList());
+        list=checkParams(list,exportReturnVO);
+        if (CollectionUtils.isEmpty(list)){
+            return;
+        }
         List<SysDictBiz> dictList = sysDictBizService.selectList();
         List<PrivateEquity> privateEquity = new ArrayList<>();
         List<String> cardIds = list.stream().distinct().map(t -> t.getCardId()).collect(Collectors.toList());
@@ -469,10 +521,17 @@ public class PrivateEquityServiceImpl extends ServiceImpl<PrivateEquityMapper, P
                                 .setCreateTime(new Date())
                                 .setUpdateTime(new Date());
                         //字典替换
-                        investInfo = this.replaceDictId(investInfo,dictList);
-                        investInfo.setCreateName(baseDTO.getServiceUserName());
-                        investInfo.setCreateAccount(baseDTO.getServiceUserAccount());
-                        privateEquity.add(investInfo);
+                        String checkDict = this.replaceDictId(investInfo, dictList);
+                        if (StringUtils.isBlank(checkDict)){
+                            investInfo.setCreateName(baseDTO.getServiceUserName());
+                            investInfo.setCreateAccount(baseDTO.getServiceUserAccount());
+                            privateEquity.add(investInfo);
+                            exportReturnVO.setSuccessNumber(exportReturnVO.getSuccessNumber()+1);
+                        }else {
+                            exportReturnVO.getFailMessage().add(new ExportReturnMessageVO(t.getColumnNumber(),checkDict));
+                            exportReturnVO.setFailNumber(exportReturnVO.getFailNumber()+1);
+                        }
+
                     }
                 } else {
                     PrivateEquity investInfo = new PrivateEquity();
@@ -481,10 +540,16 @@ public class PrivateEquityServiceImpl extends ServiceImpl<PrivateEquityMapper, P
                             .setCreateTime(new Date())
                             .setUpdateTime(new Date());
                     //字典替换
-                    investInfo = this.replaceDictId(investInfo,dictList);
-                    investInfo.setCreateName(baseDTO.getServiceUserName());
-                    investInfo.setCreateAccount(baseDTO.getServiceUserAccount());
-                    privateEquity.add(investInfo);
+                    String checkDict = this.replaceDictId(investInfo,dictList);
+                    if (StringUtils.isBlank(checkDict)){
+                        investInfo.setCreateName(baseDTO.getServiceUserName());
+                        investInfo.setCreateAccount(baseDTO.getServiceUserAccount());
+                        privateEquity.add(investInfo);
+                        exportReturnVO.setSuccessNumber(exportReturnVO.getSuccessNumber()+1);
+                    }else {
+                        exportReturnVO.getFailMessage().add(new ExportReturnMessageVO(t.getColumnNumber(),checkDict));
+                        exportReturnVO.setFailNumber(exportReturnVO.getFailNumber()+1);
+                    }
                 }
             });
             if (!privateEquity.isEmpty()) {
@@ -511,28 +576,39 @@ public class PrivateEquityServiceImpl extends ServiceImpl<PrivateEquityMapper, P
                         long nameIndex = infos.stream().filter(e->t.getName().equals(e.getName())).count();
                         long titleIndex = infos.stream().filter(e->sysDictBizService.getDictId(t.getTitle(),dictList).equals(e.getTitle())).count();
                         long codeIndex = infos.stream().filter(e->t.getCode().equals(e.getCode())).count();
-                        info = this.replaceDictId(info,dictList);
-                        if(nameIndex==0|titleIndex==0|codeIndex==0){ //一个都不重复
-                            //如果不相同，新增，否则就是覆盖
-                            info.setCreateTime(DateUtil.date());
-                            info.setCreateName(baseDTO.getServiceUserName());
-                            info.setCreateAccount(baseDTO.getServiceUserAccount());
-                            privateEquity.add(info);
-                        }else{ //有重复数据了
-                            PrivateEquity existInfo = infos.stream().filter(e->t.getName().equals(e.getName())
-                                    &&sysDictBizService.getDictId(t.getTitle(),dictList).equals(e.getTitle())
-                                    &&t.getCode().equals(e.getCode())).findAny().orElse(null);
-                            String title = info.getTitle();
-                            if(Objects.nonNull(existInfo)){
-                                info.setId(existInfo.getId());
-                                updateList.add(info);
-                            }else if (privateEquity.isEmpty()||privateEquity.stream().filter(privateEquity1 -> t.getName().equals(privateEquity1.getName())&&t.getCode().equals(privateEquity1.getCode())&&title.equals(privateEquity1.getTitle())).count()==0){
+                        String checkDict = this.replaceDictId(info,dictList);
+                        if (StringUtils.isBlank(checkDict)){
+                            if(nameIndex==0|titleIndex==0|codeIndex==0){ //一个都不重复
+                                //如果不相同，新增，否则就是覆盖
                                 info.setCreateTime(DateUtil.date());
                                 info.setCreateName(baseDTO.getServiceUserName());
                                 info.setCreateAccount(baseDTO.getServiceUserAccount());
                                 privateEquity.add(info);
+                            }else{ //有重复数据了
+                                PrivateEquity existInfo = infos.stream().filter(e->t.getName().equals(e.getName())
+                                        &&sysDictBizService.getDictId(t.getTitle(),dictList).equals(e.getTitle())
+                                        &&t.getCode().equals(e.getCode())).findAny().orElse(null);
+                                String title = info.getTitle();
+                                if(Objects.nonNull(existInfo)){
+                                    info.setId(existInfo.getId());
+                                    updateList.add(info);
+                                    exportReturnVO.setSuccessNumber(exportReturnVO.getSuccessNumber()+1);
+                                }else if (privateEquity.isEmpty()||privateEquity.stream().filter(privateEquity1 -> t.getName().equals(privateEquity1.getName())&&t.getCode().equals(privateEquity1.getCode())&&title.equals(privateEquity1.getTitle())).count()==0){
+                                    info.setCreateTime(DateUtil.date());
+                                    info.setCreateName(baseDTO.getServiceUserName());
+                                    info.setCreateAccount(baseDTO.getServiceUserAccount());
+                                    privateEquity.add(info);
+                                    exportReturnVO.setSuccessNumber(exportReturnVO.getSuccessNumber()+1);
+                                }else {
+                                    exportReturnVO.getFailMessage().add(new ExportReturnMessageVO(t.getColumnNumber(),"数据重复"));
+                                    exportReturnVO.setFailNumber(exportReturnVO.getFailNumber()+1);
+                                }
                             }
+                        }else {
+                            exportReturnVO.getFailMessage().add(new ExportReturnMessageVO(t.getColumnNumber(),checkDict));
+                            exportReturnVO.setFailNumber(exportReturnVO.getFailNumber()+1);
                         }
+
                         /*if (!t.getName().equals(e.getName()) &&!info.getTitle().equals(e.getTitle())&& !t.getCode().equals(e.getCode())) {
                             //如果不相同，新增，否则就是覆盖
                             info.setCreateTime(DateUtil.date());
@@ -569,10 +645,17 @@ public class PrivateEquityServiceImpl extends ServiceImpl<PrivateEquityMapper, P
                                 .setCreateTime(new Date())
                                 .setUpdateTime(new Date());
                         //字典替换
-                        info = this.replaceDictId(info,dictList);
-                        info.setCreateName(baseDTO.getServiceUserName());
-                        info.setCreateAccount(baseDTO.getServiceUserAccount());
-                        privateEquity.add(info);
+                        String checkDict = this.replaceDictId(info,dictList);
+                        if (StringUtils.isBlank(checkDict)){
+                            info.setCreateName(baseDTO.getServiceUserName());
+                            info.setCreateAccount(baseDTO.getServiceUserAccount());
+                            privateEquity.add(info);
+                            exportReturnVO.setSuccessNumber(exportReturnVO.getSuccessNumber()+1);
+                        }else {
+                            exportReturnVO.getFailMessage().add(new ExportReturnMessageVO(t.getColumnNumber(),checkDict));
+                            exportReturnVO.setFailNumber(exportReturnVO.getFailNumber()+1);
+                        }
+
                     }
                 }
             } else {
@@ -582,17 +665,24 @@ public class PrivateEquityServiceImpl extends ServiceImpl<PrivateEquityMapper, P
                 info.setState(SystemConstant.SAVE_STATE)//默认类型新建
                         .setUpdateTime(new Date());
                 //字典替换
-                info = this.replaceDictId(info,dictList);
-                // 数据库中如果不存在数据
-                if (CollectionUtil.isEmpty(infos)) {
-                    info.setCreateTime(new Date());
-                    info.setCreateName(baseDTO.getServiceUserName());
-                    info.setCreateAccount(baseDTO.getServiceUserAccount());
-                    privateEquity.add(info);//可添加到数据库中
-                } else {
-                    info.setId(infos.get(0).getId());
-                    updateList.add(info);
+                String checkDict = this.replaceDictId(info,dictList);
+                if (StringUtils.isBlank(checkDict)){
+                    // 数据库中如果不存在数据
+                    if (CollectionUtil.isEmpty(infos)) {
+                        info.setCreateTime(new Date());
+                        info.setCreateName(baseDTO.getServiceUserName());
+                        info.setCreateAccount(baseDTO.getServiceUserAccount());
+                        privateEquity.add(info);//可添加到数据库中
+                    } else {
+                        info.setId(infos.get(0).getId());
+                        updateList.add(info);
+                    }
+                    exportReturnVO.setSuccessNumber(exportReturnVO.getSuccessNumber()+1);
+                }else {
+                    exportReturnVO.getFailMessage().add(new ExportReturnMessageVO(t.getColumnNumber(),checkDict));
+                    exportReturnVO.setFailNumber(exportReturnVO.getFailNumber()+1);
                 }
+
             }
 
         });
@@ -624,16 +714,58 @@ public class PrivateEquityServiceImpl extends ServiceImpl<PrivateEquityMapper, P
             });
          return list;
     }
-    private PrivateEquity replaceDictId(PrivateEquity t,List<SysDictBiz> dictList){
+    private String replaceDictId(PrivateEquity t,List<SysDictBiz> dictList){
 
         System.out.println("123--"+t.getTitle());
-        //字典对应项
-        String isSituation =sysDictBizService.getDictId(t.getIsSituation(),dictList);
-        String title =sysDictBizService.getDictId(t.getTitle(),dictList);
-        String controller =sysDictBizService.getDictId(t.getController(),dictList);
-        String shareholder =sysDictBizService.getDictId(t.getShareholder(),dictList);
-        String practice =sysDictBizService.getDictId(t.getPractice(),dictList);
-        String isRelation =sysDictBizService.getDictId(t.getIsRelation(),dictList);
+
+        String isSituation=null;
+        String title=null;
+        String controller=null;
+        String shareholder=null;
+        String practice=null;
+        String isRelation=null;
+        if (StringUtils.isNotBlank(t.getIsSituation())){
+            isSituation =sysDictBizService.getDictId(t.getIsSituation(),dictList);
+            if (StringUtils.isBlank(isSituation)){
+                return "有无此类情况字典项不存在";
+            }
+        }
+        if (StringUtils.isNotBlank(t.getTitle())){
+            title =sysDictBizService.getDictId(t.getTitle(),dictList);
+            if (StringUtils.isBlank(title)){
+                return "称谓字典项不存在";
+            }
+        }
+        if (StringUtils.isNotBlank(t.getController())){
+            controller =sysDictBizService.getDictId(t.getController(),dictList);
+            if (StringUtils.isBlank(controller)){
+                return "是否为该基金管理人的实际控制人字典项不存在";
+            }
+        }
+        if (StringUtils.isNotBlank(t.getShareholder())){
+            shareholder =sysDictBizService.getDictId(t.getShareholder(),dictList);
+            if (StringUtils.isBlank(shareholder)){
+                return "是否为该基金管理人的股东（合伙人）字典项不存在";
+            }
+        }
+        if (StringUtils.isNotBlank(t.getPractice())){
+            practice =sysDictBizService.getDictId(t.getPractice(),dictList);
+            if (StringUtils.isBlank(practice)){
+                return "是否担任该基金管理人高级职字典项不存在";
+            }
+        }
+        if (StringUtils.isNotBlank(t.getIsRelation())){
+            isRelation =sysDictBizService.getDictId(t.getIsRelation(),dictList);
+            if (StringUtils.isBlank(isRelation)){
+                return "是否与报告人所在单位（系统）直接发生过经济关系字典项不存在";
+            }
+        }
+        if (StringUtils.isNotBlank(t.getIsRelation())){
+            isRelation =sysDictBizService.getDictId(t.getIsRelation(),dictList);
+            if (StringUtils.isBlank(isRelation)){
+                return "是否与报告人所在单位（系统）直接发生过经济关系字典项不存在";
+            }
+        }
         System.out.println("--"+title);
         t.setIsSituation(isSituation);
         t.setTitle(title);
@@ -641,6 +773,6 @@ public class PrivateEquityServiceImpl extends ServiceImpl<PrivateEquityMapper, P
         t.setShareholder(shareholder);
         t.setPractice(practice);
         t.setIsRelation(isRelation);
-        return t;
+        return null;
     }
 }

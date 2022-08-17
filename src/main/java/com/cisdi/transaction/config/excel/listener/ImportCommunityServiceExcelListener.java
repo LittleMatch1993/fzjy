@@ -8,6 +8,8 @@ import com.cisdi.transaction.config.excel.ExcelImportValid;
 import com.cisdi.transaction.config.excel.ExceptionCustom;
 import com.cisdi.transaction.domain.dto.BaseDTO;
 import com.cisdi.transaction.domain.dto.CommunityServiceDTO;
+import com.cisdi.transaction.domain.vo.ExportReturnMessageVO;
+import com.cisdi.transaction.domain.vo.ExportReturnVO;
 import com.cisdi.transaction.service.MechanismInfoService;
 import com.google.common.collect.Sets;
 import lombok.extern.slf4j.Slf4j;
@@ -33,14 +35,19 @@ public class ImportCommunityServiceExcelListener extends AnalysisEventListener<C
 
     private MechanismInfoService mechanismInfoService;
 
+    private int i=4;
+
     private BaseDTO baseDTO;
+
+    private ExportReturnVO exportReturnVO;
 
     public ImportCommunityServiceExcelListener() {
     }
 
-    public ImportCommunityServiceExcelListener(MechanismInfoService mechanismInfoService, BaseDTO baseDTO) {
+    public ImportCommunityServiceExcelListener(MechanismInfoService mechanismInfoService, BaseDTO baseDTO, ExportReturnVO exportReturnVO) {
         this.mechanismInfoService = mechanismInfoService;
         this.baseDTO = baseDTO;
+        this.exportReturnVO=exportReturnVO;
     }
 
     private List<String> columns= Arrays.asList(
@@ -65,12 +72,19 @@ public class ImportCommunityServiceExcelListener extends AnalysisEventListener<C
     public void invoke(CommunityServiceDTO dto, AnalysisContext analysisContext) {
         try {
 
+            dto.setColumnNumber(i++);
             //通用方法数据校验
             ExcelImportValid.valid(dto);
         } catch (ExceptionCustom e) {
-            System.out.println(e.getMessage());
+//            System.out.println(e.getMessage());
             //在easyExcel监听器中抛出业务异常
-            throw new ExcelAnalysisException(e.getMessage());
+            dto.setMessage(e.getMessage());
+            ExportReturnMessageVO exportReturnMessageVO=new ExportReturnMessageVO();
+            exportReturnMessageVO.setColumn(i-1);
+            exportReturnMessageVO.setMessage(e.getMessage());
+            exportReturnVO.getFailMessage().add(exportReturnMessageVO);
+            exportReturnVO.setFailNumber(exportReturnVO.getFailNumber()+1);
+//            throw new ExcelAnalysisException(e.getMessage());
         }
         list.add(dto);
         // 达到BATCH_COUNT了，需要去存储一次数据库，防止数据几万条数据在内存，容易OOM
@@ -94,7 +108,7 @@ public class ImportCommunityServiceExcelListener extends AnalysisEventListener<C
     private void saveData() {
         log.info("{}条数据，开始存储数据库！", list.size());
         if (list.size() > 0) {
-            mechanismInfoService.saveBatchInvestInfo(list,baseDTO);
+            mechanismInfoService.saveBatchInvestInfo(list,baseDTO,exportReturnVO);
         }
         log.info("存储数据库成功！");
     }

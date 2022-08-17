@@ -16,10 +16,9 @@ import com.cisdi.transaction.domain.dto.*;
 import com.cisdi.transaction.domain.model.InvestInfo;
 import com.cisdi.transaction.domain.model.MechanismInfo;
 import com.cisdi.transaction.domain.model.PrivateEquity;
-import com.cisdi.transaction.domain.vo.CadreExcelVO;
-import com.cisdi.transaction.domain.vo.CadreFamiliesExcelVO;
-import com.cisdi.transaction.domain.vo.RegionDropDownBoxVO;
+import com.cisdi.transaction.domain.vo.*;
 import com.cisdi.transaction.service.*;
+import com.google.common.collect.Lists;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -316,8 +315,9 @@ public class CadreFamiliesController {
              *  new SubjectExcelListener(subjectService)   监听器(主要功能都在监听器里，比如读取添加等操作)
              *  SubjectExcelListener  没有交给Spring进行管理，所有不能在此方法使用    @Autowired 注入，所以使用  SubjectExcelListener(subjectService)   传入方式
              */
-            EasyExcel.read(file.getInputStream(), InvestmentDTO.class, new ImportInvestmentExcelListener(investInfoService,baseDTO)).sheet().headRowNumber(3).doRead();
-            return ResultMsgUtil.success();
+            ExportReturnVO exportReturnVO= new ExportReturnVO();
+            EasyExcel.read(file.getInputStream(), InvestmentDTO.class, new ImportInvestmentExcelListener(investInfoService,baseDTO,exportReturnVO)).sheet().headRowNumber(3).doRead();
+            return ResultMsgUtil.success(exportReturnVO);
         } catch (Exception e) {
             e.printStackTrace();
             return ResultMsgUtil.failure(ResultCode.RC999.getCode(), "导入失败"+e.getMessage());
@@ -348,8 +348,9 @@ public class CadreFamiliesController {
     @PostMapping(value = "/importCommunityServiceExcel")
     public ResultMsgUtil<Object> importCommunityServiceExcel(@RequestPart("file") MultipartFile file,BaseDTO baseDTO) {
         try {
-            EasyExcel.read(file.getInputStream(), CommunityServiceDTO.class, new ImportCommunityServiceExcelListener(mechanismInfoService,baseDTO)).sheet().headRowNumber(3).doRead();
-            return ResultMsgUtil.success();
+            ExportReturnVO exportReturnVO= new ExportReturnVO();
+            EasyExcel.read(file.getInputStream(), CommunityServiceDTO.class, new ImportCommunityServiceExcelListener(mechanismInfoService,baseDTO,exportReturnVO)).sheet().headRowNumber(3).doRead();
+            return ResultMsgUtil.success(exportReturnVO);
         } catch (Exception e) {
             e.printStackTrace();
             return ResultMsgUtil.failure(ResultCode.RC999.getCode(), "导入失败"+e.getMessage());
@@ -381,8 +382,9 @@ public class CadreFamiliesController {
     @PostMapping(value = "/importEquityFundsExcel")
     public ResultMsgUtil<Object> importEquityFundsExcel(@RequestPart("file") MultipartFile file,BaseDTO baseDTO) {
         try {
-            EasyExcel.read(file.getInputStream(), EquityFundsDTO.class, new ImportEquityFundsExcelListener(privateEquityService,baseDTO)).sheet().headRowNumber(3).doRead();
-            return ResultMsgUtil.success();
+            ExportReturnVO exportReturnVO= new ExportReturnVO();
+            EasyExcel.read(file.getInputStream(), EquityFundsDTO.class, new ImportEquityFundsExcelListener(privateEquityService,baseDTO,exportReturnVO)).sheet().headRowNumber(3).doRead();
+            return ResultMsgUtil.success(exportReturnVO);
         } catch (Exception e) {
             e.printStackTrace();
             return ResultMsgUtil.failure(ResultCode.RC999.getCode(), "导入失败"+e.getMessage());

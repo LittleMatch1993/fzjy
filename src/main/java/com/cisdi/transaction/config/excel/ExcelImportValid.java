@@ -1,6 +1,11 @@
 package com.cisdi.transaction.config.excel;
 
+import org.apache.commons.lang3.StringUtils;
+
 import java.lang.reflect.Field;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Arrays;
 import java.util.Objects;
 
 /**
@@ -16,6 +21,7 @@ public class ExcelImportValid {
      */
     public static void valid(Object object) throws ExceptionCustom{
         Field[] fields = object.getClass().getDeclaredFields();
+        SimpleDateFormat simpleDateFormat=new SimpleDateFormat("yyyy-MM-dd");
         for (Field field : fields) {
             //设置可访问
             field.setAccessible(true);
@@ -30,6 +36,19 @@ public class ExcelImportValid {
             boolean isExcelValid = field.isAnnotationPresent(ExcelValid.class);
             if (isExcelValid && Objects.isNull(fieldValue)) {
                 throw new ExceptionCustom("NULL", field.getAnnotation(ExcelValid.class).message());
+            }
+
+            //日期字符串校验
+            if (field.isAnnotationPresent(DateStringValid.class)&&Objects.nonNull(fieldValue)&&fieldValue instanceof String&& StringUtils.isNotBlank((String)fieldValue)) {
+                try {
+                    simpleDateFormat.parse((String)fieldValue);
+                } catch (ParseException e) {
+                    throw new ExceptionCustom("IMPORT_PARAM_CHECK_FAIL", field.getAnnotation(ExcelValid.class).message());
+                }
+            }
+            //有无此类情况校验
+            if (field.isAnnotationPresent(IsSituationValid.class)&&fieldValue instanceof String&& !Arrays.asList("有此类情况","无此类情况").contains((String)fieldValue)){
+                throw new ExceptionCustom("IMPORT_PARAM_CHECK_FAIL", field.getAnnotation(IsSituationValid.class).message());
             }
 
         }

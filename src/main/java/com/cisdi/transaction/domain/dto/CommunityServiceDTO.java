@@ -3,6 +3,7 @@ package com.cisdi.transaction.domain.dto;
 //import cn.afterturn.easypoi.excel.annotation.Excel;
 
 import com.alibaba.excel.annotation.ExcelProperty;
+import com.cisdi.transaction.config.excel.DateStringValid;
 import com.cisdi.transaction.config.excel.ExcelValid;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -78,6 +79,7 @@ public class CommunityServiceDTO {
     private String operatScope;
 
     @ExcelProperty(value = "成立日期")
+    @DateStringValid
     private String establishTime;
 
     @ExcelProperty(value = "注册地（国家）")
@@ -111,6 +113,7 @@ public class CommunityServiceDTO {
     private String personalRatio;
 
     @ExcelProperty(value = "入股（合伙）时间")
+    @DateStringValid
     private String joinTime;
 
     @ExcelProperty(value = "是否在该机构中从业")
@@ -120,6 +123,7 @@ public class CommunityServiceDTO {
     private String postName;
 
     @ExcelProperty(value = "入职时间")
+    @DateStringValid
     private String inductionTime;
 
     @ExcelProperty(value = "是否与报告人所在单位（系统）直接发生过经济关系")
@@ -137,4 +141,8 @@ public class CommunityServiceDTO {
     @ExcelProperty(value = "有无此类情况")
     @ExcelValid(message = "有无此类情况为空")
     private String isSituation;
+
+    private Integer columnNumber;
+
+    private String message;
 }
