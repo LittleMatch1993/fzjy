@@ -194,7 +194,13 @@ public class OrgServiceImpl extends ServiceImpl<OrgMapper, Org> implements OrgSe
         String asglevel = org.getAsglevel();
         if(StrUtil.isNotEmpty(asglevel)&&asglevel.equals("1")){ //看所有
             if(StrUtil.isNotEmpty(name)){
-                queryWrapper.lambda().like(Org::getAsgorganname, name+"%公司");
+                ;
+                if(name.endsWith("公司")||name.endsWith("公")){
+                    queryWrapper.lambda().like(Org::getAsgorganname, name);
+                }else{
+                    queryWrapper.lambda().like(Org::getAsgorganname, name+"%公司");
+                }
+
             }else{
                 queryWrapper.lambda().likeLeft(Org::getAsgorganname, "公司").last(SqlConstant.ONE_SQL_YB);;
             }
