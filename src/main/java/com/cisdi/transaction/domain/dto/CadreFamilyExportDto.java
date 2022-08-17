@@ -2,6 +2,7 @@ package com.cisdi.transaction.domain.dto;
 
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import io.swagger.annotations.ApiOperation;
 import lombok.Data;
 
 import javax.validation.constraints.NotEmpty;
@@ -15,16 +16,19 @@ import java.util.List;
  */
 @Data
 @ApiModel(description = "干部家属导出条件")
-public class CadreFamilyExportDto {
+public class CadreFamilyExportDto extends BaseDTO{
 
-    @ApiModelProperty(value = "id集合")
-    @NotEmpty(message = "导出不能为空")
-    private List<String> ids;
+//    @ApiModelProperty(value = "id集合")
+//    @NotEmpty(message = "导出不能为空")
+//    private List<String> ids;
 
-/*    @ApiModelProperty(value = "名字")
+    @ApiModelProperty(value = "名字")
     private String name;
 
     @ApiModelProperty(value = "单位")
-    private String company;*/
+    private String unit;
+
+    @ApiModelProperty(value = "职务类型")
+    private String post;
 
 }

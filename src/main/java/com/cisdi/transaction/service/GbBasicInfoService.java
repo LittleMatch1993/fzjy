@@ -36,9 +36,9 @@ public interface GbBasicInfoService extends IService<GbBasicInfo> {
 
     /**
      * 导出
-     * @param ids
+     * @param dto
      */
-    List<CadreExcelVO> export(List<String> ids);
+    List<CadreExcelVO> export(CadreFamilyExportDto dto);
 
     /**
      * 根据身份证id查询干部的基本信息带组织信息

@@ -19,6 +19,7 @@ import com.cisdi.transaction.mapper.master.OrgMapper;
 import com.cisdi.transaction.service.OrgService;
 import com.cisdi.transaction.service.SysDictBizService;
 import com.cisdi.transaction.util.ThreadLocalUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -225,6 +226,14 @@ public class OrgServiceImpl extends ServiceImpl<OrgMapper, Org> implements OrgSe
              return null;
          }
          return org.get(0);
+    }
+
+    @Override
+    public List<String> getCardIdsByAsgpathnamecode(String asgpathnamecode) {
+        if (StringUtils.isBlank(asgpathnamecode)){
+            return null;
+        }
+        return this.baseMapper.getCardIdsByAsgpathnamecode(asgpathnamecode);
     }
 
     private List<Org>  repalceDictId(List<Org> list, List<SysDictBiz> dictList){

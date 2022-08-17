@@ -210,7 +210,7 @@ public class CadreController{
         String url = null;
         try {
             String fileName = new String("干部信息".getBytes(), StandardCharsets.UTF_8);
-            List<CadreExcelVO> list=gbBasicInfoService.export(dto.getIds());
+            List<CadreExcelVO> list=gbBasicInfoService.export(dto);
             MultipartFile multipartFile = ExportExcelUtils.exportExcel(response, fileName, CadreExcelVO.class, list);
             url = minIoUtil.downloadByMinio(multipartFile, bucketName, null);
         } catch (UnsupportedEncodingException e) {

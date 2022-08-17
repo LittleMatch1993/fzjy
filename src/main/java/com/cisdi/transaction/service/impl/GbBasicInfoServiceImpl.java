@@ -4,6 +4,7 @@ import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.StrUtil;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -20,12 +21,15 @@ import com.cisdi.transaction.service.GbBasicInfoThreeService;
 import com.cisdi.transaction.service.OrgService;
 import com.cisdi.transaction.service.SysDictBizService;
 import com.cisdi.transaction.util.ThreadLocalUtils;
+import com.google.common.collect.Lists;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -176,10 +180,26 @@ public class GbBasicInfoServiceImpl extends ServiceImpl<GbBasicInfoMapper, GbBas
     }
 
     @Override
-    public List<CadreExcelVO> export(List<String> ids) {
+    public List<CadreExcelVO> export(CadreFamilyExportDto dto) {
         List<SysDictBiz> dictList = sysDictBizService.selectList();
+        /**
+         *
+         * QueryWrapper<GbBasicInfo> queryWrapper = new QueryWrapper<>();
+         *         List<GbBasicInfo> list = this.lambdaQuery().eq(GbBasicInfo::getName, name)
+         *                 .eq(GbBasicInfo::getUnit, unit)
+         *                 .eq(GbBasicInfo::getPost, post).list();
+         *         return list;
+         */
+        String orgCode = dto.getOrgCode();
+        Org org = orgService.selectByOrgancode(orgCode);
+        List<String> cardIds = orgService.getCardIdsByAsgpathnamecode(org.getAsgpathnamecode());
+        if (CollectionUtils.isEmpty(cardIds)){
+            return Lists.newArrayList();
+        }
         //字典转换
-        List<CadreExcelVO> list =  this.baseMapper.selectBatchIds(ids).stream().map(t -> {
+        List<CadreExcelVO> list =  this.baseMapper.selectList(new LambdaQueryWrapper<GbBasicInfo>().like(StringUtils.isNotBlank(dto.getName()),GbBasicInfo::getName,dto.getName()).in(GbBasicInfo::getCardId,cardIds)
+        .like(StringUtils.isNotBlank(dto.getUnit()),GbBasicInfo::getUnit,dto.getUnit()).like(StringUtils.isNotBlank(dto.getPost()),GbBasicInfo::getPost,dto.getPost())
+        ).stream().map(t -> {
             CadreExcelVO vo = new CadreExcelVO();
             BeanUtils.copyProperties(t, vo);
             return vo;
