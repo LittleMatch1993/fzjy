@@ -80,13 +80,22 @@ public class PrivateEquityServiceImpl extends ServiceImpl<PrivateEquityMapper, P
         if(CollectionUtil.isEmpty(kvList)){
             return false;
         }
-        String tips = kvList.get(0).getName();
-        List<String> ids = kvList.stream().map(e -> e.getId()).collect(Collectors.toList());
-        UpdateWrapper<PrivateEquity> updateWrapper  = new UpdateWrapper<>();
-        updateWrapper.lambda().set(PrivateEquity::getTips,tips)
-                .in(PrivateEquity::getId,ids);
-        boolean b = this.update(updateWrapper);
-        return b;
+        Map<String, List<KVVO>> map = kvList.stream().collect(Collectors.groupingBy(KVVO::getId));
+        List<KVVO> tempList = new ArrayList<>();
+        for (Map.Entry<String, List<KVVO>> m : map.entrySet()) {
+            String id = m.getKey();
+            List<KVVO> list = m.getValue();
+            String tips = list.stream().map(KVVO::getName).collect(Collectors.joining(","));
+            KVVO vo = new KVVO();
+            vo.setId(id);
+            vo.setName(tips);
+            tempList.add(vo);
+        }
+        if(CollectionUtil.isEmpty(tempList)){
+            return false;
+        }
+        this.baseMapper.updateTips(tempList);
+        return true;
     }
 
     @Transactional(rollbackFor = Exception.class)
@@ -275,9 +284,9 @@ public class PrivateEquityServiceImpl extends ServiceImpl<PrivateEquityMapper, P
                 info.setInductionEndTime(null);
             }
             //是否与报告人所在单位（系统）直接发生过经济关系
-            if("否".equals(sysDictBizService.getDictValue(info.getIsRelation(),dictList))){
+            /*if("否".equals(sysDictBizService.getDictValue(info.getIsRelation(),dictList))){
                 info.setRemarks(null);
-            }
+            }*/
         }
         return info;
     }

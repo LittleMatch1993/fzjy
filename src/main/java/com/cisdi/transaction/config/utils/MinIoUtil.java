@@ -1,6 +1,7 @@
 package com.cisdi.transaction.config.utils;
 
 import cn.hutool.core.date.DateUtil;
+import cn.hutool.core.util.StrUtil;
 import io.minio.*;
 import io.minio.errors.*;
 import io.minio.http.Method;
@@ -30,7 +31,7 @@ import java.util.*;
 @Component
 public class MinIoUtil {
 
-    @Value("${minio.downloadUrl:https://jsbqy.minmetals.com.cn/minio}")
+    @Value("${minio.downloadUrl:no")
     private  String downloadUrl;
 
     @Value("${minio.endpoint}")
@@ -406,7 +407,9 @@ public class MinIoUtil {
         inputStream.close();
         // 返回生成文件名、访问路径
         String url = getObjectUrl(bucketName, minFileName, DEFAULT_EXPIRY);
-        url = url.replace(endpoint, downloadUrl);
+        if(StrUtil.isNotEmpty(downloadUrl)&&!"no".equals(downloadUrl)){ //正式环境才会替换，属性也才会有值
+            url = url.replace(endpoint, downloadUrl);
+        }
         return  url;
     }
 

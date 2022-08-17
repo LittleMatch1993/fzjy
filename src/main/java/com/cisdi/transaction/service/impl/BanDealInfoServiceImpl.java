@@ -182,14 +182,18 @@ public class BanDealInfoServiceImpl extends ServiceImpl<BanDealInfoMapper, BanDe
 
                     //13-1表中的，显示X（个人认缴出资额或个人出资额（人民币万元））,Y（个人认缴出资比例或个人出资比例（%））,AA（是否担任高级职务），AB（所担任的高级职务名称）列内容
                     //----如果AA值为是，则拼接AB列，否则不拼接
-                    String engageInfo = "个人认缴出资额或个人出资额(人民币万元):" + info.getPersonalCapital() + ",个人认缴出资比例或个人出资比例(%):" + info.getPersonalRatio()
-                            + ("是".equals(sysDictBizService.getDictValue(info.getSeniorPosition(),dictList)) ? ",担任高级职务名称:" + info.getSeniorPositionName() : "");
+                    String engageInfo = "个人认缴出资额或个人出资额(人民币万元):" +(StrUtil.isEmpty( info.getPersonalCapital())?"": info.getPersonalCapital()) + ",个人认缴出资比例或个人出资比例(%):" + (StrUtil.isEmpty(info.getPersonalRatio())?"":info.getPersonalRatio())
+                            + ("是".equals(sysDictBizService.getDictValue(info.getSeniorPosition(),dictList)) ? ",担任高级职务名称:" + (StrUtil.isEmpty(info.getSeniorPositionName())?"":info.getSeniorPositionName()) : "");
 
                     bandealInfo.setEngageInfo(engageInfo);
                     bandealInfo.setOperatScope(info.getOperatScope());
                     bandealInfo.setSupplier(info.getEnterpriseName());
                     bandealInfo.setCode(info.getCode());
-
+                    //验证必填字段
+                    boolean b = this.validRequiredFeild(info.getId(),bandealInfo,submitFailId);
+                    if(!b){
+                        continue;
+                    }
                     String company = gbOrgInfo.getUnit();
                     String department = gbOrgInfo.getDeparment();
                     if ((StrUtil.isEmpty(company)||StrUtil.isEmpty(department)) || !(company.contains("中国五矿集团有限公司")&&department.contains("专职董(监)事办公室"))) { //如果该干部在集团专职董监事,禁止交易采购单位名称手动录入
@@ -248,7 +252,6 @@ public class BanDealInfoServiceImpl extends ServiceImpl<BanDealInfoMapper, BanDe
         map.put("banDealRecord",deal); //禁止交易记录数据是否提交成功
         return ResultMsgUtil.success(map);
     }
-
     @Transactional(rollbackFor = Exception.class)
     @Override
     public ResultMsgUtil<Map<String,Object>> insertBanDealInfoOfPrivateEquity(List<PrivateEquity> infoList, List<GbOrgInfo> gbOrgList) {
@@ -277,16 +280,20 @@ public class BanDealInfoServiceImpl extends ServiceImpl<BanDealInfoMapper, BanDe
                     bandealInfo.setEngageType(sysDictBizService.getDictId("投资私募股权投资基金或者担任高级职务",dictList));
                     //13-3表中的，显示M（投资的私募股权投资基金产品名称），O（基金总实缴金额（人民币万元）），P（个人实缴金额（人民币万元））,Q（基金投向），X（认缴金额（人民币万元）），Y（认缴比例（%）），AA（是否担任该基金管理人高级职务），AB（所担任的高级职务名称）列内容
                     //------如果AA值为是，则拼接AB列，否则不拼接
-                    String engageInfo = "投资的私募股权投资基金产品名称:" + info.getPrivateequityName() + ",基金总实缴金额（人民币万元）:" + info.getMoney()
-                            + ",个人实缴金额（人民币万元）:" + info.getPersonalMoney() + ",基金投向:" + info.getInvestDirection()
+                    String engageInfo = "投资的私募股权投资基金产品名称:" + (StrUtil.isEmpty(info.getPrivateequityName())?"":info.getPrivateequityName()) + ",基金总实缴金额（人民币万元）:" + (StrUtil.isEmpty(info.getMoney())?"":info.getMoney())
+                            + ",个人实缴金额（人民币万元）:" +(StrUtil.isEmpty(info.getPersonalMoney())?"":info.getPersonalMoney())  + ",基金投向:" + (StrUtil.isEmpty(info.getInvestDirection())?"":info.getInvestDirection())
                             + ",认缴金额（人民币万元）:" + info.getSubscriptionMoney() + ",认缴比例（%）:" + info.getSubscriptionRatio()
-                            + ("是".equals(sysDictBizService.getDictValue(info.getPractice(),dictList)) ? ",所担任的高级职务名称:" + info.getPostName() : "");
+                            + ("是".equals(sysDictBizService.getDictValue(info.getPractice(),dictList)) ? ",所担任的高级职务名称:" + (StrUtil.isEmpty(info.getPostName())?"":info.getPostName()) : "");
 
                     bandealInfo.setEngageInfo(engageInfo);
                     bandealInfo.setOperatScope(info.getManagerOperatScope());
                     bandealInfo.setSupplier(info.getManager());
                     bandealInfo.setCode(info.getRegistrationNumber());
-
+                    //验证在数据库中必填字段是否有值。无值则不插入
+                    boolean b = this.validRequiredFeild(info.getId(),bandealInfo,submitFailId);
+                    if(!b){
+                        continue;
+                    }
                     String company = gbOrgInfo.getUnit();
                     String department = gbOrgInfo.getDeparment();
                     if ((StrUtil.isEmpty(company)||StrUtil.isEmpty(department)) || !(company.contains("中国五矿集团有限公司")&&department.contains("专职董(监)事办公室"))) { //如果该干部在集团专职董监事,禁止交易采购单位名称手动录入
@@ -370,14 +377,18 @@ public class BanDealInfoServiceImpl extends ServiceImpl<BanDealInfoMapper, BanDe
                     bandealInfo.setEngageType(sysDictBizService.getDictId("开办有偿社会中介和法律服务结构或从业",dictList));
                     //13-2表中的，显示Z（个人认缴出资额或个人出资额（人民币万元）），AA（个人认缴出资比例或个人出资比例（%）），AC（是否在该机构中从业），AD（所担任的职务名称）列内容
                     //------如果AC值为是，则拼接AD列，否则不拼接
-                    String engageInfo = "个人认缴出资额或个人出资额（人民币万元）:" + info.getPersonalCapital() + ",个人认缴出资比例或个人出资比例（%）:" + info.getPersonalRatio()
-                            + ("是".equals(sysDictBizService.getDictValue(info.getPractice(),dictList)) ? ",所担任的职务名称:" + info.getPostName() : "");
+                    String engageInfo = "个人认缴出资额或个人出资额（人民币万元）:" +(StrUtil.isEmpty( info.getPersonalCapital())?"": info.getPersonalCapital()) + ",个人认缴出资比例或个人出资比例（%）:" + (StrUtil.isEmpty(info.getPersonalRatio())?"":info.getPersonalRatio())
+                            + ("是".equals(sysDictBizService.getDictValue(info.getPractice(),dictList)) ? ",所担任的职务名称:" + (StrUtil.isEmpty(info.getPostName())?"":info.getPostName()) : "");
 
                     bandealInfo.setEngageInfo(engageInfo);
                     bandealInfo.setOperatScope(info.getOperatScope());
                     bandealInfo.setSupplier(info.getOrganizationName());
                     bandealInfo.setCode(info.getCode());
-
+                    //验证在数据库中必填字段是否有值。无值则不插入
+                    boolean b = this.validRequiredFeild(info.getId(),bandealInfo,submitFailId);
+                    if(!b){
+                        continue;
+                    }
                     String company = gbOrgInfo.getUnit();
                     String department = gbOrgInfo.getDeparment();
                     if ((StrUtil.isEmpty(company)||StrUtil.isEmpty(department)) || !(company.contains("中国五矿集团有限公司")&&department.contains("专职董(监)事办公室"))) { //如果该干部在集团专职董监事,禁止交易采购单位名称手动录入
@@ -441,7 +452,7 @@ public class BanDealInfoServiceImpl extends ServiceImpl<BanDealInfoMapper, BanDe
         if (CollectionUtil.isNotEmpty(infoList)) {
             long count = infoList.stream().filter(e -> SystemConstant.VALID_STATE.equals(e.getState())).count();
             if (count > 0) {
-                return ResultMsgUtil.failure("当前表中的有效数据不能重复提交到禁止交易信息表中!");
+                return ResultMsgUtil.failure("当前表中的有效数据不能重复!");
             }
             //验证社会统一信用代码 不符合则在数据校验提示列中显示
             infoList = this.validBatchCompanyCode(infoList);
@@ -647,5 +658,112 @@ public class BanDealInfoServiceImpl extends ServiceImpl<BanDealInfoMapper, BanDe
 
         });
         return list;
+    }
+
+    /**
+     * 验证数据库中必填字段是否有值。验证通过返回true,否则返回flse
+     * @param infoId 提交数据id
+     * @param bandealInfo 验证数据实体
+     * @param submitFailId 存储验证提示的集合
+     * @return
+     */
+    private  boolean  validRequiredFeild(String infoId,BanDealInfo bandealInfo,List<KVVO>  submitFailId){
+        String cardId = bandealInfo.getCardId(); //身份证
+        if(StrUtil.isEmpty(cardId)){
+            KVVO vo = new KVVO();
+            vo.setId(infoId);
+            vo.setName("干部的身份证为空");
+            submitFailId.add(vo);
+            return false;
+        }
+        String name = bandealInfo.getName(); //姓名
+        if(StrUtil.isEmpty(name)){
+            KVVO vo = new KVVO();
+            vo.setId(infoId);
+            vo.setName("干部姓名为空");
+            submitFailId.add(vo);
+            return false;
+        }
+        String company = bandealInfo.getCompany(); //单位
+        if(StrUtil.isEmpty(company)){
+            KVVO vo = new KVVO();
+            vo.setId(infoId);
+            vo.setName("干部的单位为空");
+            submitFailId.add(vo);
+            return false;
+        }
+        String post = bandealInfo.getPost(); //职务
+        if(StrUtil.isEmpty(post)){
+            KVVO vo = new KVVO();
+            vo.setId(infoId);
+            vo.setName("干部的职务为空");
+            submitFailId.add(vo);
+            return false;
+        }
+        String postType = bandealInfo.getPostType(); //职务类型
+        if(StrUtil.isEmpty(postType)){
+            KVVO vo = new KVVO();
+            vo.setId(infoId);
+            vo.setName("干部的职务类型为空");
+            submitFailId.add(vo);
+            return false;
+        }
+        String familyName = bandealInfo.getFamilyName(); //家人姓名
+        if(StrUtil.isEmpty(familyName)){
+            KVVO vo = new KVVO();
+            vo.setId(infoId);
+            vo.setName("家人姓名为空");
+            submitFailId.add(vo);
+            return false;
+        }
+        String engageType = bandealInfo.getEngageType(); //经商类型
+        if(StrUtil.isEmpty(engageType)){
+            KVVO vo = new KVVO();
+            vo.setId(infoId);
+            vo.setName("经商类型为空");
+            submitFailId.add(vo);
+            return false;
+        }
+        String engageInfo = bandealInfo.getEngageInfo(); //经商类型详细描述
+        if(StrUtil.isEmpty(engageInfo)){
+            KVVO vo = new KVVO();
+            vo.setId(infoId);
+            vo.setName("经商类型详细描述为空");
+            submitFailId.add(vo);
+            return false;
+        }
+        String supplier = bandealInfo.getSupplier(); //供应商名称
+        if(StrUtil.isEmpty(supplier)){
+            KVVO vo = new KVVO();
+            vo.setId(infoId);
+            vo.setName("供应商名称为空");
+            submitFailId.add(vo);
+            return false;
+        }
+        String code = bandealInfo.getCode(); //社会信用代码
+        if(StrUtil.isEmpty(code)){
+            KVVO vo = new KVVO();
+            vo.setId(infoId);
+            vo.setName("统一社会信用代码为空");
+            submitFailId.add(vo);
+            return false;
+        }
+        String state = bandealInfo.getState(); //状态
+        if(StrUtil.isEmpty(state)){
+            KVVO vo = new KVVO();
+            vo.setId(infoId);
+            vo.setName("状态为空");
+            submitFailId.add(vo);
+            return false;
+        }
+        String banPostType = bandealInfo.getBanPostType(); //禁业职务类型
+        if(StrUtil.isEmpty(banPostType)){
+            KVVO vo = new KVVO();
+            vo.setId(infoId);
+            vo.setName("禁业职务类型");
+            submitFailId.add(vo);
+            return false;
+        }
+        return true;
     }
 }

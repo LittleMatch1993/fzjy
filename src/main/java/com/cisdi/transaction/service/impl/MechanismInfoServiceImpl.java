@@ -86,13 +86,22 @@ public class MechanismInfoServiceImpl extends ServiceImpl<MechanismInfoMapper, M
         if(CollectionUtil.isEmpty(kvList)){
             return false;
         }
-        String tips = kvList.get(0).getName();
-        List<String> ids = kvList.stream().map(e -> e.getId()).collect(Collectors.toList());
-        UpdateWrapper<MechanismInfo> updateWrapper  = new UpdateWrapper<>();
-        updateWrapper.lambda().set(MechanismInfo::getTips,tips)
-                .in(MechanismInfo::getId,ids);
-        boolean b = this.update(updateWrapper);
-        return b;
+        Map<String, List<KVVO>> map = kvList.stream().collect(Collectors.groupingBy(KVVO::getId));
+        List<KVVO> tempList = new ArrayList<>();
+        for (Map.Entry<String, List<KVVO>> m : map.entrySet()) {
+            String id = m.getKey();
+            List<KVVO> list = m.getValue();
+            String tips = list.stream().map(KVVO::getName).collect(Collectors.joining(","));
+            KVVO vo = new KVVO();
+            vo.setId(id);
+            vo.setName(tips);
+            tempList.add(vo);
+        }
+        if(CollectionUtil.isEmpty(tempList)){
+            return false;
+        }
+        this.baseMapper.updateTips(tempList);
+        return true;
     }
 
     @Override
@@ -269,9 +278,9 @@ public class MechanismInfoServiceImpl extends ServiceImpl<MechanismInfoMapper, M
                 info.setInductionTime(null);
             }
             //该企业或其他市场主体是否与报告人所在单位（系统）直接发生过商品、劳务、服务等经济关系
-            if("否".equals(sysDictBizService.getDictValue(info.getIsRelation(),dictList))){
+            /*if("否".equals(sysDictBizService.getDictValue(info.getIsRelation(),dictList))){
                 info.setRemarks(null);
-            }
+            }*/
         }
         return info;
     }

@@ -77,13 +77,22 @@ public class InvestInfoServiceImpl extends ServiceImpl<InvestInfoMapper, InvestI
         if(CollectionUtil.isEmpty(kvList)){
             return false;
         }
-        String tips = kvList.get(0).getName();
-        List<String> ids = kvList.stream().map(e -> e.getId()).collect(Collectors.toList());
-        UpdateWrapper<InvestInfo> updateWrapper  = new UpdateWrapper<>();
-        updateWrapper.lambda().set(InvestInfo::getTips,tips)
-                .in(InvestInfo::getId,ids);
-        boolean b = this.update(updateWrapper);
-        return b;
+        Map<String, List<KVVO>> map = kvList.stream().collect(Collectors.groupingBy(KVVO::getId));
+        List<KVVO> tempList = new ArrayList<>();
+        for (Map.Entry<String, List<KVVO>> m : map.entrySet()) {
+            String id = m.getKey();
+            List<KVVO> list = m.getValue();
+            String tips = list.stream().map(KVVO::getName).collect(Collectors.joining(","));
+            KVVO vo = new KVVO();
+            vo.setId(id);
+            vo.setName(tips);
+            tempList.add(vo);
+        }
+        if(CollectionUtil.isEmpty(tempList)){
+            return false;
+        }
+         this.baseMapper.updateTips(tempList);
+        return true;
     }
 
     @Override
@@ -121,11 +130,6 @@ public class InvestInfoServiceImpl extends ServiceImpl<InvestInfoMapper, InvestI
 
             for (InvestInfo info : infoList) {
                 //无此类情况不提交数据
-                String isSitution = info.getIsSituation();
-                /*if("无此类情况".equals(sysDictBizService.getDictValue(isSitution,dictList))){
-                    tempList.add(info.getId());
-                    continue;
-                }*/
                 String cardId = info.getCardId();
                 String name = info.getName();
                 String title = info.getTitle();

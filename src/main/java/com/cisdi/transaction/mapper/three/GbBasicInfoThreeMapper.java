@@ -18,7 +18,7 @@ public interface GbBasicInfoThreeMapper extends BaseMapper<GbBasicInfoThree> {
             "case \n" +
             "when post_type='党委管干部班子正职（一把手）' then '党委管干部正职'\n" +
             "when post_type='党组管干部正职' then '党委管干部正职'\n" +
-            "when post_type='总部处长班子正职' then '总部处长'\n" +
+            "when post_type='集团总部处长班子正职' then '总部处长'\n" +
             "when post_type='党委管干部副职' then '党委管干部副职'\n" +
             "when post_type='党委管干部班子正职' then '党委管干部正职'\n" +
             "when post_type='党组管干部班子正职（一把手）' then '党委管干部正职'\n" +
