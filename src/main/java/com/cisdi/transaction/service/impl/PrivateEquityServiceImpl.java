@@ -603,6 +603,7 @@ public class PrivateEquityServiceImpl extends ServiceImpl<PrivateEquityMapper, P
                                 info.setCreateName(baseDTO.getServiceUserName());
                                 info.setCreateAccount(baseDTO.getServiceUserAccount());
                                 privateEquity.add(info);
+                                exportReturnVO.setSuccessNumber(exportReturnVO.getSuccessNumber()+1);
                             }else{ //有重复数据了
                                 PrivateEquity existInfo = infos.stream().filter(e->t.getName().equals(e.getName())
                                         &&sysDictBizService.getDictId(t.getTitle(),dictList).equals(e.getTitle())

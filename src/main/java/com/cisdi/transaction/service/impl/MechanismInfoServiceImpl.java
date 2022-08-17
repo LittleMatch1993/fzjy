@@ -780,11 +780,11 @@ public class MechanismInfoServiceImpl extends ServiceImpl<MechanismInfoMapper, M
             if (SystemConstant.IS_SITUATION_YES.equals(e.getIsSituation())){
                 if (StringUtils.isBlank(e.getName())||StringUtils.isBlank(e.getTitle())||StringUtils.isBlank(e.getQualificationName())
                 ||StringUtils.isBlank(e.getQualificationCode())||StringUtils.isBlank(e.getOrganizationName())||StringUtils.isBlank(e.getCode())||StringUtils.isBlank(e.getEstablishTime())
-                        ||StringUtils.isBlank(e.getRegisterCountry())||StringUtils.isBlank(e.getRegisterProvince())||StringUtils.isBlank(e.getCity())||StringUtils.isBlank(e.getOperatAddr())||StringUtils.isBlank(e.getOrganizationType())
+                        ||StringUtils.isBlank(e.getRegisterCountry())||StringUtils.isBlank(e.getRegisterProvince())||StringUtils.isBlank(e.getOperatAddr())||StringUtils.isBlank(e.getOrganizationType())
                         ||StringUtils.isBlank(e.getRegisterCapital())||StringUtils.isBlank(e.getOperatState())||StringUtils.isBlank(e.getOperatScope())||StringUtils.isBlank(e.getShareholder())||StringUtils.isBlank(e.getPractice())
                         ||StringUtils.isBlank(e.getIsRelation())){
                     exportReturnVO.setFailNumber(exportReturnVO.getFailNumber()+1);
-                    exportReturnVO.getFailMessage().add(new ExportReturnMessageVO(e.getColumnNumber(),"有此类情况时以下内容不能为空：姓名,称谓,执业资格名称,执业证号,开办或所在机构名称,统一社会信用代码/注册号,成立日期,注册地（国家）,注册地（省）,注册地（市）,经营（服务）地,机构类型,注册资本（金）或资金数额（出资额）,经营状态,经营（服务）范围,是否为机构股东（合伙人、所有人等）,是否在该机构中从业,该企业或其他市场主体是否与报告人所在单位（系统）直接发生过商品、劳务、服务等经济关系,填报类型,年度。"));
+                    exportReturnVO.getFailMessage().add(new ExportReturnMessageVO(e.getColumnNumber(),"有此类情况时以下内容不能为空：姓名,称谓,执业资格名称,执业证号,开办或所在机构名称,统一社会信用代码/注册号,成立日期,注册地（国家）,注册地（省）,经营（服务）地,机构类型,注册资本（金）或资金数额（出资额）,经营状态,经营（服务）范围,是否为机构股东（合伙人、所有人等）,是否在该机构中从业,该企业或其他市场主体是否与报告人所在单位（系统）直接发生过商品、劳务、服务等经济关系,填报类型,年度。"));
                     return false;
                 }
                 if (!isOrNotList.contains(e.getShareholder())||!isOrNotList.contains(e.getPractice())||!isOrNotList.contains(e.getIsRelation())){

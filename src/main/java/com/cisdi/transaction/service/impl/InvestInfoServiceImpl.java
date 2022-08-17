@@ -596,6 +596,7 @@ public class InvestInfoServiceImpl extends ServiceImpl<InvestInfoMapper, InvestI
                                 investInfo.setCreateName(baseDTO.getServiceUserName());
                                 investInfo.setCreateAccount(baseDTO.getServiceUserAccount());
                                 investInfoList.add(investInfo);
+                                exportReturnVO.setSuccessNumber(exportReturnVO.getSuccessNumber()+1);
 
                             }else {
                                 exportReturnVO.setFailNumber(exportReturnVO.getFailNumber()+1);
@@ -785,11 +786,11 @@ public class InvestInfoServiceImpl extends ServiceImpl<InvestInfoMapper, InvestI
         List<String> isOrNotList = Arrays.asList(SystemConstant.WHETHER_YES, SystemConstant.WHETHER_NO);
         return list.stream().filter(e->{
             if (SystemConstant.IS_SITUATION_YES.equals(e.getIsSituation())){
-                if (StringUtils.isBlank(e.getName())||StringUtils.isBlank(e.getTitle())||StringUtils.isBlank(e.getEnterpriseName())||StringUtils.isBlank(e.getEnterpriseType())||StringUtils.isBlank(e.getCode())||StringUtils.isBlank(e.getEstablishTime())||StringUtils.isBlank(e.getRegisterCountry())||StringUtils.isBlank(e.getRegisterProvince())||StringUtils.isBlank(e.getCity())
+                if (StringUtils.isBlank(e.getName())||StringUtils.isBlank(e.getTitle())||StringUtils.isBlank(e.getEnterpriseName())||StringUtils.isBlank(e.getEnterpriseType())||StringUtils.isBlank(e.getCode())||StringUtils.isBlank(e.getEstablishTime())||StringUtils.isBlank(e.getRegisterCountry())||StringUtils.isBlank(e.getRegisterProvince())
                 ||StringUtils.isBlank(e.getOperatAddr())||StringUtils.isBlank(e.getRegisterCapital())||StringUtils.isBlank(e.getEnterpriseState())||StringUtils.isBlank(e.getOperatScope())||StringUtils.isBlank(e.getShareholder())||StringUtils.isBlank(e.getSeniorPosition())||StringUtils.isBlank(e.getIsRelation())||StringUtils.isBlank(e.getTbType())||StringUtils.isBlank(e.getYear())
                 ){
                     exportReturnVO.setFailNumber(exportReturnVO.getFailNumber()+1);
-                    exportReturnVO.getFailMessage().add(new ExportReturnMessageVO(e.getColumnNumber(),"有此类情况时以下内容不能为空：姓名,称谓,企业或其他市场主体名称,企业或其他市场主体类型,统一社会信用代码/注册号,成立日期,注册地（国家）,注册地（省）,注册地（市）,注册资本或资金数额,企业状态,经营范围,是否为股东（合伙人、所有人）,是否担任高级职务,该企业或其他市场主体是否与报告人所在单位（系统）直接发生过商品、劳务、服务等经济关系,填报类型,年度。"));
+                    exportReturnVO.getFailMessage().add(new ExportReturnMessageVO(e.getColumnNumber(),"有此类情况时以下内容不能为空：姓名,称谓,企业或其他市场主体名称,企业或其他市场主体类型,统一社会信用代码/注册号,成立日期,注册地（国家）,注册地（省）,注册资本或资金数额,企业状态,经营范围,是否为股东（合伙人、所有人）,是否担任高级职务,该企业或其他市场主体是否与报告人所在单位（系统）直接发生过商品、劳务、服务等经济关系,填报类型,年度。"));
                     return false;
                 }
                 if (!isOrNotList.contains(e.getShareholder())||!isOrNotList.contains(e.getSeniorPosition())||!isOrNotList.contains(e.getIsRelation())){

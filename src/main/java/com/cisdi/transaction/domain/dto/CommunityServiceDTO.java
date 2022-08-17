@@ -138,8 +138,8 @@ public class CommunityServiceDTO {
     @ExcelProperty(value = "年度")
     private String year;
 
-    @ExcelProperty(value = "有无此类情况")
-    @ExcelValid(message = "有无此类情况为空")
+//    @ExcelProperty(value = "有无此类情况")
+//    @ExcelValid(message = "有无此类情况为空")
     private String isSituation;
 
     private Integer columnNumber;

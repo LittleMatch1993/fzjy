@@ -68,6 +68,7 @@ public class ImportEquityFundsExcelListener extends AnalysisEventListener<Equity
         try {
 
             dto.setColumnNumber(i++);
+            dto.setIsSituation("有此类情况");
             //通用方法数据校验
             ExcelImportValid.valid(dto);
         } catch (ExceptionCustom e) {

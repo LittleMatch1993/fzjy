@@ -27,6 +27,7 @@ import org.apache.commons.collections4.bag.SynchronizedSortedBag;
 import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.FileItemFactory;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.validation.annotation.Validated;
@@ -42,9 +43,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 /**
  * @author yuw
@@ -307,7 +306,8 @@ public class CadreFamiliesController {
 
     @ApiOperation("家属投资企业或者担任高级职务导入功能")
     @PostMapping("/importInvestmentExcel")
-    public ResultMsgUtil<Object> importInvestmentExcel(@RequestPart("file") MultipartFile file,BaseDTO baseDTO) {
+    public ResultMsgUtil<Object> importInvestmentExcel(@RequestPart("file") MultipartFile file,BaseDTO baseDTO,HttpServletResponse response) {
+        String url = null;
         try {
             /**
              *  inputStream   文件流
@@ -317,7 +317,14 @@ public class CadreFamiliesController {
              */
             ExportReturnVO exportReturnVO= new ExportReturnVO();
             EasyExcel.read(file.getInputStream(), InvestmentDTO.class, new ImportInvestmentExcelListener(investInfoService,baseDTO,exportReturnVO)).sheet().headRowNumber(3).doRead();
-            return ResultMsgUtil.success(exportReturnVO);
+            exportReturnVO.addMessage();
+            String fileName = new String("投资企业或者担任高级职务导入返回信息".getBytes(), StandardCharsets.UTF_8);
+//            List<CadreFamiliesExcelVO> list = spouseBasicInfoService.export(dto.getIds());
+            ExportReturnExcelVO exportReturnExcelVO=new ExportReturnExcelVO();
+            BeanUtils.copyProperties(exportReturnVO,exportReturnExcelVO);
+            MultipartFile multipartFile = ExportExcelUtils.exportExcel(response, fileName, ExportReturnExcelVO.class, Collections.singletonList(exportReturnExcelVO));
+            url = minIoUtil.downloadByMinio(multipartFile, bucketName, null);
+            return ResultMsgUtil.success(url);
         } catch (Exception e) {
             e.printStackTrace();
             return ResultMsgUtil.failure(ResultCode.RC999.getCode(), "导入失败"+e.getMessage());
@@ -346,11 +353,18 @@ public class CadreFamiliesController {
 
     @ApiOperation("开办有偿社会中介和法律服务机构或者从业的情况导入功能")
     @PostMapping(value = "/importCommunityServiceExcel")
-    public ResultMsgUtil<Object> importCommunityServiceExcel(@RequestPart("file") MultipartFile file,BaseDTO baseDTO) {
+    public ResultMsgUtil<Object> importCommunityServiceExcel(@RequestPart("file") MultipartFile file,BaseDTO baseDTO,HttpServletResponse response) {
+        String url=null;
         try {
             ExportReturnVO exportReturnVO= new ExportReturnVO();
             EasyExcel.read(file.getInputStream(), CommunityServiceDTO.class, new ImportCommunityServiceExcelListener(mechanismInfoService,baseDTO,exportReturnVO)).sheet().headRowNumber(3).doRead();
-            return ResultMsgUtil.success(exportReturnVO);
+            exportReturnVO.addMessage();
+            String fileName = new String("开办有偿社会中介和法律服务机构或者从业的情况导入返回信息".getBytes(), StandardCharsets.UTF_8);
+            ExportReturnExcelVO exportReturnExcelVO=new ExportReturnExcelVO();
+            BeanUtils.copyProperties(exportReturnVO,exportReturnExcelVO);
+            MultipartFile multipartFile = ExportExcelUtils.exportExcel(response, fileName, ExportReturnExcelVO.class, Collections.singletonList(exportReturnExcelVO));
+            url = minIoUtil.downloadByMinio(multipartFile, bucketName, null);
+            return ResultMsgUtil.success(url);
         } catch (Exception e) {
             e.printStackTrace();
             return ResultMsgUtil.failure(ResultCode.RC999.getCode(), "导入失败"+e.getMessage());
@@ -380,11 +394,18 @@ public class CadreFamiliesController {
 
     @ApiOperation("家属投资私募股权投资基金或者担任高级职务的情况导入功能")
     @PostMapping(value = "/importEquityFundsExcel")
-    public ResultMsgUtil<Object> importEquityFundsExcel(@RequestPart("file") MultipartFile file,BaseDTO baseDTO) {
+    public ResultMsgUtil<Object> importEquityFundsExcel(@RequestPart("file") MultipartFile file,BaseDTO baseDTO,HttpServletResponse response) {
+        String url;
         try {
             ExportReturnVO exportReturnVO= new ExportReturnVO();
             EasyExcel.read(file.getInputStream(), EquityFundsDTO.class, new ImportEquityFundsExcelListener(privateEquityService,baseDTO,exportReturnVO)).sheet().headRowNumber(3).doRead();
-            return ResultMsgUtil.success(exportReturnVO);
+            exportReturnVO.addMessage();
+            String fileName = new String("投资私募股权投资基金或者担任高级职务的情况导入返回信息".getBytes(), StandardCharsets.UTF_8);
+            ExportReturnExcelVO exportReturnExcelVO=new ExportReturnExcelVO();
+            BeanUtils.copyProperties(exportReturnVO,exportReturnExcelVO);
+            MultipartFile multipartFile = ExportExcelUtils.exportExcel(response, fileName, ExportReturnExcelVO.class, Collections.singletonList(exportReturnExcelVO));
+            url = minIoUtil.downloadByMinio(multipartFile, bucketName, null);
+            return ResultMsgUtil.success(url);
         } catch (Exception e) {
             e.printStackTrace();
             return ResultMsgUtil.failure(ResultCode.RC999.getCode(), "导入失败"+e.getMessage());
