@@ -83,7 +83,7 @@ public interface GbBasicInfoMapper extends BaseMapper<GbBasicInfo> {
      * @param pathNameCode 可见部门的部门编码链
      * @return
      */
-    @Select("   SELECT \n" +
+    @Select("<script>   SELECT \n" +
             "                DISTINCT t3.*,t5.asgorgancode 'unit_code' \n" +
             "        FROM \n" +
             "                ( \n" +
@@ -93,7 +93,7 @@ public interface GbBasicInfoMapper extends BaseMapper<GbBasicInfo> {
             "                        FROM \n" +
             "                                69654103_gb_basic_info t1 \n" +
             "                                        LEFT JOIN sys_dict_biz t2 ON t1.post_type = t2.id where t1.card_id in \n" +
-            "<foreach item='item' index='index' collection='ids' open='(' separator=',' close=')'>\n" +
+            "<foreach collection='list' item='item'  open='(' separator=',' close=')'>\n" +
             "  #{item}\n" +
             "</foreach>\n"+
             "                        ) t3 \n" +
@@ -110,8 +110,8 @@ public interface GbBasicInfoMapper extends BaseMapper<GbBasicInfo> {
             "                                sort >= 4 \n" +
             "                        ) t4 ON t3.card_id = t4.card_id \n" +
             "                        AND t3.sort = t4.sort \n" +
-            "                        INNER JOIN ( SELECT DISTINCT asgorganname,asgorgancode FROM 69654103_org WHERE asgpathnamecode LIKE concat(#{pathNameCode},'%')) t5 ON t5.asgorganname = t3.unit")
-    public  List<GbOrgInfo> selectByPathNameCodeAndCardIds(@Param("ids")List<String> cardIds,@Param("pathNameCode") String pathNameCode);
+            "                        INNER JOIN ( SELECT DISTINCT asgorganname,asgorgancode FROM 69654103_org WHERE asgpathnamecode LIKE concat(#{pathNameCode},'%')) t5 ON t5.asgorganname = t3.unit </script> ")
+    public  List<GbOrgInfo> selectByPathNameCodeAndCardIds(@Param("list") List<String> cardIds,@Param("pathNameCode") String pathNameCode);
 
     /*@Select("   SELECT \n" +
             "                DISTINCT t3.*,t5.asgorgancode 'unit_code' \n" +

@@ -28,7 +28,8 @@ public class MultithreadScheduleTask {
     private GbBasicInfoService gbBasicInfoService;
 
     //@PostConstruct      //项目启动执行1次
-    @Scheduled(fixedDelay = 7200000) //两小时执行一次
+    //@Scheduled(fixedDelay = 7200000) //两小时执行一次
+    @Scheduled(cron = "0 0 21 *  *  ? ") //每天晚上九点执行
     public  void syncOrgInfo(){
         long i = DateUtil.date().getTime();
         System.out.println("执行组织同步定时任务");
@@ -38,7 +39,8 @@ public class MultithreadScheduleTask {
     }
 
    // @PostConstruct      //项目启动执行一次
-    @Scheduled(fixedDelay = 72000000) //两小时执行一次
+    //@Scheduled(fixedDelay = 72000000) //两小时执行一次
+    @Scheduled(cron = "0 0 21 *  *  ? ") //每天晚上九点执行
     public  void syncGbBasicInfo(){
         long i = DateUtil.date().getTime();
         System.out.println("执行干部信息定时任务");

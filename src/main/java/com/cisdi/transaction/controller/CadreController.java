@@ -135,8 +135,9 @@ public class CadreController{
                  KVVO kv = new KVVO();
                  String id = e.getId();
                  String gbname = e.getName();
+                 String unit = e.getUnit();
                  kv.setId(id+"_"+gbname);
-                 kv.setName(gbname);
+                 kv.setName(gbname+"-"+unit);
                  kvvoList.add(kv);
              });
          }

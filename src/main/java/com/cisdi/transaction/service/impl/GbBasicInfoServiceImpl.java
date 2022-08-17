@@ -162,6 +162,9 @@ public class GbBasicInfoServiceImpl extends ServiceImpl<GbBasicInfoMapper, GbBas
                 BeanUtil.copyProperties(gbBasicInfoThree, info);
                 info.setCreateTime(DateUtil.date());
                 info.setUpdateTime(DateUtil.date());
+                String name = gbBasicInfoThree.getName();
+                name =name.replace(" ","");
+                info.setName(name);
                 dataList.add(info);
             }
             List<SysDictBiz> dictList = sysDictBizService.selectList();
