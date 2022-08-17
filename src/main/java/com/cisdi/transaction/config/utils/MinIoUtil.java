@@ -406,7 +406,8 @@ public class MinIoUtil {
                 .build());
         inputStream.close();
         // 返回生成文件名、访问路径
-        String url = getObjectUrl(bucketName, minFileName, DEFAULT_EXPIRY);
+       // String url = getObjectUrl(bucketName, minFileName, DEFAULT_EXPIRY);
+        String url =endpoint+"/"+bucketName+"/"+minFileName;
         if(StrUtil.isNotEmpty(downloadUrl)&&!"no".equals(downloadUrl)){ //正式环境才会替换，属性也才会有值
             url = url.replace(endpoint, downloadUrl);
         }

@@ -39,8 +39,8 @@ public class MultithreadScheduleTask {
     }
 
    // @PostConstruct      //项目启动执行一次
-    //@Scheduled(fixedDelay = 72000000) //两小时执行一次
-    @Scheduled(cron = "0 0 21 *  *  ? ") //每天晚上九点执行
+    @Scheduled(fixedDelay = 72000000) //两小时执行一次
+    //@Scheduled(cron = "0 0 21 *  *  ? ") //每天晚上九点执行
     public  void syncGbBasicInfo(){
         long i = DateUtil.date().getTime();
         System.out.println("执行干部信息定时任务");
