@@ -31,7 +31,12 @@ public class CadreExcelVO {
     @ExcelProperty(value = "职务类型")
     private String postType;
 
+    @ExcelProperty(value = "原职务类型")
+    private String oldPostType;
+
     @ExcelProperty(value = "分配类型")
     private String allotType;
+
+
 
 }

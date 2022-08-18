@@ -40,9 +40,9 @@ public class YjxxDTO{
     //招标制单人单位名称
     private String zbzdrdwmc;
     //预警时间
-    private Date yjsj;
+    private String yjsj;
     //接收数据时间
-    private Date jssjsj;
+    private String jssjsj;
     //状态 0:处理中1:处理完成 2 已发现 3已派单 4已移交
     private String zt;
     //预警内容

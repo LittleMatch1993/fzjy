@@ -9,6 +9,8 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.cisdi.transaction.config.utils.AuthSqlUtil;
+import com.cisdi.transaction.constant.ModelConstant;
 import com.cisdi.transaction.constant.SqlConstant;
 import com.cisdi.transaction.domain.dto.CadreDTO;
 import com.cisdi.transaction.domain.dto.CadreFamilyExportDto;
@@ -190,15 +192,9 @@ public class GbBasicInfoServiceImpl extends ServiceImpl<GbBasicInfoMapper, GbBas
          *                 .eq(GbBasicInfo::getPost, post).list();
          *         return list;
          */
-        String orgCode = dto.getOrgCode();
-        Org org = orgService.selectByOrgancode(orgCode);
-        List<String> cardIds = orgService.getCardIdsByAsgpathnamecode(org.getAsgpathnamecode());
-        if (CollectionUtils.isEmpty(cardIds)){
-            return Lists.newArrayList();
-        }
         //字典转换
-        List<CadreExcelVO> list =  this.baseMapper.selectList(new LambdaQueryWrapper<GbBasicInfo>().like(StringUtils.isNotBlank(dto.getName()),GbBasicInfo::getName,dto.getName()).in(GbBasicInfo::getCardId,cardIds)
-        .like(StringUtils.isNotBlank(dto.getUnit()),GbBasicInfo::getUnit,dto.getUnit()).eq(StringUtils.isNotBlank(dto.getPost_type()),GbBasicInfo::getPost,dto.getPost_type())
+        List<CadreExcelVO> list =  this.baseMapper.selectList(new LambdaQueryWrapper<GbBasicInfo>().like(StringUtils.isNotBlank(dto.getName()),GbBasicInfo::getName,dto.getName())
+        .like(StringUtils.isNotBlank(dto.getUnit()),GbBasicInfo::getUnit,dto.getUnit()).eq(StringUtils.isNotBlank(dto.getPost_type()),GbBasicInfo::getPost,dto.getPost_type()).apply(AuthSqlUtil.getAuthSqlByTableNameAndOrgCode(ModelConstant.GB_BASIC_INFO,dto.getOrgCode()))
         ).stream().map(t -> {
             CadreExcelVO vo = new CadreExcelVO();
             BeanUtils.copyProperties(t, vo);

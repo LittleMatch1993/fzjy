@@ -234,6 +234,11 @@ public class OrgServiceImpl extends ServiceImpl<OrgMapper, Org> implements OrgSe
         return this.baseMapper.getCardIdsByAsgpathnamecode(asgpathnamecode);
     }
 
+    @Override
+    public String getOrgNamesByCodePath(String codePath) {
+        return "'"+this.lambdaQuery().likeRight(Org::getAsgpathnamecode, codePath).list().stream().distinct().map(Org::getAsgorganname).collect(Collectors.joining("','"))+"'";
+    }
+
     private List<Org>  repalceDictId(List<Org> list, List<SysDictBiz> dictList){
         list.parallelStream().forEach(dto->{
             String s1 = dto.getAsgleadfg();
