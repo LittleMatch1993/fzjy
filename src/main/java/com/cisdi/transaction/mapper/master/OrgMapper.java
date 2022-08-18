@@ -25,7 +25,7 @@ public interface OrgMapper extends BaseMapper<Org> {
             "         a.asgpathname = concat(b.asgpathname,\"-\",#{name})</script>")
     public List<Org> getOrgByUnitCodeAndDepartmentName(@Param("code")String code,String name);
 
-    @Select("SELECT \n" +
+    @Select("<script> SELECT \n" +
             "                DISTINCT t3.card_id \n" +
             "        FROM \n" +
             "                ( \n" +
@@ -49,6 +49,6 @@ public interface OrgMapper extends BaseMapper<Org> {
             "                                sort &gt;= 4 \n" +
             "                        ) t4 ON t3.card_id = t4.card_id \n" +
             "                        AND t3.sort = t4.sort \n" +
-            "                        INNER JOIN ( SELECT DISTINCT asgorganname FROM 69654103_org WHERE asgpathnamecode LIKE concat(#{codePath},'%') ) t5 ON t5.asgorganname = t3.unit")
+            "                        INNER JOIN ( SELECT DISTINCT asgorganname FROM 69654103_org WHERE asgpathnamecode LIKE concat(#{codePath},'%') ) t5 ON t5.asgorganname = t3.unit </script>")
     List<String> getCardIdsByAsgpathnamecode(@Param("codePath") String codePath);
 }

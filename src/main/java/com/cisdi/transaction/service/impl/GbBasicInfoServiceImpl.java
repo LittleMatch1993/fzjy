@@ -257,7 +257,7 @@ public class GbBasicInfoServiceImpl extends ServiceImpl<GbBasicInfoMapper, GbBas
             List<GbOrgInfo> tempList = m.getValue();
             System.out.println("key:" + m.getKey() + " value:" + m.getValue());
             GbOrgInfo gbOrgInfo = tempList.get(0);//默认取第一个值 作为新数据保存
-            //将多个职务用都好链接并保存之新数据中
+            //将多个职务用逗号链接并保存之新数据中
             String newPost = tempList.stream().map(GbOrgInfo::getPost).collect(Collectors.joining(","));
             gbOrgInfo.setPost(newPost);
             gbOrgInfoList.add(gbOrgInfo); //数据中部门id不存在
@@ -293,7 +293,9 @@ public class GbBasicInfoServiceImpl extends ServiceImpl<GbBasicInfoMapper, GbBas
         list.parallelStream().forEach(dto->{
             //字典对应项
             String postType = sysDictBizService.getDictId(dto.getPostType(), dictList);
-
+            if(StrUtil.isEmpty(postType)){
+                postType = "1560093752752332800";
+            }
             dto.setPostType(postType);
 
         });

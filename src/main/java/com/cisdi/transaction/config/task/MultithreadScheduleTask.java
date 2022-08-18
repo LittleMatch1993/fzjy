@@ -10,6 +10,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
+import java.util.Date;
 
 /**
  * @Author: cxh
@@ -27,12 +28,14 @@ public class MultithreadScheduleTask {
     @Autowired
     private GbBasicInfoService gbBasicInfoService;
 
-    //@PostConstruct      //项目启动执行1次
+    // @PostConstruct      //项目启动执行1次
     //@Scheduled(fixedDelay = 7200000) //两小时执行一次
-    @Scheduled(cron = "0 0 21 *  *  ? ") //每天晚上九点执行
+   // @Scheduled(cron = "0 0 21 *  *  ? ") //每天晚上九点执行
     public  void syncOrgInfo(){
         long i = DateUtil.date().getTime();
         System.out.println("执行组织同步定时任务");
+        String stringDate = DateUtil.format(new Date(), "yyyyMMdd");
+        System.out.println("当前时间"+stringDate);
         //orgService.syncDa();
         long j = DateUtil.date().getTime();
         System.out.println("执行组织同步定时任务完成:"+(j-i));

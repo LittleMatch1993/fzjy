@@ -3,6 +3,7 @@ package com.cisdi.transaction.mapper.master;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.cisdi.transaction.domain.model.MechanismInfo;
 import com.cisdi.transaction.domain.vo.KVVO;
+import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
 
 import java.util.List;
@@ -26,4 +27,11 @@ public interface MechanismInfoMapper extends BaseMapper<MechanismInfo> {
             "        #{item.id}" +
             "    </foreach></script>")
     public int updateTips(List<KVVO> kvList);
+
+    @Select("<script>    <foreach collection=\"list\" item=\"item\" index=\"index\" open=\"\" close=\"\" separator=\";\">\n" +
+            "            update 69654103_mechanism_info\n" +
+            "             set       tips = #{item.name,jdbcType=VARCHAR}\n" +
+            "            where id = #{item.id,jdbcType=VARCHAR}\n" +
+            "     </foreach></script>")
+    public void  updateBatchTips(@Param("list") List<KVVO> kvList);
 }

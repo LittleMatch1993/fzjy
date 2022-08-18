@@ -127,7 +127,7 @@ public class PrivateEquityServiceImpl extends ServiceImpl<PrivateEquityMapper, P
         if(CollectionUtil.isEmpty(tempList)){
             return false;
         }
-        this.baseMapper.updateTips(tempList);
+        this.baseMapper.updateBatchTips(tempList);
         return true;
     }
 
@@ -140,7 +140,7 @@ public class PrivateEquityServiceImpl extends ServiceImpl<PrivateEquityMapper, P
         //校验国家/省份/市
         //checkArea(dto, info);
         info.setState(SystemConstant.SAVE_STATE);
-        info.setCreateTime(DateUtil.date());
+        //info.setCreateTime(DateUtil.date());
         info.setUpdateTime(DateUtil.date());
         info.setTenantId(dto.getServiceLesseeId());
         info.setCreatorId(dto.getServiceUserId());
@@ -150,7 +150,8 @@ public class PrivateEquityServiceImpl extends ServiceImpl<PrivateEquityMapper, P
         info.setOrgCode(dto.getOrgCode());
         info.setOrgName(dto.getOrgName());
         info = this.valid(info);
-        this.save(info);
+        this.updateById(info);
+        addFamilyInfo(info);
     }
 
     @Override

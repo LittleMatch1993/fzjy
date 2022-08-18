@@ -120,6 +120,8 @@ public class BanDealInfoServiceImpl extends ServiceImpl<BanDealInfoMapper, BanDe
         ids.add(infoDto.getId());
         this.updateById(info);
          //purchaseBanDealInfoSevice.deletePushDataForPurchase(ids);
+        //加入干部家属信息
+        this.addFamilyInfo(info);
         //新增操作记录
         List<BanDealInfo> infoList = new ArrayList<>();
         infoList.add(info);
@@ -349,7 +351,7 @@ public class BanDealInfoServiceImpl extends ServiceImpl<BanDealInfoMapper, BanDe
                 submitFailId.add(vo);
             }
         }
-        //社会企业信用代码验证 13-3表不验证
+        //社会企业信用代码验证
         List<BanDealInfo> newBanDealInfoList = this.validBatchCompanyCode(banDealInfoList);
         //在禁止企业交易信息表中添加数据
         boolean b = this.saveBatch(banDealInfoList);

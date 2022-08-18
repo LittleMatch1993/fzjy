@@ -40,6 +40,6 @@ public interface GbBasicInfoThreeMapper extends BaseMapper<GbBasicInfoThree> {
             "FROM \n" +
             " ( SELECT A00, A0101, a0184, ZDYXA0110 FROM A01) a1 \n" +
             " LEFT JOIN a02 a2 ON a1.A00 = a2.A00  \n" +
-            " ) a where a.post_type!='集团领导班子正职(一把手)'or a.post_type!='集团领导正职' or a.post_type!='集团领导副职'")
+            " ) a where a.post_type!='集团领导班子正职（一把手）'and a.post_type!='集团领导正职' and a.post_type!='集团领导副职'")
     public List<GbBasicInfoThree> selectGbBasicInfo();
 }
