@@ -767,19 +767,19 @@ public class BanDealInfoServiceImpl extends ServiceImpl<BanDealInfoMapper, BanDe
             submitFailId.add(vo);
             return false;
         }
-        String state = bandealInfo.getState(); //状态
+        /*String state = bandealInfo.getState(); //状态
         if(StrUtil.isEmpty(state)){
             KVVO vo = new KVVO();
             vo.setId(infoId);
             vo.setName("状态为空");
             submitFailId.add(vo);
             return false;
-        }
+        }*/
         String banPostType = bandealInfo.getBanPostType(); //禁业职务类型
         if(StrUtil.isEmpty(banPostType)){
             KVVO vo = new KVVO();
             vo.setId(infoId);
-            vo.setName("禁业职务类型");
+            vo.setName("禁业职务类型为空");
             submitFailId.add(vo);
             return false;
         }
