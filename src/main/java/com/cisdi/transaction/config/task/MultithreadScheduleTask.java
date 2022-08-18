@@ -47,7 +47,7 @@ public class MultithreadScheduleTask {
     public  void syncGbBasicInfo(){
         long i = DateUtil.date().getTime();
         System.out.println("执行干部信息定时任务");
-        //gbBasicInfoService.syncData();
+        gbBasicInfoService.syncData();
         long j = DateUtil.date().getTime();
         System.out.println("执行干部信息定时任务完成+"+(j-i));
     }

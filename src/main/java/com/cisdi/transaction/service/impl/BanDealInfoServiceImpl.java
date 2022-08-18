@@ -351,7 +351,7 @@ public class BanDealInfoServiceImpl extends ServiceImpl<BanDealInfoMapper, BanDe
                 submitFailId.add(vo);
             }
         }
-        //社会企业信用代码验证 13-3表不验证
+        //社会企业信用代码验证
         List<BanDealInfo> newBanDealInfoList = this.validBatchCompanyCode(banDealInfoList);
         //在禁止企业交易信息表中添加数据
         boolean b = this.saveBatch(banDealInfoList);

@@ -293,7 +293,9 @@ public class GbBasicInfoServiceImpl extends ServiceImpl<GbBasicInfoMapper, GbBas
         list.parallelStream().forEach(dto->{
             //字典对应项
             String postType = sysDictBizService.getDictId(dto.getPostType(), dictList);
-
+            if(StrUtil.isEmpty(postType)){
+                postType = "1560093752752332800";
+            }
             dto.setPostType(postType);
 
         });

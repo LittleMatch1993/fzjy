@@ -100,7 +100,7 @@ public class MechanismInfoServiceImpl extends ServiceImpl<MechanismInfoMapper, M
         if(CollectionUtil.isEmpty(tempList)){
             return false;
         }
-        this.baseMapper.updateTips(tempList);
+        this.baseMapper.updateBatchTips(tempList);
         return true;
     }
 

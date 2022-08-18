@@ -91,7 +91,7 @@ public class InvestInfoServiceImpl extends ServiceImpl<InvestInfoMapper, InvestI
         if(CollectionUtil.isEmpty(tempList)){
             return false;
         }
-         this.baseMapper.updateTips(tempList);
+         this.baseMapper.updateBatchTips(tempList);
         return true;
     }
 

@@ -127,7 +127,7 @@ public class PrivateEquityServiceImpl extends ServiceImpl<PrivateEquityMapper, P
         if(CollectionUtil.isEmpty(tempList)){
             return false;
         }
-        this.baseMapper.updateTips(tempList);
+        this.baseMapper.updateBatchTips(tempList);
         return true;
     }
 
