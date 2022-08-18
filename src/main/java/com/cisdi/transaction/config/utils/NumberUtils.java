@@ -18,6 +18,9 @@ public class NumberUtils {
 
     public static boolean isNumeric(String str){
 
+        if (StringUtils.isBlank(str)){
+            return true;
+        }
         Pattern pattern = Pattern.compile("[0-9]*\\.?[0-9]+");
         Matcher isNum = pattern.matcher(str);
         if (!isNum.matches()) {
@@ -31,7 +34,7 @@ public class NumberUtils {
             return false;
         }
         for (String string : numberString) {
-            if (StringUtils.isBlank(string)||!isNumeric(string)){
+            if (!isNumeric(string)){
                 return false;
             }
         }
@@ -43,7 +46,7 @@ public class NumberUtils {
             return false;
         }
         for (String string : stringList) {
-            if (StringUtils.isBlank(string)||!isNumeric(string)){
+            if (!isNumeric(string)){
                 return false;
             }
         }

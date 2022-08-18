@@ -1,5 +1,6 @@
 package com.cisdi.transaction.config.excel;
 
+import com.cisdi.transaction.constant.SystemConstant;
 import org.apache.commons.lang3.StringUtils;
 
 import java.lang.reflect.Field;
@@ -34,18 +35,23 @@ public class ExcelImportValid {
             }
             //是否包含必填校验注解
             boolean isExcelValid = field.isAnnotationPresent(ExcelValid.class);
-            if (isExcelValid && Objects.isNull(fieldValue)) {
+            if (isExcelValid && (Objects.isNull(fieldValue))) {
                 throw new ExceptionCustom("NULL", field.getAnnotation(ExcelValid.class).message());
             }
 
+            boolean dateStringValid = field.isAnnotationPresent(DateStringValid.class);
             //日期字符串校验
-            if (field.isAnnotationPresent(DateStringValid.class)&&Objects.nonNull(fieldValue)&&fieldValue instanceof String&& StringUtils.isNotBlank((String)fieldValue)) {
+            if (dateStringValid &&Objects.nonNull(fieldValue)&&fieldValue instanceof String&& StringUtils.isNotBlank((String)fieldValue)) {
                 try {
                     simpleDateFormat.parse((String)fieldValue);
                 } catch (ParseException e) {
-                    throw new ExceptionCustom("IMPORT_PARAM_CHECK_FAIL", field.getAnnotation(ExcelValid.class).message());
+                    throw new ExceptionCustom("IMPORT_PARAM_CHECK_FAIL", field.getAnnotation(DateStringValid.class).message());
                 }
             }
+//            //如果两个注解都有，则不能为"无"
+//            if (isExcelValid&&dateStringValid&&SystemConstant.NO.equals(fieldValue)){
+//                throw new ExceptionCustom("NULL", field.getAnnotation(ExcelValid.class).message());
+//            }
             //有无此类情况校验
             if (field.isAnnotationPresent(IsSituationValid.class)&&fieldValue instanceof String&& !Arrays.asList("有此类情况","无此类情况").contains((String)fieldValue)){
                 throw new ExceptionCustom("IMPORT_PARAM_CHECK_FAIL", field.getAnnotation(IsSituationValid.class).message());

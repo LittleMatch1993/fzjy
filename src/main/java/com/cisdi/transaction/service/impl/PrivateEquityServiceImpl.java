@@ -468,32 +468,32 @@ public class PrivateEquityServiceImpl extends ServiceImpl<PrivateEquityMapper, P
         List<String> isOrNotList = Arrays.asList(SystemConstant.WHETHER_YES, SystemConstant.WHETHER_NO);
         return list.stream().filter(e->{
             if (SystemConstant.IS_SITUATION_YES.equals(e.getIsSituation())){
-                if (StringUtils.isBlank(e.getName())||StringUtils.isBlank(e.getTitle())||StringUtils.isBlank(e.getPrivateequityName())||StringUtils.isBlank(e.getCode())||StringUtils.isBlank(e.getMoney())||StringUtils.isBlank(e.getPersonalMoney())||StringUtils.isBlank(e.getContractTime()
-                )||StringUtils.isBlank(e.getContractExpireTime())||StringUtils.isBlank(e.getInvestDirection())||StringUtils.isBlank(e.getManager())||StringUtils.isBlank(e.getRegistrationNumber())||StringUtils.isBlank(e.getShareholder())||StringUtils.isBlank(e.getController())||StringUtils.isBlank(e.getPractice())||StringUtils.isBlank(e.getIsRelation())||StringUtils.isBlank(e.getTbType())||StringUtils.isBlank(e.getYear())){
-                    exportReturnVO.setFailNumber(exportReturnVO.getFailNumber()+1);
-                    exportReturnVO.getFailMessage().add(new ExportReturnMessageVO(e.getColumnNumber(),"有此类情况时以下内容不能为空：姓名,称谓,投资私募股权投资基金的情况,投资的私募股权投资基金产品名称,投资的私募股权投资基金产品编码,基金总实缴金额,个人实缴金额,基金合同签署日,基金合同约定的到期日,基金投向,投资私募股权投资基金管理人或者在其担任高级职务的情况,私募股权投资基金管理人名称,私募股权投资基金登记编号,是否为该基金管理人的股东（合伙人）,是否为该基金管理人的实际控制人,是否担任该基金管理人高级职务,是否与报告人所在单位（系统）直接发生过经济关系,填报类型,年度。"));
-                    return false;
-                }
+//                if (StringUtils.isBlank(e.getName())||StringUtils.isBlank(e.getTitle())||StringUtils.isBlank(e.getPrivateequityName())||StringUtils.isBlank(e.getCode())||StringUtils.isBlank(e.getMoney())||StringUtils.isBlank(e.getPersonalMoney())||StringUtils.isBlank(e.getContractTime()
+//                )||StringUtils.isBlank(e.getContractExpireTime())||StringUtils.isBlank(e.getInvestDirection())||StringUtils.isBlank(e.getManager())||StringUtils.isBlank(e.getRegistrationNumber())||StringUtils.isBlank(e.getShareholder())||StringUtils.isBlank(e.getController())||StringUtils.isBlank(e.getPractice())||StringUtils.isBlank(e.getIsRelation())){
+//                    exportReturnVO.setFailNumber(exportReturnVO.getFailNumber()+1);
+//                    exportReturnVO.getFailMessage().add(new ExportReturnMessageVO(e.getColumnNumber(),"有此类情况时以下内容不能为空：姓名,称谓,投资私募股权投资基金的情况,投资的私募股权投资基金产品名称,投资的私募股权投资基金产品编码,基金总实缴金额,个人实缴金额,基金合同签署日,基金合同约定的到期日,基金投向,投资私募股权投资基金管理人或者在其担任高级职务的情况,私募股权投资基金管理人名称,私募股权投资基金登记编号,是否为该基金管理人的股东（合伙人）,是否为该基金管理人的实际控制人,是否担任该基金管理人高级职务,是否与报告人所在单位（系统）直接发生过经济关系。"));
+//                    return false;
+//                }
                 if (!isOrNotList.contains(e.getShareholder())||!isOrNotList.contains(e.getController())||!isOrNotList.contains(e.getPractice())||!isOrNotList.contains(e.getIsRelation())){
                     exportReturnVO.setFailNumber(exportReturnVO.getFailNumber()+1);
                     exportReturnVO.getFailMessage().add(new ExportReturnMessageVO(e.getColumnNumber(),"有此类情况时以下内容只能填是否：是否为该基金管理人的实际控制人,是否为机构股东（合伙人、所有人等）,是否在该机构中从业,该企业或其他市场主体是否与报告人所在单位（系统）直接发生过商品、劳务、服务等经济关系。"));
                     return false;
                 }
-                if (SystemConstant.WHETHER_YES.equals(e.getShareholder())&&(StringUtils.isBlank(e.getSubscriptionMoney()))||StringUtils.isBlank(e.getSubscriptionRatio())||StringUtils.isBlank(e.getSubscriptionTime())){
-                    exportReturnVO.setFailNumber(exportReturnVO.getFailNumber()+1);
-                    exportReturnVO.getFailMessage().add(new ExportReturnMessageVO(e.getColumnNumber(),"为机构股东（合伙人、所有人等）时以下内容不能为空： 认缴金额,认缴比例,认缴时间。"));
-                    return false;
-                }
-                if (SystemConstant.WHETHER_YES.equals(e.getPractice())&&(StringUtils.isBlank(e.getPostName())||StringUtils.isBlank(e.getInductionStartTime())||StringUtils.isBlank(e.getInductionEndTime())||StringUtils.isBlank(e.getManagerOperatScope()))){
-                    exportReturnVO.setFailNumber(exportReturnVO.getFailNumber()+1);
-                    exportReturnVO.getFailMessage().add(new ExportReturnMessageVO(e.getColumnNumber(),"担任该基金管理人高级职务时以下内容不能为空： 所担任的高级职务名称,担任高级职务的开始结束时间,基金管理人的经营范围。"));
-                    return false;
-                }
-                if (SystemConstant.WHETHER_YES.equals(e.getIsRelation())&&StringUtils.isBlank(e.getRemarks())){
-                    exportReturnVO.setFailNumber(exportReturnVO.getFailNumber()+1);
-                    exportReturnVO.getFailMessage().add(new ExportReturnMessageVO(e.getColumnNumber(),"与报告人所在单位（系统）直接发生过经济关系时以下内容不能为空：备注。"));
-                    return false;
-                }
+//                if (SystemConstant.WHETHER_YES.equals(e.getShareholder())&&(StringUtils.isBlank(e.getSubscriptionMoney()))||StringUtils.isBlank(e.getSubscriptionRatio())||StringUtils.isBlank(e.getSubscriptionTime())){
+//                    exportReturnVO.setFailNumber(exportReturnVO.getFailNumber()+1);
+//                    exportReturnVO.getFailMessage().add(new ExportReturnMessageVO(e.getColumnNumber(),"为机构股东（合伙人、所有人等）时以下内容不能为空： 认缴金额,认缴比例,认缴时间。"));
+//                    return false;
+//                }
+//                if (SystemConstant.WHETHER_YES.equals(e.getPractice())&&(StringUtils.isBlank(e.getPostName())||StringUtils.isBlank(e.getInductionStartTime())||StringUtils.isBlank(e.getInductionEndTime())||StringUtils.isBlank(e.getManagerOperatScope()))){
+//                    exportReturnVO.setFailNumber(exportReturnVO.getFailNumber()+1);
+//                    exportReturnVO.getFailMessage().add(new ExportReturnMessageVO(e.getColumnNumber(),"担任该基金管理人高级职务时以下内容不能为空： 所担任的高级职务名称,担任高级职务的开始结束时间,基金管理人的经营范围。"));
+//                    return false;
+//                }
+//                if (SystemConstant.WHETHER_YES.equals(e.getIsRelation())&&StringUtils.isBlank(e.getRemarks())){
+//                    exportReturnVO.setFailNumber(exportReturnVO.getFailNumber()+1);
+//                    exportReturnVO.getFailMessage().add(new ExportReturnMessageVO(e.getColumnNumber(),"与报告人所在单位（系统）直接发生过经济关系时以下内容不能为空：备注。"));
+//                    return false;
+//                }
                 List<String> numbers = Stream.of(e.getMoney(), e.getPersonalMoney(), e.getSubscriptionMoney(),e.getSubscriptionRatio(), e.getYear()).filter(StringUtils::isNotBlank).collect(Collectors.toList());
                 if (!NumberUtils.isAllNumeric(numbers)){
                     exportReturnVO.setFailNumber(exportReturnVO.getFailNumber()+1);

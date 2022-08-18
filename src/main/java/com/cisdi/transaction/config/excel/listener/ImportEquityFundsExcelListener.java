@@ -6,6 +6,7 @@ import com.alibaba.excel.exception.ExcelAnalysisException;
 import com.alibaba.excel.metadata.CellData;
 import com.cisdi.transaction.config.excel.ExcelImportValid;
 import com.cisdi.transaction.config.excel.ExceptionCustom;
+import com.cisdi.transaction.constant.SystemConstant;
 import com.cisdi.transaction.domain.dto.BaseDTO;
 import com.cisdi.transaction.domain.dto.EquityFundsDTO;
 import com.cisdi.transaction.domain.vo.ExportReturnMessageVO;
@@ -71,6 +72,7 @@ public class ImportEquityFundsExcelListener extends AnalysisEventListener<Equity
             dto.setIsSituation("有此类情况");
             //通用方法数据校验
             ExcelImportValid.valid(dto);
+//            changNoToNull(dto);
         } catch (ExceptionCustom e) {
 //            System.out.println(e.getMessage());
             //在easyExcel监听器中抛出业务异常
@@ -90,6 +92,35 @@ public class ImportEquityFundsExcelListener extends AnalysisEventListener<Equity
             list.clear();
         }
     }
+
+    /**
+     * 将"无"替换为空
+     * @param dto
+     */
+    private void changNoToNull(EquityFundsDTO dto) {
+        if (SystemConstant.NO.equals(dto.getSubscriptionMoney())){
+            dto.setSubscriptionMoney(null);
+        }
+        if (SystemConstant.NO.equals(dto.getSubscriptionRatio())){
+            dto.setSubscriptionRatio(null);
+        }
+        if (SystemConstant.NO.equals(dto.getSubscriptionTime())){
+            dto.setSubscriptionTime(null);
+        }
+        if (SystemConstant.NO.equals(dto.getPostName())){
+            dto.setPostName(null);
+        }
+        if (SystemConstant.NO.equals(dto.getInductionStartTime())){
+            dto.setInductionStartTime(null);
+        }
+        if (SystemConstant.NO.equals(dto.getInductionEndTime())){
+            dto.setInductionEndTime(null);
+        }
+        if (SystemConstant.NO.equals(dto.getManagerOperatScope())){
+            dto.setManagerOperatScope(null);
+        }
+    }
+
 
     @Override
     public void doAfterAllAnalysed(AnalysisContext analysisContext) {

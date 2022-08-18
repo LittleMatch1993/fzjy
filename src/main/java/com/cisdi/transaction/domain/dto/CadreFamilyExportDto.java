@@ -29,6 +29,6 @@ public class CadreFamilyExportDto extends BaseDTO{
     private String unit;
 
     @ApiModelProperty(value = "职务类型")
-    private String post;
+    private String post_type;
 
 }

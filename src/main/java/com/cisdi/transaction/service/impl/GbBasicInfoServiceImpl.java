@@ -198,7 +198,7 @@ public class GbBasicInfoServiceImpl extends ServiceImpl<GbBasicInfoMapper, GbBas
         }
         //字典转换
         List<CadreExcelVO> list =  this.baseMapper.selectList(new LambdaQueryWrapper<GbBasicInfo>().like(StringUtils.isNotBlank(dto.getName()),GbBasicInfo::getName,dto.getName()).in(GbBasicInfo::getCardId,cardIds)
-        .like(StringUtils.isNotBlank(dto.getUnit()),GbBasicInfo::getUnit,dto.getUnit()).like(StringUtils.isNotBlank(dto.getPost()),GbBasicInfo::getPost,dto.getPost())
+        .like(StringUtils.isNotBlank(dto.getUnit()),GbBasicInfo::getUnit,dto.getUnit()).eq(StringUtils.isNotBlank(dto.getPost_type()),GbBasicInfo::getPost,dto.getPost_type())
         ).stream().map(t -> {
             CadreExcelVO vo = new CadreExcelVO();
             BeanUtils.copyProperties(t, vo);
