@@ -556,7 +556,7 @@ public class InvestInfoServiceImpl extends ServiceImpl<InvestInfoMapper, InvestI
                 //GlobalCityInfo city = infoMap.get(info.getCountryId());//地级市
                 if (i == 0) {
 //                    throw new RuntimeException(dto.getRegisterProvince() + ":" + "省份下的地级市不匹配");
-                    return dto.getRegisterProvince() + ":" + "省份下的地级市不匹配";
+//                    return dto.getRegisterProvince() + ":" + "省份下的地级市不匹配";
                 }
             }
             return null;

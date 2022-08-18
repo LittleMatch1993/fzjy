@@ -527,7 +527,7 @@ public class MechanismInfoServiceImpl extends ServiceImpl<MechanismInfoMapper, M
                 long i = cityList.stream().filter(e -> e.getName().equals(dto.getCity())).count();
                 if (i == 0) {
 //                    throw new RuntimeException(dto.getRegisterProvince() + ":" + "省份下的地级市不匹配");
-                    return dto.getRegisterProvince() + ":" + "省份下的地级市不匹配";
+//                    return dto.getRegisterProvince() + ":" + "省份下的地级市不匹配";
                 }
             }
             return null;
