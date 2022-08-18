@@ -81,8 +81,6 @@ public class OrgServiceImpl extends ServiceImpl<OrgMapper, Org> implements OrgSe
     @Override
     public void syncDa() {
         JSONObject obj = new JSONObject();
-        String stringDate = DateUtil.format(new Date(), "yyyyMMdd");
-        System.out.println("当前时间"+stringDate);
         //换成配置文件
         obj.put("app_id", "sphy");
         obj.put("table_name", "");

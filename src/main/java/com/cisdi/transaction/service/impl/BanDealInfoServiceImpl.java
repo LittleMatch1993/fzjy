@@ -120,6 +120,8 @@ public class BanDealInfoServiceImpl extends ServiceImpl<BanDealInfoMapper, BanDe
         ids.add(infoDto.getId());
         this.updateById(info);
          //purchaseBanDealInfoSevice.deletePushDataForPurchase(ids);
+        //加入干部家属信息
+        this.addFamilyInfo(info);
         //新增操作记录
         List<BanDealInfo> infoList = new ArrayList<>();
         infoList.add(info);

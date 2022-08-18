@@ -112,12 +112,13 @@ public class MechanismInfoServiceImpl extends ServiceImpl<MechanismInfoMapper, M
         //校验国家/省份/市
         checkArea(dto, info);
         info.setState(SystemConstant.SAVE_STATE);
-        info.setCreateTime(DateUtil.date());
+        //info.setCreateTime(DateUtil.date());
         info.setUpdateTime(DateUtil.date());
         info.setTenantId(dto.getServiceLesseeId());
         info.setCreatorId(dto.getServiceUserId());
         info = this.valid(info);
-        this.save(info);
+        this.updateById(info);
+        addFamilyInfo(info);
     }
 
     @Override
