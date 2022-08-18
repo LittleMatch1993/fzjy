@@ -1,6 +1,8 @@
 package com.cisdi.transaction.controller;
 
 import cn.hutool.core.collection.CollectionUtil;
+import cn.hutool.core.io.FileUtil;
+import cn.hutool.core.io.IoUtil;
 import cn.hutool.core.util.StrUtil;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
@@ -30,6 +32,8 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 import javax.validation.constraints.Size;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -108,6 +112,7 @@ public class ProhibitTransactionController{
         try {
             String fileName = new String("禁止交易信息".getBytes(), StandardCharsets.UTF_8);
             List<ProhibitTransactionExcelVO> list=banDealInfoService.export(dto.getIds());
+
             MultipartFile multipartFile = ExportExcelUtils.exportExcel(response, fileName, ProhibitTransactionExcelVO.class, list);
             url = minIoUtil.downloadByMinio(multipartFile, bucketName, null);
         } catch (UnsupportedEncodingException e) {

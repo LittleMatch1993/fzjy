@@ -76,6 +76,13 @@ public class SpouseBasicInfoServiceImpl extends ServiceImpl<SpouseBasicInfoMappe
     }
 
     @Override
+    public long selectCount(String cadreCardId, String name, String title) {
+        long index = this.lambdaQuery().eq(SpouseBasicInfo::getCadreCardId, cadreCardId)
+                .eq(SpouseBasicInfo::getName, name).eq(SpouseBasicInfo::getTitle, title).count();
+        return index;
+    }
+
+    @Override
     public List<SpouseBasicInfo> selectAll() {
         List<SpouseBasicInfo>  list = this.lambdaQuery().list();
         return list;
