@@ -18,9 +18,9 @@ import java.util.List;
 @ApiModel(description = "干部家属导出条件")
 public class CadreFamilyExportDto extends BaseDTO{
 
-//    @ApiModelProperty(value = "id集合")
+    @ApiModelProperty(value = "id集合")
 //    @NotEmpty(message = "导出不能为空")
-//    private List<String> ids;
+    private List<String> ids;
 
     @ApiModelProperty(value = "名字")
     private String name;
