@@ -96,7 +96,7 @@ public class InstitutionalFrameworkController {
         String url = null;
         try {
             String fileName = new String("组织机构信息".getBytes(), StandardCharsets.UTF_8);
-            List<InstitutionalFrameworkExcelVO> list=orgService.export(dto.getIds());
+            List<InstitutionalFrameworkExcelVO> list=orgService.export(dto);
             MultipartFile multipartFile = ExportExcelUtils.exportExcel(response, fileName, InstitutionalFrameworkExcelVO.class, list);
             url = minIoUtil.downloadByMinio(multipartFile, bucketName, null);
         } catch (UnsupportedEncodingException e) {

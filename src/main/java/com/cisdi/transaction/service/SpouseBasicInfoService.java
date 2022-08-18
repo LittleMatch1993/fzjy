@@ -2,6 +2,7 @@ package com.cisdi.transaction.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.cisdi.transaction.domain.dto.CadreFamiliesDTO;
+import com.cisdi.transaction.domain.dto.CadreFamilyExportDto;
 import com.cisdi.transaction.domain.model.GbBasicInfo;
 import com.cisdi.transaction.domain.model.SpouseBasicInfo;
 import com.cisdi.transaction.domain.vo.CadreFamiliesExcelVO;
@@ -63,4 +64,13 @@ public interface SpouseBasicInfoService extends IService<SpouseBasicInfo> {
      * @return
      */
     List<CadreFamiliesExcelVO> export(List<String> ids);
+
+    /**
+     * 导出功能
+     * @param dto
+     * @return
+     */
+    List<CadreFamiliesExcelVO> export(CadreFamilyExportDto dto);
+
+
 }

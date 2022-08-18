@@ -7,7 +7,9 @@ import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.cisdi.transaction.config.base.ResultMsgUtil;
+import com.cisdi.transaction.config.utils.AuthSqlUtil;
 import com.cisdi.transaction.config.utils.NumberUtils;
+import com.cisdi.transaction.constant.ModelConstant;
 import com.cisdi.transaction.constant.SqlConstant;
 import com.cisdi.transaction.constant.SystemConstant;
 import com.cisdi.transaction.domain.dto.*;
@@ -700,6 +702,22 @@ public class PrivateEquityServiceImpl extends ServiceImpl<PrivateEquityMapper, P
         if (!updateList.isEmpty()) {
             this.updateBatchById(updateList);
         }
+    }
+
+    @Override
+    public List<EquityFundsDTO> exportEquityFundsExcel(CadreFamilyExportDto exportDto) {
+        List<SysDictBiz> dictList = sysDictBizService.selectList();
+        List<EquityFundsDTO> list =  this.lambdaQuery().eq(StringUtils.isNotBlank(exportDto.getState()),PrivateEquity::getState, exportDto.getState())
+                .like(StringUtils.isNotBlank(exportDto.getCompany()),PrivateEquity::getCompany,exportDto.getCompany())
+                .like(StringUtils.isNotBlank(exportDto.getGb_name()),PrivateEquity::getGbName,exportDto.getGb_name())
+                .apply(AuthSqlUtil.getAuthSqlByTableNameAndOrgCode(ModelConstant.INVEST_INFO,exportDto.getOrgCode()))
+                .orderByDesc(PrivateEquity::getUpdateTime).list().stream().map(t -> {
+            EquityFundsDTO dto = new EquityFundsDTO();
+            BeanUtils.copyProperties(t, dto);
+            return dto;
+        }).collect(Collectors.toList());
+        list  = this.replaceDictValue(list,dictList);
+        return list;
     }
 
     private List<EquityFundsDTO> replaceDictValue(List<EquityFundsDTO> list,List<SysDictBiz> dictList){

@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.cisdi.transaction.config.base.ResultMsgUtil;
 import com.cisdi.transaction.domain.dto.BanDealInfoDTO;
+import com.cisdi.transaction.domain.dto.CadreFamilyExportDto;
 import com.cisdi.transaction.domain.dto.SubmitDto;
 import com.cisdi.transaction.domain.model.*;
 import com.cisdi.transaction.domain.vo.ProhibitTransactionExcelVO;
@@ -115,4 +116,11 @@ public interface BanDealInfoService extends IService<BanDealInfo> {
      * @return
      */
     List<ProhibitTransactionExcelVO> export(List<String> ids);
+
+    /**
+     * 导出
+     * @param dto
+     * @return
+     */
+    List<ProhibitTransactionExcelVO> export(CadreFamilyExportDto dto);
 }

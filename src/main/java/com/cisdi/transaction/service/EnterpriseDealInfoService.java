@@ -2,6 +2,7 @@ package com.cisdi.transaction.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.cisdi.transaction.domain.dto.BusinessTransactionDTO;
+import com.cisdi.transaction.domain.dto.CadreFamilyExportDto;
 import com.cisdi.transaction.domain.model.EnterpriseDealInfo;
 import com.cisdi.transaction.domain.vo.BusinessTransactionExcelVO;
 
@@ -31,4 +32,11 @@ public interface EnterpriseDealInfoService extends IService<EnterpriseDealInfo> 
      * @param dtos
      */
     void saveList(List<BusinessTransactionDTO> dtos);
+
+    /**
+     * 导出功能
+     * @param dto
+     * @return
+     */
+    List<BusinessTransactionExcelVO> export(CadreFamilyExportDto dto);
 }

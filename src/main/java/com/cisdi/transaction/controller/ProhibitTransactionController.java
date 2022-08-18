@@ -111,7 +111,7 @@ public class ProhibitTransactionController{
         String url = null;
         try {
             String fileName = new String("禁止交易信息".getBytes(), StandardCharsets.UTF_8);
-            List<ProhibitTransactionExcelVO> list=banDealInfoService.export(dto.getIds());
+            List<ProhibitTransactionExcelVO> list=banDealInfoService.export(dto);
 
             MultipartFile multipartFile = ExportExcelUtils.exportExcel(response, fileName, ProhibitTransactionExcelVO.class, list);
             url = minIoUtil.downloadByMinio(multipartFile, bucketName, null);

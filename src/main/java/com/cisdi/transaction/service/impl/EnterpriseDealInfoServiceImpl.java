@@ -2,10 +2,14 @@ package com.cisdi.transaction.service.impl;
 
 import cn.hutool.core.date.DateUtil;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.cisdi.transaction.config.utils.AuthSqlUtil;
+import com.cisdi.transaction.constant.ModelConstant;
 import com.cisdi.transaction.constant.SqlConstant;
 import com.cisdi.transaction.domain.dto.BusinessTransactionDTO;
+import com.cisdi.transaction.domain.dto.CadreFamilyExportDto;
 import com.cisdi.transaction.domain.model.BanDealInfo;
 import com.cisdi.transaction.domain.model.EnterpriseDealInfo;
+import com.cisdi.transaction.domain.model.InvestInfo;
 import com.cisdi.transaction.domain.model.SysDictBiz;
 import com.cisdi.transaction.domain.vo.BusinessTransactionExcelVO;
 import com.cisdi.transaction.mapper.master.EnterpriseDealInfoMapper;
@@ -13,6 +17,7 @@ import com.cisdi.transaction.service.BanDealInfoService;
 import com.cisdi.transaction.service.EnterpriseDealInfoService;
 import com.cisdi.transaction.service.SysDictBizService;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -131,5 +136,22 @@ public class EnterpriseDealInfoServiceImpl extends ServiceImpl<EnterpriseDealInf
                 this.saveBatch(collect);
             }
         }
+    }
+
+    @Override
+    public List<BusinessTransactionExcelVO> export(CadreFamilyExportDto dto){
+        List<SysDictBiz> dictList = sysDictBizService.selectList();
+        List<BusinessTransactionExcelVO> list = this.lambdaQuery().eq(StringUtils.isNotBlank(dto.getPost_type()), EnterpriseDealInfo::getPostType, dto.getPost_type())
+                .like(StringUtils.isNotBlank(dto.getCompany()),EnterpriseDealInfo::getCompany,dto.getCompany())
+                .like(StringUtils.isNotBlank(dto.getName()),EnterpriseDealInfo::getName,dto.getName())
+                .apply(AuthSqlUtil.getAuthSqlByTableNameAndOrgCode(ModelConstant.INVEST_INFO,dto.getOrgCode()))
+                .orderByDesc(EnterpriseDealInfo::getUpdateTime)
+                .list().stream().map(t -> {
+            BusinessTransactionExcelVO vo = new BusinessTransactionExcelVO();
+            BeanUtils.copyProperties(t, vo);
+            return vo;
+        }).collect(Collectors.toList());
+        list = this.replaceDictValue(list,dictList);
+        return list;
     }
 }

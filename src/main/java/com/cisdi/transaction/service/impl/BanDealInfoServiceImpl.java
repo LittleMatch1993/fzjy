@@ -12,8 +12,11 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.cisdi.transaction.config.base.ResultMsgUtil;
+import com.cisdi.transaction.config.utils.AuthSqlUtil;
+import com.cisdi.transaction.constant.ModelConstant;
 import com.cisdi.transaction.constant.SystemConstant;
 import com.cisdi.transaction.domain.dto.BanDealInfoDTO;
+import com.cisdi.transaction.domain.dto.CadreFamilyExportDto;
 import com.cisdi.transaction.domain.dto.SubmitDto;
 import com.cisdi.transaction.domain.model.*;
 import com.cisdi.transaction.domain.vo.KVVO;
@@ -22,6 +25,7 @@ import com.cisdi.transaction.mapper.master.BanDealInfoMapper;
 import com.cisdi.transaction.mapper.slave.PurchaseBanDealInfoMapper;
 import com.cisdi.transaction.service.*;
 import org.apache.commons.collections4.MapUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -651,6 +655,24 @@ public class BanDealInfoServiceImpl extends ServiceImpl<BanDealInfoMapper, BanDe
     public List<ProhibitTransactionExcelVO> export(List<String> ids) {
         List<SysDictBiz> dictList = sysDictBizService.selectList();
         List<ProhibitTransactionExcelVO> list =  this.baseMapper.selectBatchIds(ids).stream().map(t -> {
+            ProhibitTransactionExcelVO vo = new ProhibitTransactionExcelVO();
+            BeanUtils.copyProperties(t, vo);
+            return vo;
+        }).collect(Collectors.toList());
+        list = this.replaceDictValue(list,dictList);
+        return list;
+    }
+
+    @Override
+    public List<ProhibitTransactionExcelVO> export(CadreFamilyExportDto dto) {
+        List<SysDictBiz> dictList = sysDictBizService.selectList();
+        List<ProhibitTransactionExcelVO> list =  this.lambdaQuery().eq(StringUtils.isNotBlank(dto.getState()),BanDealInfo::getState, dto.getState())
+                .like(StringUtils.isNotBlank(dto.getCompany()),BanDealInfo::getCompany,dto.getCompany())
+                .like(StringUtils.isNotBlank(dto.getName()),BanDealInfo::getName,dto.getName())
+                .like(StringUtils.isNotBlank(dto.getPost_type()),BanDealInfo::getPostType,dto.getPost_type())
+                .apply(AuthSqlUtil.getAuthSqlByTableNameAndOrgCode(ModelConstant.INVEST_INFO,dto.getOrgCode()))
+                .orderByDesc(BanDealInfo::getUpdateTime)
+                .list().stream().map(t -> {
             ProhibitTransactionExcelVO vo = new ProhibitTransactionExcelVO();
             BeanUtils.copyProperties(t, vo);
             return vo;

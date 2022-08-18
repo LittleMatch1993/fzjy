@@ -8,8 +8,11 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.cisdi.transaction.config.utils.AuthSqlUtil;
 import com.cisdi.transaction.config.utils.HttpUtils;
+import com.cisdi.transaction.constant.ModelConstant;
 import com.cisdi.transaction.constant.SqlConstant;
+import com.cisdi.transaction.domain.dto.CadreFamilyExportDto;
 import com.cisdi.transaction.domain.dto.InstitutionalFrameworkDTO;
 import com.cisdi.transaction.domain.dto.InvestmentDTO;
 import com.cisdi.transaction.domain.model.Org;
@@ -253,6 +256,21 @@ public class OrgServiceImpl extends ServiceImpl<OrgMapper, Org> implements OrgSe
 
         });
         return list;
+    }
+
+    @Override
+    public List<InstitutionalFrameworkExcelVO> export(CadreFamilyExportDto dto){
+        return this.lambdaQuery().like(StringUtils.isNotBlank(dto.getAsgorganname()),Org::getAsgorganname,dto.getAsgorganname())
+                .like(StringUtils.isNotBlank(dto.getAsgorgancode()),Org::getAsgorgancode,dto.getAsgorgancode())
+                .eq(StringUtils.isNotBlank(dto.getAsglead()),Org::getAsglead,dto.getAsglead())
+                .eq(StringUtils.isNotBlank(dto.getAsgleadfg()),Org::getAsgleadfg,dto.getAsgleadfg())
+                .apply(AuthSqlUtil.getAuthSqlByTableNameAndOrgCode(ModelConstant.ORG,dto.getOrgCode()))
+                .orderByDesc(Org::getUpdateTime)
+                .list().stream().map(t -> {
+            InstitutionalFrameworkExcelVO vo = new InstitutionalFrameworkExcelVO();
+            BeanUtils.copyProperties(t, vo);
+            return vo;
+        }).collect(Collectors.toList());
     }
 
 

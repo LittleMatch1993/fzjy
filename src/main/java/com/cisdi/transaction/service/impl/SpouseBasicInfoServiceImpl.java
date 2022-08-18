@@ -6,8 +6,10 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.cisdi.transaction.constant.ModelConstant;
 import com.cisdi.transaction.constant.SqlConstant;
 import com.cisdi.transaction.domain.dto.CadreFamiliesDTO;
+import com.cisdi.transaction.domain.dto.CadreFamilyExportDto;
 import com.cisdi.transaction.domain.model.GbBasicInfo;
 import com.cisdi.transaction.domain.model.SpouseBasicInfo;
 import com.cisdi.transaction.domain.model.SysDictBiz;
@@ -15,6 +17,7 @@ import com.cisdi.transaction.domain.vo.CadreFamiliesExcelVO;
 import com.cisdi.transaction.mapper.master.SpouseBasicInfoMapper;
 import com.cisdi.transaction.service.SpouseBasicInfoService;
 import com.cisdi.transaction.service.SysDictBizService;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -107,6 +110,19 @@ public class SpouseBasicInfoServiceImpl extends ServiceImpl<SpouseBasicInfoMappe
     public List<CadreFamiliesExcelVO> export(List<String> ids) {
         List<SysDictBiz> dictList = sysDictBizService.selectList();
         return this.baseMapper.selectBatchIds(ids).stream().map(t->{
+            CadreFamiliesExcelVO vo = new CadreFamiliesExcelVO();
+            BeanUtils.copyProperties(t,vo);
+            String title = sysDictBizService.getDictValue(t.getTitle(), dictList);
+            vo.setTitle(title);
+            return vo;
+        }).collect(Collectors.toList());
+    }
+
+    @Override
+    public List<CadreFamiliesExcelVO> export(CadreFamilyExportDto dto) {
+        List<SysDictBiz> dictList = sysDictBizService.selectList();
+
+        return this.lambdaQuery().like(StringUtils.isNotBlank(dto.getCadre_name()),SpouseBasicInfo::getCadreName,dto.getCadre_name()).apply(ModelConstant.SPOUSE_BASIC_INFO,dto.getOrgCode()).orderByDesc(SpouseBasicInfo::getUpdateTime).list().stream().map(t->{
             CadreFamiliesExcelVO vo = new CadreFamiliesExcelVO();
             BeanUtils.copyProperties(t,vo);
             String title = sysDictBizService.getDictValue(t.getTitle(), dictList);

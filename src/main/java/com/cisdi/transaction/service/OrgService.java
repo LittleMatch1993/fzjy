@@ -1,6 +1,7 @@
 package com.cisdi.transaction.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.cisdi.transaction.domain.dto.CadreFamilyExportDto;
 import com.cisdi.transaction.domain.dto.InstitutionalFrameworkDTO;
 import com.cisdi.transaction.domain.model.Org;
 import com.cisdi.transaction.domain.vo.InstitutionalFrameworkExcelVO;
@@ -59,4 +60,6 @@ public interface OrgService  extends IService<Org> {
     List<String> getCardIdsByAsgpathnamecode(String asgpathnamecode);
 
     String getOrgNamesByCodePath(String codePath);
+
+    List<InstitutionalFrameworkExcelVO> export(CadreFamilyExportDto dto);
 }

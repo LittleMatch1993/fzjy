@@ -115,7 +115,7 @@ public class BusinessTransactionController {
         String url = null;
        try {
             String fileName = new String("企业交易信息".getBytes(), StandardCharsets.UTF_8);
-            List<BusinessTransactionExcelVO> list=enterpriseDealInfoService.export(dto.getIds());
+            List<BusinessTransactionExcelVO> list=enterpriseDealInfoService.export(dto);
             MultipartFile multipartFile = ExportExcelUtils.exportExcel(response, fileName, BusinessTransactionExcelVO.class, list);
             url = minIoUtil.downloadByMinio(multipartFile, bucketName, null);
         } catch (UnsupportedEncodingException e) {

@@ -7,13 +7,12 @@ import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.cisdi.transaction.config.base.ResultMsgUtil;
+import com.cisdi.transaction.config.utils.AuthSqlUtil;
 import com.cisdi.transaction.config.utils.NumberUtils;
+import com.cisdi.transaction.constant.ModelConstant;
 import com.cisdi.transaction.constant.SqlConstant;
 import com.cisdi.transaction.constant.SystemConstant;
-import com.cisdi.transaction.domain.dto.BaseDTO;
-import com.cisdi.transaction.domain.dto.CommunityServiceDTO;
-import com.cisdi.transaction.domain.dto.MechanismInfoDTO;
-import com.cisdi.transaction.domain.dto.SubmitDto;
+import com.cisdi.transaction.domain.dto.*;
 import com.cisdi.transaction.domain.model.*;
 import com.cisdi.transaction.domain.vo.ExportReturnMessageVO;
 import com.cisdi.transaction.domain.vo.ExportReturnVO;
@@ -499,9 +498,9 @@ public class MechanismInfoServiceImpl extends ServiceImpl<MechanismInfoMapper, M
             }
             //如果是中国下的，校验省份和市
             if (country.getAreaCode().equals(SystemConstant.CHINA_AREA_CODE)) {
-                if (StringUtils.isBlank(dto.getRegisterProvince()) || StringUtils.isBlank(dto.getCity())) {
+                if (StringUtils.isBlank(dto.getRegisterProvince()) ) {
 //                    throw new RuntimeException(dto.getRegisterCountry() + ":" + "国家下的省份或地级市信息不能为空");
-                    return dto.getRegisterCountry() + ":" + "国家下的省份或地级市信息不能为空";
+                    return dto.getRegisterCountry() + ":" + "国家下的省份信息不能为空";
                 }
                 //省份及城市
                 List<GlobalCityInfo> infoList = globalCityInfoService.lambdaQuery().in(GlobalCityInfo::getName, dto.getRegisterProvince(), dto.getCity()).list();
@@ -761,6 +760,22 @@ public class MechanismInfoServiceImpl extends ServiceImpl<MechanismInfoMapper, M
         if (!updateList.isEmpty()) {
             this.updateBatchById(updateList);
         }
+    }
+
+    @Override
+    public List<CommunityServiceDTO> exportCommunityServiceExcel(CadreFamilyExportDto exportDto) {
+        List<SysDictBiz> dictList = sysDictBizService.selectList();
+        List<CommunityServiceDTO> list = this.lambdaQuery().eq(StringUtils.isNotBlank(exportDto.getState()),MechanismInfo::getState, exportDto.getState())
+                .like(StringUtils.isNotBlank(exportDto.getCompany()),MechanismInfo::getCompany,exportDto.getCompany())
+                .like(StringUtils.isNotBlank(exportDto.getGb_name()),MechanismInfo::getGbName,exportDto.getGb_name())
+                .apply(AuthSqlUtil.getAuthSqlByTableNameAndOrgCode(ModelConstant.INVEST_INFO,exportDto.getOrgCode()))
+                .orderByDesc(MechanismInfo::getUpdateTime).list().stream().map(t -> {
+            CommunityServiceDTO dto = new CommunityServiceDTO();
+            BeanUtils.copyProperties(t, dto);
+            return dto;
+        }).collect(Collectors.toList());
+        list = this.replaceDictValue(list,dictList);
+        return list;
     }
 
     private List<CommunityServiceDTO> checkParams(List<CommunityServiceDTO> list, ExportReturnVO exportReturnVO) {

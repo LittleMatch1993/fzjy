@@ -86,4 +86,10 @@ public interface PrivateEquityService extends IService<PrivateEquity> {
      * @param list
      */
     void saveBatchInvestmentInfo(List<EquityFundsDTO> list, BaseDTO baseDTO, ExportReturnVO exportReturnVO);
+
+    /**
+     * 导出功能
+     * @return
+     */
+    List<EquityFundsDTO> exportEquityFundsExcel(CadreFamilyExportDto exportDto);
 }

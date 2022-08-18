@@ -2,10 +2,7 @@ package com.cisdi.transaction.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.cisdi.transaction.config.base.ResultMsgUtil;
-import com.cisdi.transaction.domain.dto.BaseDTO;
-import com.cisdi.transaction.domain.dto.CommunityServiceDTO;
-import com.cisdi.transaction.domain.dto.MechanismInfoDTO;
-import com.cisdi.transaction.domain.dto.SubmitDto;
+import com.cisdi.transaction.domain.dto.*;
 import com.cisdi.transaction.domain.model.InvestInfo;
 import com.cisdi.transaction.domain.model.MechanismInfo;
 import com.cisdi.transaction.domain.vo.ExportReturnMessageVO;
@@ -84,4 +81,10 @@ public interface MechanismInfoService extends IService<MechanismInfo> {
      * @param list
      */
     void saveBatchInvestInfo(List<CommunityServiceDTO> list, BaseDTO baseDTO, ExportReturnVO exportReturnVO);
+
+    /**
+     * 导出功能
+     * @return
+     */
+    List<CommunityServiceDTO> exportCommunityServiceExcel(CadreFamilyExportDto exportDto);
 }

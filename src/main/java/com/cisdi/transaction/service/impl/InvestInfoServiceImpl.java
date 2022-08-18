@@ -7,7 +7,9 @@ import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.cisdi.transaction.config.base.ResultMsgUtil;
+import com.cisdi.transaction.config.utils.AuthSqlUtil;
 import com.cisdi.transaction.config.utils.NumberUtils;
+import com.cisdi.transaction.constant.ModelConstant;
 import com.cisdi.transaction.constant.SqlConstant;
 import com.cisdi.transaction.constant.SystemConstant;
 import com.cisdi.transaction.domain.dto.*;
@@ -521,9 +523,9 @@ public class InvestInfoServiceImpl extends ServiceImpl<InvestInfoMapper, InvestI
             }
             //如果是中国下的，校验省份和市
             if (country.getAreaCode().equals(SystemConstant.CHINA_AREA_CODE)) {
-                if (StringUtils.isBlank(dto.getRegisterProvince()) || StringUtils.isBlank(dto.getCity())) {
+                if (StringUtils.isBlank(dto.getRegisterProvince())) {
 //                    throw new RuntimeException(dto.getRegisterCountry() + ":" + "国家下的省份或地级市信息不能为空");
-                    return dto.getRegisterCountry() + ":" + "国家下的省份或地级市信息不能为空";
+                    return dto.getRegisterCountry() + ":" + "国家下的省份信息不能为空";
                 }
                 //省份及城市
                 List<GlobalCityInfo> infoList = globalCityInfoService.lambdaQuery().in(GlobalCityInfo::getName, dto.getRegisterProvince(), dto.getCity()).list();
@@ -788,6 +790,24 @@ public class InvestInfoServiceImpl extends ServiceImpl<InvestInfoMapper, InvestI
         if (!updateList.isEmpty()) {
             this.updateBatchById(updateList);
         }
+    }
+
+    @Override
+    public List<InvestmentDTO> exportInvestmentExcel(CadreFamilyExportDto exportDto) {
+
+        List<SysDictBiz> dictList = sysDictBizService.selectList();
+        List<InvestmentDTO> list = this.lambdaQuery().eq(StringUtils.isNotBlank(exportDto.getState()),InvestInfo::getState, exportDto.getState())
+                .like(StringUtils.isNotBlank(exportDto.getCompany()),InvestInfo::getCompany,exportDto.getCompany())
+                .like(StringUtils.isNotBlank(exportDto.getGb_name()),InvestInfo::getGbName,exportDto.getGb_name())
+                .apply(AuthSqlUtil.getAuthSqlByTableNameAndOrgCode(ModelConstant.INVEST_INFO,exportDto.getOrgCode()))
+                .orderByDesc(InvestInfo::getUpdateTime)
+                .list().stream().map(t -> {
+            InvestmentDTO dto = new InvestmentDTO();
+            BeanUtils.copyProperties(t, dto);
+            return dto;
+        }).collect(Collectors.toList());
+        list = this.repalceDictValue(list,dictList);
+        return list;
     }
 
     private List<InvestmentDTO> checkParams(List<InvestmentDTO> list, ExportReturnVO exportReturnVO) {

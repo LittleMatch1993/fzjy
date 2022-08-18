@@ -2,10 +2,7 @@ package com.cisdi.transaction.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.cisdi.transaction.config.base.ResultMsgUtil;
-import com.cisdi.transaction.domain.dto.BaseDTO;
-import com.cisdi.transaction.domain.dto.InvestInfoDTO;
-import com.cisdi.transaction.domain.dto.InvestmentDTO;
-import com.cisdi.transaction.domain.dto.SubmitDto;
+import com.cisdi.transaction.domain.dto.*;
 import com.cisdi.transaction.domain.model.BanDealInfo;
 import com.cisdi.transaction.domain.model.InvestInfo;
 import com.cisdi.transaction.domain.vo.ExportReturnVO;
@@ -98,4 +95,11 @@ public interface InvestInfoService extends IService<InvestInfo> {
      * @param list
      */
     void saveBatchInvestmentInfo(List<InvestmentDTO> list, BaseDTO baseDTO, ExportReturnVO exportReturnVO);
+
+    /**
+     * 根据条件导出
+     * @param exportDto
+     * @return
+     */
+    List<InvestmentDTO> exportInvestmentExcel(CadreFamilyExportDto exportDto);
 }

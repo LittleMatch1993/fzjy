@@ -293,7 +293,7 @@ public class CadreFamiliesController {
         String url = null;
         try {
             String fileName = new String("干部家属信息".getBytes(), StandardCharsets.UTF_8);
-            List<CadreFamiliesExcelVO> list = spouseBasicInfoService.export(dto.getIds());
+            List<CadreFamiliesExcelVO> list = spouseBasicInfoService.export(dto);
             MultipartFile multipartFile = ExportExcelUtils.exportExcel(response, fileName, CadreFamiliesExcelVO.class, list);
             url = minIoUtil.downloadByMinio(multipartFile, bucketName, null);
         } catch (UnsupportedEncodingException e) {
@@ -339,7 +339,7 @@ public class CadreFamiliesController {
         String url = null;
         try {
             String fileName = new String("家属投资企业或者担任高级职务".getBytes(), StandardCharsets.UTF_8);
-            List<InvestmentDTO> list = investInfoService.exportInvestmentExcel(exportDto.getIds());
+            List<InvestmentDTO> list = investInfoService.exportInvestmentExcel(exportDto);
             MultipartFile multipartFile = ExportExcelUtils.exportExcel(response, fileName, InvestmentDTO.class, list);
             url = minIoUtil.downloadByMinio(multipartFile, bucketName, null);
         } catch (UnsupportedEncodingException e) {
@@ -379,7 +379,7 @@ public class CadreFamiliesController {
         String url = null;
         try {
             String fileName = new String("开办有偿社会中介和法律服务机构或者从业的情况".getBytes(), "UTF-8");
-            List<CommunityServiceDTO> list = mechanismInfoService.exportCommunityServiceExcel(exportDto.getIds());
+            List<CommunityServiceDTO> list = mechanismInfoService.exportCommunityServiceExcel(exportDto);
             // EasyExcel.write(response.getOutputStream(), CommunityServiceDTO.class).sheet("开办有偿社会中介和法律服务机构或者从业的情况").doWrite(list);
             MultipartFile multipartFile = ExportExcelUtils.exportExcel(response, fileName, CommunityServiceDTO.class, list);
             url = minIoUtil.downloadByMinio(multipartFile, bucketName, null);
@@ -420,7 +420,7 @@ public class CadreFamiliesController {
         String url = null;
         try {
             String fileName = new String("家属投资私募股权投资基金或者担任高级职务的情况".getBytes(), "UTF-8");
-            List<EquityFundsDTO> list = privateEquityService.exportEquityFundsExcel(exportDto.getIds());
+            List<EquityFundsDTO> list = privateEquityService.exportEquityFundsExcel(exportDto);
             MultipartFile multipartFile = ExportExcelUtils.exportExcel(response, fileName, EquityFundsDTO.class, list);
             url = minIoUtil.downloadByMinio(multipartFile, bucketName, null);
             //EasyExcel.write(response.getOutputStream(), EquityFundsDTO.class).sheet("家属投资私募股权投资基金或者担任高级职务的情况").doWrite(list);
