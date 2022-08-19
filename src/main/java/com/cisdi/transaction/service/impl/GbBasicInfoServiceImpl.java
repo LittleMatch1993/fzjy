@@ -33,10 +33,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -246,17 +243,81 @@ public class GbBasicInfoServiceImpl extends ServiceImpl<GbBasicInfoMapper, GbBas
             String pathNamecode = org.getAsgpathnamecode();
             list =this.baseMapper.selectByPathNameCodeAndCardIds(cardIds,pathNamecode);
         }
+        if(CollectionUtil.isEmpty(list)){
+            return null;
+        }
         List<GbOrgInfo> gbOrgInfoList = new ArrayList<>();
-        Map<String, List<GbOrgInfo>> map = list.stream().collect(Collectors.groupingBy(go -> go.getCardId() + "_" +go.getUnit() + "_" + go.getPostType()));
+        Map<String, List<GbOrgInfo>> map = list.stream().collect(Collectors.groupingBy(go -> go.getCardId()));
         for (Map.Entry<String, List<GbOrgInfo>> m : map.entrySet()) {
-            String key = m.getKey();//key 身份证_单位_职务类型
+            String key = m.getKey();//key 身份证
             List<GbOrgInfo> tempList = m.getValue();
+            String gbName = tempList.get(0).getName();//干部姓名
             System.out.println("key:" + m.getKey() + " value:" + m.getValue());
-            GbOrgInfo gbOrgInfo = tempList.get(0);//默认取第一个值 作为新数据保存
-            //将多个职务用逗号链接并保存之新数据中
-            String newPost = tempList.stream().map(GbOrgInfo::getPost).collect(Collectors.joining(","));
-            gbOrgInfo.setPost(newPost);
-            gbOrgInfoList.add(gbOrgInfo); //数据中部门id不存在
+            //同一用户根据单位分组
+            Map<String, List<GbOrgInfo>> unitGroupMap = tempList.stream().collect(Collectors.groupingBy(e -> e.getUnit()));
+            //查询同一单位下职务类型是否有多个。如果多个返回异常
+            for (Map.Entry<String, List<GbOrgInfo>> unitGoup : unitGroupMap.entrySet()) {
+                List<GbOrgInfo> unitGroupList = unitGoup.getValue();
+                Map<String, List<GbOrgInfo>> postTypeGroupMap = unitGroupList.stream().collect(Collectors.groupingBy(e -> e.getPostType()));
+                if (postTypeGroupMap.size() > 1) {//同一单位下 多个职务类型 。
+                    throw new RuntimeException(gbName + "同一单位下多个职务类型");
+                }
+            }
+            int unitSize = unitGroupMap.size();
+            if(unitSize==1){
+                 GbOrgInfo gbOrgInfo = tempList.get(0);
+                 String unit = gbOrgInfo.getUnit();
+                 //如果有多个职务，则职务类型逗号 隔开
+                 List<GbOrgInfo> unitList = unitGroupMap.get(unit);
+                 if(unitList.size()>1){
+                     //多个职务逗号链接
+                     String tempPost = unitList.stream().map(GbOrgInfo::getPost).collect(Collectors.joining(","));
+                     gbOrgInfo.setPost(tempPost);
+                 }
+                gbOrgInfoList.add(gbOrgInfo);
+                 continue;
+            }
+            //当前用户有多个单位 获取当前用户的最高级别单位  asglevel值越小 级别越高
+            int  level  = tempList.stream().min(Comparator.comparing(GbOrgInfo::getAsglevel)).get().getAsglevel();
+            //取出最高等级的单位
+             List<GbOrgInfo> levelList = tempList.stream().filter(e -> level == e.getAsglevel()).collect(Collectors.toList());
+             if(CollectionUtil.isNotEmpty(levelList)){
+                 //1.非最高等级干部组织信息的组织链是否在最高等级干部组织信息的组织链中，
+                 // 如果在 不做任何事，如果不在，将单位和单位编码拼接在最高等级干部组织信息列表的中第一条数据
+                 List<GbOrgInfo> otherLevelList = tempList.stream().
+                         filter(e -> !levelList.stream().map(GbOrgInfo::getId).collect(Collectors.toList()).contains(e.getId()))
+                         .collect(Collectors.toList()); //非最高等级的信息
+                 //2.获取组织编码链不在最高等级单位下的数据 默认放入
+                 String otherPost = null;
+                 if(CollectionUtil.isNotEmpty(otherLevelList)){
+                     List<GbOrgInfo> temp = new ArrayList<>();
+                     List<String> pathCodeList = levelList.stream().map(GbOrgInfo::getAsgpathnamecode).collect(Collectors.toList());
+                     otherLevelList.stream().forEach(e->{
+                          String asgpathnamecode = e.getAsgpathnamecode();
+                          boolean b = pathCodeList.contains(asgpathnamecode);
+                         if (!b) {
+                             temp.add(e);
+                         }
+                     });
+                     if(CollectionUtil.isNotEmpty(temp)){
+                         otherPost = temp.stream().map(e->e.getPost()).collect(Collectors.joining(","));
+                     }
+                 }
+
+                 //3.将最高等级的单位干部组织信息进行分组，因为会出现一个单位多个部门
+                 Map<String, List<GbOrgInfo>> levelListMap = levelList.stream().collect(Collectors.groupingBy(e -> e.getUnit()));
+                 int index =1;
+                 for (Map.Entry<String, List<GbOrgInfo>> leveMap : levelListMap.entrySet()) {
+                      List<GbOrgInfo> valueList = leveMap.getValue();
+                      GbOrgInfo levlGbOrg = valueList.get(0);//取第一个。同单位的其他部门的职务进行逗号拼接
+                      String tempPost = valueList.stream().map(GbOrgInfo::getPost).collect(Collectors.joining(","));
+                      if(index==1&&StrUtil.isNotEmpty(otherPost)){
+                          tempPost +=","+otherPost;
+                      }
+                     levlGbOrg.setPost(tempPost);
+                     gbOrgInfoList.add(levlGbOrg);
+                 }
+             }
         }
         return gbOrgInfoList;
     }

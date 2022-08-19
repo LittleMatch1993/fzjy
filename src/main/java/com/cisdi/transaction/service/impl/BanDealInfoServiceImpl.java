@@ -205,8 +205,8 @@ public class BanDealInfoServiceImpl extends ServiceImpl<BanDealInfoMapper, BanDe
 
                     //13-1表中的，显示X（个人认缴出资额或个人出资额（人民币万元））,Y（个人认缴出资比例或个人出资比例（%））,AA（是否担任高级职务），AB（所担任的高级职务名称）列内容
                     //----如果AA值为是，则拼接AB列，否则不拼接
-                    String engageInfo = "个人认缴出资额或个人出资额(人民币万元):" +(StrUtil.isEmpty( info.getPersonalCapital())?"": info.getPersonalCapital()) + ",个人认缴出资比例或个人出资比例(%):" + (StrUtil.isEmpty(info.getPersonalRatio())?"":info.getPersonalRatio())
-                            + ("是".equals(sysDictBizService.getDictValue(info.getSeniorPosition(),dictList)) ? ",担任高级职务名称:" + (StrUtil.isEmpty(info.getSeniorPositionName())?"":info.getSeniorPositionName()) : "");
+                    String engageInfo = "个人认缴出资额或个人出资额(人民币万元):" +(StrUtil.isEmpty( info.getPersonalCapital())?"": info.getPersonalCapital()) + "；个人认缴出资比例或个人出资比例(%):" + (StrUtil.isEmpty(info.getPersonalRatio())?"":info.getPersonalRatio())
+                            + ("是".equals(sysDictBizService.getDictValue(info.getSeniorPosition(),dictList)) ? "；担任高级职务名称:" + (StrUtil.isEmpty(info.getSeniorPositionName())?"":info.getSeniorPositionName()) : "");
 
                     bandealInfo.setEngageInfo(engageInfo);
                     bandealInfo.setOperatScope(info.getOperatScope());
@@ -227,16 +227,16 @@ public class BanDealInfoServiceImpl extends ServiceImpl<BanDealInfoMapper, BanDe
                         //当禁业职务类型为直管企业党委管理干部正职，则禁止交易采购单位为该干部所在单位及以下；
                         //当禁业职务类型为直管企业党委管理干部副职，则禁止交易采购单位为该干部所在单位及以下；
                         String banPostType = bandealInfo.getBanPostType();
-                        String whether = SystemConstant.WHETHER_YES;
+                        String whether = sysDictBizService.getDictId(SystemConstant.WHETHER_YES,dictList);
                         //String purchaseCode = Objects.isNull(gbOrgInfo) ? "" : gbOrgInfo.getUnitCode();//禁止交易采购单位代码
-                        String purchaseCode = Objects.isNull(gbOrgInfo) ? "" : gbOrgInfo.getOrgCode();//禁止交易采购单位代码
+                        String purchaseCode = Objects.isNull(gbOrgInfo) ? "" : gbOrgInfo.getUnitCode();//禁止交易采购单位代码
                         String purchaseName = Objects.isNull(gbOrgInfo) ? "" : gbOrgInfo.getUnit();
                         ;//禁止交易采购单位名称
                         if ("党组管理干部正职".equals(sysDictBizService.getDictValue(banPostType,dictList))) {
                             purchaseCode = "60000001";
                             purchaseName = "中国五矿集团有限公司";
                         } else if ("总部处长".equals(sysDictBizService.getDictValue(banPostType,dictList))) {
-                            whether = SystemConstant.WHETHER_NO;//是否继承关系
+                            whether = sysDictBizService.getDictId(SystemConstant.WHETHER_NO,dictList);
                             Org org = orgService.getOrgByUnitCodeAndDepartmentName(gbOrgInfo.getUnitCode(),gbOrgInfo.getDeparment());
                             purchaseCode = Objects.isNull(org) ? "" : org.getAsgorgancode();//禁止交易采购单位代码
                             purchaseName = Objects.isNull(org) ? "" : org.getAsgorganname();
@@ -303,10 +303,10 @@ public class BanDealInfoServiceImpl extends ServiceImpl<BanDealInfoMapper, BanDe
                     bandealInfo.setEngageType(sysDictBizService.getDictId("投资私募股权投资基金或者担任高级职务",dictList));
                     //13-3表中的，显示M（投资的私募股权投资基金产品名称），O（基金总实缴金额（人民币万元）），P（个人实缴金额（人民币万元））,Q（基金投向），X（认缴金额（人民币万元）），Y（认缴比例（%）），AA（是否担任该基金管理人高级职务），AB（所担任的高级职务名称）列内容
                     //------如果AA值为是，则拼接AB列，否则不拼接
-                    String engageInfo = "投资的私募股权投资基金产品名称:" + (StrUtil.isEmpty(info.getPrivateequityName())?"":info.getPrivateequityName()) + ",基金总实缴金额（人民币万元）:" + (StrUtil.isEmpty(info.getMoney())?"":info.getMoney())
-                            + ",个人实缴金额（人民币万元）:" +(StrUtil.isEmpty(info.getPersonalMoney())?"":info.getPersonalMoney())  + ",基金投向:" + (StrUtil.isEmpty(info.getInvestDirection())?"":info.getInvestDirection())
-                            + ",认缴金额（人民币万元）:" + info.getSubscriptionMoney() + ",认缴比例（%）:" + info.getSubscriptionRatio()
-                            + ("是".equals(sysDictBizService.getDictValue(info.getPractice(),dictList)) ? ",所担任的高级职务名称:" + (StrUtil.isEmpty(info.getPostName())?"":info.getPostName()) : "");
+                    String engageInfo = "投资的私募股权投资基金产品名称:" + (StrUtil.isEmpty(info.getPrivateequityName())?"":info.getPrivateequityName()) + "；基金总实缴金额（人民币万元）:" + (StrUtil.isEmpty(info.getMoney())?"":info.getMoney())
+                            + "；个人实缴金额（人民币万元）:" +(StrUtil.isEmpty(info.getPersonalMoney())?"":info.getPersonalMoney())  + "；基金投向:" + (StrUtil.isEmpty(info.getInvestDirection())?"":info.getInvestDirection())
+                            + "；认缴金额（人民币万元）:" + info.getSubscriptionMoney() + "；认缴比例（%）:" + info.getSubscriptionRatio()
+                            + ("是".equals(sysDictBizService.getDictValue(info.getPractice(),dictList)) ? "；所担任的高级职务名称:" + (StrUtil.isEmpty(info.getPostName())?"":info.getPostName()) : "");
 
                     bandealInfo.setEngageInfo(engageInfo);
                     bandealInfo.setOperatScope(info.getManagerOperatScope());
@@ -400,8 +400,8 @@ public class BanDealInfoServiceImpl extends ServiceImpl<BanDealInfoMapper, BanDe
                     bandealInfo.setEngageType(sysDictBizService.getDictId("开办有偿社会中介和法律服务结构或从业",dictList));
                     //13-2表中的，显示Z（个人认缴出资额或个人出资额（人民币万元）），AA（个人认缴出资比例或个人出资比例（%）），AC（是否在该机构中从业），AD（所担任的职务名称）列内容
                     //------如果AC值为是，则拼接AD列，否则不拼接
-                    String engageInfo = "个人认缴出资额或个人出资额（人民币万元）:" +(StrUtil.isEmpty( info.getPersonalCapital())?"": info.getPersonalCapital()) + ",个人认缴出资比例或个人出资比例（%）:" + (StrUtil.isEmpty(info.getPersonalRatio())?"":info.getPersonalRatio())
-                            + ("是".equals(sysDictBizService.getDictValue(info.getPractice(),dictList)) ? ",所担任的职务名称:" + (StrUtil.isEmpty(info.getPostName())?"":info.getPostName()) : "");
+                    String engageInfo = "个人认缴出资额或个人出资额（人民币万元）:" +(StrUtil.isEmpty( info.getPersonalCapital())?"": info.getPersonalCapital()) + "；个人认缴出资比例或个人出资比例（%）:" + (StrUtil.isEmpty(info.getPersonalRatio())?"":info.getPersonalRatio())
+                            + ("是".equals(sysDictBizService.getDictValue(info.getPractice(),dictList)) ? "；所担任的职务名称:" + (StrUtil.isEmpty(info.getPostName())?"":info.getPostName()) : "");
 
                     bandealInfo.setEngageInfo(engageInfo);
                     bandealInfo.setOperatScope(info.getOperatScope());
@@ -475,7 +475,11 @@ public class BanDealInfoServiceImpl extends ServiceImpl<BanDealInfoMapper, BanDe
         if (CollectionUtil.isNotEmpty(infoList)) {
             long count = infoList.stream().filter(e -> SystemConstant.VALID_STATE.equals(e.getState())).count();
             if (count > 0) {
-                return ResultMsgUtil.failure("当前表中的有效数据不能重复!");
+                return ResultMsgUtil.failure("当前表中的有效数据不能重复提交!");
+            }
+            long index = infoList.stream().filter(e -> SystemConstant.INVALID_STATE.equals(e.getState())).count();
+            if(index>0){
+                return ResultMsgUtil.failure("不能提交无效数据!");
             }
             //验证社会统一信用代码 不符合则在数据校验提示列中显示
             infoList = this.validBatchCompanyCode(infoList);

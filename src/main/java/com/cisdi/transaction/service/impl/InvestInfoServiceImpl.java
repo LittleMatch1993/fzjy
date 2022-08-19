@@ -605,6 +605,8 @@ public class InvestInfoServiceImpl extends ServiceImpl<InvestInfoMapper, InvestI
                             if (StringUtils.isBlank(checkDict)){
                                 investInfo.setCreateName(baseDTO.getServiceUserName());
                                 investInfo.setCreateAccount(baseDTO.getServiceUserAccount());
+                                investInfo.setOrgCode(baseDTO.getOrgCode());
+                                investInfo.setOrgName(baseDTO.getOrgName());
                                 investInfoList.add(investInfo);
                                 exportReturnVO.setSuccessNumber(exportReturnVO.getSuccessNumber()+1);
 
@@ -629,6 +631,8 @@ public class InvestInfoServiceImpl extends ServiceImpl<InvestInfoMapper, InvestI
                     if (StringUtils.isBlank(checkDict)){
                         investInfo.setCreateName(baseDTO.getServiceUserName());
                         investInfo.setCreateAccount(baseDTO.getServiceUserAccount());
+                        investInfo.setOrgCode(baseDTO.getOrgCode());
+                        investInfo.setOrgName(baseDTO.getOrgName());
                         investInfoList.add(investInfo);
                         exportReturnVO.setSuccessNumber(exportReturnVO.getSuccessNumber()+1);
                     }else {
@@ -670,6 +674,8 @@ public class InvestInfoServiceImpl extends ServiceImpl<InvestInfoMapper, InvestI
                                     info.setCreateTime(DateUtil.date());
                                     info.setCreateName(baseDTO.getServiceUserName());
                                     info.setCreateAccount(baseDTO.getServiceUserAccount());
+                                    info.setOrgCode(baseDTO.getOrgCode());
+                                    info.setOrgName(baseDTO.getOrgName());
                                     investInfoList.add(info);
                                     exportReturnVO.setSuccessNumber(exportReturnVO.getSuccessNumber()+1);
                                 }else{ //有重复数据了
@@ -685,6 +691,8 @@ public class InvestInfoServiceImpl extends ServiceImpl<InvestInfoMapper, InvestI
                                         info.setCreateTime(DateUtil.date());
                                         info.setCreateName(baseDTO.getServiceUserName());
                                         info.setCreateAccount(baseDTO.getServiceUserAccount());
+                                        info.setOrgCode(baseDTO.getOrgCode());
+                                        info.setOrgName(baseDTO.getOrgName());
                                         investInfoList.add(info);
                                         exportReturnVO.setSuccessNumber(exportReturnVO.getSuccessNumber()+1);
                                     }else {
@@ -746,6 +754,8 @@ public class InvestInfoServiceImpl extends ServiceImpl<InvestInfoMapper, InvestI
                                     .setUpdateTime(DateUtil.date());
                             info.setCreateName(baseDTO.getServiceUserName());
                             info.setCreateAccount(baseDTO.getServiceUserAccount());
+                            info.setOrgCode(baseDTO.getOrgCode());
+                            info.setOrgName(baseDTO.getOrgName());
                             investInfoList.add(info);
                             exportReturnVO.setSuccessNumber(exportReturnVO.getSuccessNumber()+1);
                         }else {
@@ -768,6 +778,8 @@ public class InvestInfoServiceImpl extends ServiceImpl<InvestInfoMapper, InvestI
                         info.setCreateTime(DateUtil.date());
                         info.setCreateName(baseDTO.getServiceUserName());
                         info.setCreateAccount(baseDTO.getServiceUserAccount());
+                        info.setOrgCode(baseDTO.getOrgCode());
+                        info.setOrgName(baseDTO.getOrgName());
                         investInfoList.add(info);
                         exportReturnVO.setSuccessNumber(exportReturnVO.getSuccessNumber()+1);
                     } else {

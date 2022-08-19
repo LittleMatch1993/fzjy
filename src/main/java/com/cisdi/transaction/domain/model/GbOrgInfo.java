@@ -59,4 +59,15 @@ public class GbOrgInfo {
 
     private String orgCode;
 
+    /**
+     * 组织层级
+     */
+    private int asglevel;
+    /**
+     * 组织编码链
+     */
+    private String asgpathnamecode;
+
+
+
 }
