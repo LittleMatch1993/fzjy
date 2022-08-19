@@ -14,6 +14,7 @@ import com.cisdi.transaction.domain.model.Org;
 import com.cisdi.transaction.domain.vo.BusinessTransactionExcelVO;
 import com.cisdi.transaction.domain.vo.InstitutionalFrameworkExcelVO;
 import com.cisdi.transaction.domain.vo.OrgDictVo;
+import com.cisdi.transaction.domain.vo.SearchVO;
 import com.cisdi.transaction.service.OrgService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -32,6 +33,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * @author yuw
@@ -125,15 +127,16 @@ public class InstitutionalFrameworkController {
     }
 
     @ApiOperation("根据组织名和编码")
-    @GetMapping("/selectCodeAndNameByName")
-    public ResultMsgUtil<List> selectCodeAndNameByName(@ApiParam(value = "组织名") @RequestParam(value = "keyword" ,required = false) String keyword,
-                                                  @RequestParam(value = "orgCode" ,required = false) String orgCode) {
-        List<Org> list = orgService.selectByName(keyword,orgCode);
+    @PostMapping("/selectCodeAndNameByName")
+    public ResultMsgUtil<List> selectCodeAndNameByName(@RequestBody SearchVO search) {
         List<OrgDictVo> voList = new ArrayList<>();
+        List<String> keywordList = search.getKeywords();
+        String orgCode = search.getOrgCode();
+        List<Org> list = orgService.selectByName(keywordList,orgCode);
         if(CollectionUtil.isNotEmpty(list)){
             list.stream().forEach(e->{
                 OrgDictVo vo = new OrgDictVo();
-                vo.setId(e.getAsgorgancode());
+                vo.setId(e.getAsgorganname());
                 vo.setName(e.getAsgorgancode()+"-"+e.getAsgorganname());
                 voList.add(vo);
             });

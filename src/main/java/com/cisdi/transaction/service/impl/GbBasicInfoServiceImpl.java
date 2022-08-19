@@ -166,7 +166,7 @@ public class GbBasicInfoServiceImpl extends ServiceImpl<GbBasicInfoMapper, GbBas
                 info.setCreateTime(DateUtil.date());
                 info.setUpdateTime(DateUtil.date());
                 String name = gbBasicInfoThree.getName();
-                name =name.replace(" ","");
+                name  = name.replaceAll("[　*| *| *|//s*]*", "");
                 info.setName(name);
                 dataList.add(info);
             }
@@ -289,6 +289,8 @@ public class GbBasicInfoServiceImpl extends ServiceImpl<GbBasicInfoMapper, GbBas
                          .collect(Collectors.toList()); //非最高等级的信息
                  //2.获取组织编码链不在最高等级单位下的数据 默认放入
                  String otherPost = null;
+                 String otherUnit = null;
+                 String otherUnitCode = null;
                  if(CollectionUtil.isNotEmpty(otherLevelList)){
                      List<GbOrgInfo> temp = new ArrayList<>();
                      List<String> pathCodeList = levelList.stream().map(GbOrgInfo::getAsgpathnamecode).collect(Collectors.toList());
@@ -301,6 +303,8 @@ public class GbBasicInfoServiceImpl extends ServiceImpl<GbBasicInfoMapper, GbBas
                      });
                      if(CollectionUtil.isNotEmpty(temp)){
                          otherPost = temp.stream().map(e->e.getPost()).collect(Collectors.joining(","));
+                         otherUnit = temp.stream().map(e->e.getUnit()).collect(Collectors.joining(","));
+                         otherUnitCode = temp.stream().map(e->e.getUnitCode()).collect(Collectors.joining(","));
                      }
                  }
 
@@ -311,10 +315,20 @@ public class GbBasicInfoServiceImpl extends ServiceImpl<GbBasicInfoMapper, GbBas
                       List<GbOrgInfo> valueList = leveMap.getValue();
                       GbOrgInfo levlGbOrg = valueList.get(0);//取第一个。同单位的其他部门的职务进行逗号拼接
                       String tempPost = valueList.stream().map(GbOrgInfo::getPost).collect(Collectors.joining(","));
+                      String tempUnit = valueList.stream().map(GbOrgInfo::getUnit).collect(Collectors.joining(","));
+                      String tempUnitCode = valueList.stream().map(GbOrgInfo::getUnitCode).collect(Collectors.joining(","));
                       if(index==1&&StrUtil.isNotEmpty(otherPost)){
                           tempPost +=","+otherPost;
                       }
-                     levlGbOrg.setPost(tempPost);
+                      levlGbOrg.setPost(tempPost);
+                      if(index==1&&StrUtil.isNotEmpty(otherPost)){
+                         tempUnit +=","+otherUnit;
+                     }
+                     levlGbOrg.setUnit(tempUnit);
+                     if(index==1&&StrUtil.isNotEmpty(otherPost)){
+                         tempUnitCode +=","+otherUnitCode;
+                     }
+                     levlGbOrg.setUnitCode(tempUnitCode);
                      gbOrgInfoList.add(levlGbOrg);
                  }
              }
