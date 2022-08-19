@@ -580,6 +580,8 @@ public class MechanismInfoServiceImpl extends ServiceImpl<MechanismInfoMapper, M
                             }else {
                                 investInfo.setCreateName(baseDTO.getServiceUserName());
                                 investInfo.setCreateAccount(baseDTO.getServiceUserAccount());
+                                investInfo.setOrgCode(baseDTO.getOrgCode());
+                                investInfo.setOrgName(baseDTO.getOrgName());
                                 mechanismInfoList.add(investInfo);
                                 exportReturnVO.setSuccessNumber(exportReturnVO.getSuccessNumber()+1);
                             }
@@ -600,6 +602,8 @@ public class MechanismInfoServiceImpl extends ServiceImpl<MechanismInfoMapper, M
                     }else {
                         investInfo.setCreateName(baseDTO.getServiceUserName());
                         investInfo.setCreateAccount(baseDTO.getServiceUserAccount());
+                        investInfo.setOrgCode(baseDTO.getOrgCode());
+                        investInfo.setOrgName(baseDTO.getOrgName());
                         mechanismInfoList.add(investInfo);
                         exportReturnVO.setSuccessNumber(exportReturnVO.getSuccessNumber()+1);
                     }
@@ -643,6 +647,8 @@ public class MechanismInfoServiceImpl extends ServiceImpl<MechanismInfoMapper, M
                                     info.setCreateTime(DateUtil.date());
                                     info.setCreateName(baseDTO.getServiceUserName());
                                     info.setCreateAccount(baseDTO.getServiceUserAccount());
+                                    info.setOrgCode(baseDTO.getOrgCode());
+                                    info.setOrgName(baseDTO.getOrgName());
                                     exportReturnVO.setSuccessNumber(exportReturnVO.getSuccessNumber()+1);
                                     mechanismInfoList.add(info);
                                 }else{ //有重复数据了
@@ -721,6 +727,8 @@ public class MechanismInfoServiceImpl extends ServiceImpl<MechanismInfoMapper, M
                             }else {
                                 info.setCreateName(baseDTO.getServiceUserName());
                                 info.setCreateAccount(baseDTO.getServiceUserAccount());
+                                info.setOrgCode(baseDTO.getOrgCode());
+                                info.setOrgName(baseDTO.getOrgName());
                                 mechanismInfoList.add(info);
                                 exportReturnVO.setSuccessNumber(exportReturnVO.getSuccessNumber()+1);
                             }
@@ -746,6 +754,8 @@ public class MechanismInfoServiceImpl extends ServiceImpl<MechanismInfoMapper, M
                         info.setCreateTime(new Date());
                         info.setCreateName(baseDTO.getServiceUserName());
                         info.setCreateAccount(baseDTO.getServiceUserAccount());
+                        info.setOrgCode(baseDTO.getOrgCode());
+                        info.setOrgName(baseDTO.getOrgName());
                         mechanismInfoList.add(info);//可添加到数据库中
                     } else {
                         info.setId(infos.get(0).getId());

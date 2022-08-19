@@ -37,11 +37,11 @@ public interface GbBasicInfoMapper extends BaseMapper<GbBasicInfo> {
      * @param ids
      * @return
      */
-    @Select("<script>select a.name,a.card_id,a.unit, c.asgorgancode \"unit_code\",  c.asglevel \"level\",\n" +
+    @Select("<script>select a.name,a.card_id,a.unit, c.asgorgancode \"unit_code\",  CONVERT(c.asglevel,SIGNED) 'asglevel',c.asgpathnamecode,\n" +
             "            department,\n" +
             "          \n" +
             "            post,post_type,a.allot_type from `69654103_gb_basic_info` a left join  \n" +
-            "            (select  asgorgancode,asgorganname,asglevel from `69654103_org`) c \n" +
+            "            (select  asgorgancode,asgorganname,asglevel,asgpathnamecode from `69654103_org`) c \n" +
             "                     \n" +
             "            on c.asgorganname =a.unit where a.card_id in\n" +
             "<foreach item='item' index='index' collection='ids' open='(' separator=',' close=')'>\n" +
@@ -84,7 +84,7 @@ public interface GbBasicInfoMapper extends BaseMapper<GbBasicInfo> {
      * @return
      */
     @Select("<script>   SELECT \n" +
-            "                DISTINCT t3.*,t5.asgorgancode 'unit_code' \n" +
+            "                DISTINCT t3.*,t5.asgorgancode 'unit_code',CONVERT(t5.asglevel,SIGNED) 'asglevel',t5.asgpathnamecode \n" +
             "        FROM \n" +
             "                ( \n" +
             "                        SELECT \n" +
@@ -110,7 +110,7 @@ public interface GbBasicInfoMapper extends BaseMapper<GbBasicInfo> {
             "                                sort >= 4 \n" +
             "                        ) t4 ON t3.card_id = t4.card_id \n" +
             "                        AND t3.sort = t4.sort \n" +
-            "                        INNER JOIN ( SELECT DISTINCT asgorganname,asgorgancode FROM 69654103_org WHERE asgpathnamecode LIKE concat(#{pathNameCode},'%')) t5 ON t5.asgorganname = t3.unit </script> ")
+            "                        INNER JOIN ( SELECT DISTINCT asgorganname,asgorgancode,asglevel,asgpathnamecode FROM 69654103_org WHERE asgpathnamecode LIKE concat(#{pathNameCode},'%')) t5 ON t5.asgorganname = t3.unit </script> ")
     public  List<GbOrgInfo> selectByPathNameCodeAndCardIds(@Param("list") List<String> cardIds,@Param("pathNameCode") String pathNameCode);
 
     /*@Select("   SELECT \n" +

@@ -534,6 +534,8 @@ public class PrivateEquityServiceImpl extends ServiceImpl<PrivateEquityMapper, P
                         if (StringUtils.isBlank(checkDict)){
                             investInfo.setCreateName(baseDTO.getServiceUserName());
                             investInfo.setCreateAccount(baseDTO.getServiceUserAccount());
+                            investInfo.setOrgCode(baseDTO.getOrgCode());
+                            investInfo.setOrgName(baseDTO.getOrgName());
                             privateEquity.add(investInfo);
                             exportReturnVO.setSuccessNumber(exportReturnVO.getSuccessNumber()+1);
                         }else {
@@ -553,6 +555,8 @@ public class PrivateEquityServiceImpl extends ServiceImpl<PrivateEquityMapper, P
                     if (StringUtils.isBlank(checkDict)){
                         investInfo.setCreateName(baseDTO.getServiceUserName());
                         investInfo.setCreateAccount(baseDTO.getServiceUserAccount());
+                        investInfo.setOrgCode(baseDTO.getOrgCode());
+                        investInfo.setOrgName(baseDTO.getOrgName());
                         privateEquity.add(investInfo);
                         exportReturnVO.setSuccessNumber(exportReturnVO.getSuccessNumber()+1);
                     }else {
@@ -592,6 +596,8 @@ public class PrivateEquityServiceImpl extends ServiceImpl<PrivateEquityMapper, P
                                 info.setCreateTime(DateUtil.date());
                                 info.setCreateName(baseDTO.getServiceUserName());
                                 info.setCreateAccount(baseDTO.getServiceUserAccount());
+                                info.setOrgCode(baseDTO.getOrgCode());
+                                info.setOrgName(baseDTO.getOrgName());
                                 privateEquity.add(info);
                                 exportReturnVO.setSuccessNumber(exportReturnVO.getSuccessNumber()+1);
                             }else{ //有重复数据了
@@ -607,6 +613,8 @@ public class PrivateEquityServiceImpl extends ServiceImpl<PrivateEquityMapper, P
                                     info.setCreateTime(DateUtil.date());
                                     info.setCreateName(baseDTO.getServiceUserName());
                                     info.setCreateAccount(baseDTO.getServiceUserAccount());
+                                    info.setOrgCode(baseDTO.getOrgCode());
+                                    info.setOrgName(baseDTO.getOrgName());
                                     privateEquity.add(info);
                                     exportReturnVO.setSuccessNumber(exportReturnVO.getSuccessNumber()+1);
                                 }else {
