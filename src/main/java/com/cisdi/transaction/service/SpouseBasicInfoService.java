@@ -73,4 +73,11 @@ public interface SpouseBasicInfoService extends IService<SpouseBasicInfo> {
     List<CadreFamiliesExcelVO> export(CadreFamilyExportDto dto);
 
 
+    /**
+     * 批量新增家属信息
+     * @param spouseBasicInfos
+     */
+    void addBatchSpouse(List<SpouseBasicInfo> spouseBasicInfos);
+
+
 }

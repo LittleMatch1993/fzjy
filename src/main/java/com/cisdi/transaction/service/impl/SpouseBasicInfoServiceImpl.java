@@ -21,6 +21,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -129,6 +130,32 @@ public class SpouseBasicInfoServiceImpl extends ServiceImpl<SpouseBasicInfoMappe
             vo.setTitle(title);
             return vo;
         }).collect(Collectors.toList());
+    }
+
+    @Override
+    public void addBatchSpouse(List<SpouseBasicInfo> spouseBasicInfos) {
+        if (CollectionUtils.isEmpty(spouseBasicInfos)){
+            return;
+        }
+        //所有干部身份证号
+        List<String> cadreCardIds = spouseBasicInfos.stream().map(SpouseBasicInfo::getCadreCardId).distinct().collect(Collectors.toList());
+        List<SpouseBasicInfo> spouseBasicInfoList = this.lambdaQuery().in(SpouseBasicInfo::getCadreCardId, cadreCardIds).list();
+        if (!CollectionUtils.isEmpty(spouseBasicInfoList)){
+            //筛选出不存在的
+            List<SpouseBasicInfo> addSpouseBasicInfos = spouseBasicInfos.stream().filter(spouseBasicInfo -> {
+                for (SpouseBasicInfo basicInfo : spouseBasicInfoList) {
+                    if (basicInfo.getCadreCardId().equals(spouseBasicInfo.getCadreCardId())
+                            && basicInfo.getTitle().equals(spouseBasicInfo.getTitle()) && basicInfo.getName().equals(spouseBasicInfo.getName())
+                    ) {
+                        return false;
+                    }
+                }
+                return true;
+            }).collect(Collectors.toList());
+            if (!CollectionUtils.isEmpty(addSpouseBasicInfos)){
+                this.saveBatch(addSpouseBasicInfos);
+            }
+        }
     }
 
 }

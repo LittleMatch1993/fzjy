@@ -546,6 +546,7 @@ public class MechanismInfoServiceImpl extends ServiceImpl<MechanismInfoMapper, M
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public void saveBatchInvestInfo(List<CommunityServiceDTO> lists, BaseDTO baseDTO, ExportReturnVO exportReturnVO) {
         //过滤掉必填校验未通过的字段
         List<CommunityServiceDTO> list = lists.stream().filter(e -> StringUtils.isBlank(e.getMessage())).collect(Collectors.toList());
@@ -612,6 +613,11 @@ public class MechanismInfoServiceImpl extends ServiceImpl<MechanismInfoMapper, M
             });
             if (!mechanismInfoList.isEmpty()) {
                 this.saveBatch(mechanismInfoList);
+                spouseBasicInfoService.addBatchSpouse(mechanismInfoList.stream().map(investInfo ->
+                        new SpouseBasicInfo().setCreateTime(DateUtil.date()).setTenantId(baseDTO.getServiceLesseeId())
+                                .setCreatorId(baseDTO.getServiceUserId()).setUpdaterId(baseDTO.getServiceUserId()).setUpdateTime(DateUtil.date())
+                                .setCadreCardId(investInfo.getCardId()).setName(investInfo.getName()).setTitle(investInfo.getTitle()).setCadreName(investInfo.getGbName())
+                ).collect(Collectors.toList()));
             }
             return;
         }
@@ -766,9 +772,19 @@ public class MechanismInfoServiceImpl extends ServiceImpl<MechanismInfoMapper, M
         });
         if (!mechanismInfoList.isEmpty()) {
             this.saveBatch(mechanismInfoList);
+            spouseBasicInfoService.addBatchSpouse(mechanismInfoList.stream().map(investInfo ->
+                    new SpouseBasicInfo().setCreateTime(DateUtil.date()).setTenantId(baseDTO.getServiceLesseeId())
+                            .setCreatorId(baseDTO.getServiceUserId()).setUpdaterId(baseDTO.getServiceUserId()).setUpdateTime(DateUtil.date())
+                            .setCadreCardId(investInfo.getCardId()).setName(investInfo.getName()).setTitle(investInfo.getTitle()).setCadreName(investInfo.getGbName())
+            ).collect(Collectors.toList()));
         }
         if (!updateList.isEmpty()) {
             this.updateBatchById(updateList);
+            spouseBasicInfoService.addBatchSpouse(updateList.stream().map(investInfo ->
+                    new SpouseBasicInfo().setCreateTime(DateUtil.date()).setTenantId(baseDTO.getServiceLesseeId())
+                            .setCreatorId(baseDTO.getServiceUserId()).setUpdaterId(baseDTO.getServiceUserId()).setUpdateTime(DateUtil.date())
+                            .setCadreCardId(investInfo.getCardId()).setName(investInfo.getName()).setTitle(investInfo.getTitle()).setCadreName(investInfo.getGbName())
+            ).collect(Collectors.toList()));
         }
     }
 
