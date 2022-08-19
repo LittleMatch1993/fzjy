@@ -70,6 +70,12 @@ public class ImportEquityFundsExcelListener extends AnalysisEventListener<Equity
 
             dto.setColumnNumber(i++);
             dto.setIsSituation("有此类情况");
+            if (SystemConstant.NO.equals(dto.getInductionStartTime())){
+                dto.setInductionStartTime(null);
+            }
+            if (SystemConstant.NO.equals(dto.getInductionEndTime())){
+                dto.setInductionEndTime(null);
+            }
             //通用方法数据校验
             ExcelImportValid.valid(dto);
 //            changNoToNull(dto);
