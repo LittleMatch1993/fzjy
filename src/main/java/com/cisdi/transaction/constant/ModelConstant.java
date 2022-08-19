@@ -27,5 +27,5 @@ public class ModelConstant {
     /**
      * 二级组织可看职务类型
      */
-    public static final String STR_POST_TYPE="'1552195897691123712','1552195799322112000'";
+    public static final String STR_POST_TYPE="'1552195897691123712','1552195799322112000','1560561704115101696'";
 }
