@@ -6,6 +6,7 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.cisdi.transaction.config.utils.AuthSqlUtil;
 import com.cisdi.transaction.constant.ModelConstant;
 import com.cisdi.transaction.constant.SqlConstant;
 import com.cisdi.transaction.domain.dto.CadreFamiliesDTO;
@@ -123,7 +124,7 @@ public class SpouseBasicInfoServiceImpl extends ServiceImpl<SpouseBasicInfoMappe
     public List<CadreFamiliesExcelVO> export(CadreFamilyExportDto dto) {
         List<SysDictBiz> dictList = sysDictBizService.selectList();
 
-        return this.lambdaQuery().like(StringUtils.isNotBlank(dto.getCadre_name()),SpouseBasicInfo::getCadreName,dto.getCadre_name()).apply(ModelConstant.SPOUSE_BASIC_INFO,dto.getOrgCode()).orderByDesc(SpouseBasicInfo::getUpdateTime).list().stream().map(t->{
+        return this.lambdaQuery().like(StringUtils.isNotBlank(dto.getCadre_name()),SpouseBasicInfo::getCadreName,dto.getCadre_name()).apply(AuthSqlUtil.getAuthSqlByTableNameAndOrgCode(ModelConstant.SPOUSE_BASIC_INFO,dto.getOrgCode()),dto.getOrgCode()).orderByDesc(SpouseBasicInfo::getUpdateTime).list().stream().map(t->{
             CadreFamiliesExcelVO vo = new CadreFamiliesExcelVO();
             BeanUtils.copyProperties(t,vo);
             String title = sysDictBizService.getDictValue(t.getTitle(), dictList);

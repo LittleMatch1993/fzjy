@@ -674,7 +674,7 @@ public class BanDealInfoServiceImpl extends ServiceImpl<BanDealInfoMapper, BanDe
                 .like(StringUtils.isNotBlank(dto.getCompany()),BanDealInfo::getCompany,dto.getCompany())
                 .like(StringUtils.isNotBlank(dto.getName()),BanDealInfo::getName,dto.getName())
                 .like(StringUtils.isNotBlank(dto.getPost_type()),BanDealInfo::getPostType,dto.getPost_type())
-                .apply(AuthSqlUtil.getAuthSqlByTableNameAndOrgCode(ModelConstant.INVEST_INFO,dto.getOrgCode()))
+                .apply(AuthSqlUtil.getAuthSqlByTableNameAndOrgCode(ModelConstant.BAN_DEAL_INFO,dto.getOrgCode()))
                 .orderByDesc(BanDealInfo::getUpdateTime)
                 .list().stream().map(t -> {
             ProhibitTransactionExcelVO vo = new ProhibitTransactionExcelVO();

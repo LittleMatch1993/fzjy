@@ -794,7 +794,7 @@ public class MechanismInfoServiceImpl extends ServiceImpl<MechanismInfoMapper, M
         List<CommunityServiceDTO> list = this.lambdaQuery().eq(StringUtils.isNotBlank(exportDto.getState()),MechanismInfo::getState, exportDto.getState())
                 .like(StringUtils.isNotBlank(exportDto.getCompany()),MechanismInfo::getCompany,exportDto.getCompany())
                 .like(StringUtils.isNotBlank(exportDto.getGb_name()),MechanismInfo::getGbName,exportDto.getGb_name())
-                .apply(AuthSqlUtil.getAuthSqlByTableNameAndOrgCode(ModelConstant.INVEST_INFO,exportDto.getOrgCode()))
+                .apply(AuthSqlUtil.getAuthSqlByTableNameAndOrgCode(ModelConstant.MECHANISM_INFO,exportDto.getOrgCode()))
                 .orderByDesc(MechanismInfo::getUpdateTime).list().stream().map(t -> {
             CommunityServiceDTO dto = new CommunityServiceDTO();
             BeanUtils.copyProperties(t, dto);

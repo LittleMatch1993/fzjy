@@ -144,7 +144,7 @@ public class EnterpriseDealInfoServiceImpl extends ServiceImpl<EnterpriseDealInf
         List<BusinessTransactionExcelVO> list = this.lambdaQuery().eq(StringUtils.isNotBlank(dto.getPost_type()), EnterpriseDealInfo::getPostType, dto.getPost_type())
                 .like(StringUtils.isNotBlank(dto.getCompany()),EnterpriseDealInfo::getCompany,dto.getCompany())
                 .like(StringUtils.isNotBlank(dto.getName()),EnterpriseDealInfo::getName,dto.getName())
-                .apply(AuthSqlUtil.getAuthSqlByTableNameAndOrgCode(ModelConstant.INVEST_INFO,dto.getOrgCode()))
+                .apply(AuthSqlUtil.getAuthSqlByTableNameAndOrgCode(ModelConstant.ENTERPRISE_DEAL_INFO,dto.getOrgCode()))
                 .orderByDesc(EnterpriseDealInfo::getUpdateTime)
                 .list().stream().map(t -> {
             BusinessTransactionExcelVO vo = new BusinessTransactionExcelVO();

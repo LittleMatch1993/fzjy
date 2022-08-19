@@ -734,7 +734,7 @@ public class PrivateEquityServiceImpl extends ServiceImpl<PrivateEquityMapper, P
         List<EquityFundsDTO> list =  this.lambdaQuery().eq(StringUtils.isNotBlank(exportDto.getState()),PrivateEquity::getState, exportDto.getState())
                 .like(StringUtils.isNotBlank(exportDto.getCompany()),PrivateEquity::getCompany,exportDto.getCompany())
                 .like(StringUtils.isNotBlank(exportDto.getGb_name()),PrivateEquity::getGbName,exportDto.getGb_name())
-                .apply(AuthSqlUtil.getAuthSqlByTableNameAndOrgCode(ModelConstant.INVEST_INFO,exportDto.getOrgCode()))
+                .apply(AuthSqlUtil.getAuthSqlByTableNameAndOrgCode(ModelConstant.PRIVATE_EQUITY,exportDto.getOrgCode()))
                 .orderByDesc(PrivateEquity::getUpdateTime).list().stream().map(t -> {
             EquityFundsDTO dto = new EquityFundsDTO();
             BeanUtils.copyProperties(t, dto);

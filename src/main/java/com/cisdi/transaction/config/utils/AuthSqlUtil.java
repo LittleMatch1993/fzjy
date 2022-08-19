@@ -37,7 +37,7 @@ public class AuthSqlUtil {
         String orgNames=staticOrgService.getOrgNamesByCodePath(codePath);
         String cardIds="'"+staticOrgService.getCardIdsByAsgpathnamecode(codePath).stream().distinct().collect(Collectors.joining("','"))+"'";
         String conditionSql="1=1";
-        if(level>=2){
+        if(level!=0){
             switch (tableName) {
                 case ModelConstant.BAN_DEAL_INFO:
                 case ModelConstant.BAN_DEAL_INFO_RECORD:
