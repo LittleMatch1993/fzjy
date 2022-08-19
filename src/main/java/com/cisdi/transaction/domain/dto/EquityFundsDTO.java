@@ -133,12 +133,12 @@ public class EquityFundsDTO {
 
     @ExcelProperty(value = "担任高级职务的开始时间")
 //    @ExcelValid(message = "担任高级职务的开始时间为空")
-    @DateStringValid(message = "担任高级职务的开始时间时间格式不正确")
+//    @DateStringValid(message = "担任高级职务的开始时间时间格式不正确")
     private String inductionStartTime;
 
     @ExcelProperty(value = "担任高级职务的结束时间")
 //    @ExcelValid(message = "担任高级职务的结束时间为空")
-    @DateStringValid(message = "担任高级职务的结束时间格式不正确")
+//    @DateStringValid(message = "担任高级职务的结束时间格式不正确")
     private String inductionEndTime;
 
     @ExcelProperty(value = "基金管理人的经营范围")
