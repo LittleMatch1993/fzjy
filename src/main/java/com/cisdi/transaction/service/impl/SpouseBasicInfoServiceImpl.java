@@ -156,6 +156,8 @@ public class SpouseBasicInfoServiceImpl extends ServiceImpl<SpouseBasicInfoMappe
             if (!CollectionUtils.isEmpty(addSpouseBasicInfos)){
                 this.saveBatch(addSpouseBasicInfos);
             }
+        }else {
+            this.saveBatch(spouseBasicInfos);
         }
     }
 

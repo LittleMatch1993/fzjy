@@ -86,12 +86,12 @@ public class EquityFundsDTO {
 
     @ExcelProperty(value = "基金合同签署日")
     @ExcelValid(message = "基金合同签署日为空")
-    @DateStringValid(message = "基金合同签署日格式不正确")
+    @DateStringValid
     private String contractTime;
 
     @ExcelProperty(value = "基金合同约定的到期日")
     @ExcelValid(message = "基金合同约定的到期日为空")
-    @DateStringValid(message = "基金合同约定的到期日格式不正确")
+    @DateStringValid
     private String contractExpireTime;
 
     @ExcelProperty(value = "私募股权投资基金管理人名称")
@@ -120,7 +120,7 @@ public class EquityFundsDTO {
 
     @ExcelProperty(value = "认缴时间")
 //    @ExcelValid(message = "认缴时间为空")
-    @DateStringValid(message = "认缴时间格式不正确")
+    @DateStringValid
     private String subscriptionTime;
 
     @ExcelProperty(value = "是否担任该基金管理人高级职务")
@@ -133,12 +133,12 @@ public class EquityFundsDTO {
 
     @ExcelProperty(value = "担任高级职务的开始时间")
 //    @ExcelValid(message = "担任高级职务的开始时间为空")
-    @DateStringValid(message = "担任高级职务的开始时间时间格式不正确")
+    @DateStringValid
     private String inductionStartTime;
 
     @ExcelProperty(value = "担任高级职务的结束时间")
 //    @ExcelValid(message = "担任高级职务的结束时间为空")
-    @DateStringValid(message = "担任高级职务的结束时间格式不正确")
+    @DateStringValid
     private String inductionEndTime;
 
     @ExcelProperty(value = "基金管理人的经营范围")

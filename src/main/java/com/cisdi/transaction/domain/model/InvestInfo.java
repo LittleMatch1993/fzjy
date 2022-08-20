@@ -244,15 +244,5 @@ public class InvestInfo {
      */
     private  String tips;
 
-    /**
-     * 家属证件类型
-     */
-    private String familyCardType;
-
-    /**
-     * 家属证件号
-     */
-    private String familyCardId;
-
 
 }

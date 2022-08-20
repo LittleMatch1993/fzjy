@@ -2,6 +2,7 @@ package com.cisdi.transaction.config.excel;
 
 import com.cisdi.transaction.constant.SystemConstant;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.validator.GenericValidator;
 
 import java.lang.reflect.Field;
 import java.text.ParseException;
@@ -22,7 +23,6 @@ public class ExcelImportValid {
      */
     public static void valid(Object object) throws ExceptionCustom{
         Field[] fields = object.getClass().getDeclaredFields();
-        SimpleDateFormat simpleDateFormat=new SimpleDateFormat("yyyy-MM-dd");
         for (Field field : fields) {
             //设置可访问
             field.setAccessible(true);
@@ -42,10 +42,16 @@ public class ExcelImportValid {
             boolean dateStringValid = field.isAnnotationPresent(DateStringValid.class);
             //日期字符串校验
             if (dateStringValid &&Objects.nonNull(fieldValue)&&fieldValue instanceof String&& StringUtils.isNotBlank((String)fieldValue)) {
-                try {
-                    simpleDateFormat.parse((String)fieldValue);
-                } catch (ParseException e) {
+                if (!GenericValidator.isDate((String)fieldValue, "yyyy-MM-dd", true)){
                     throw new ExceptionCustom("IMPORT_PARAM_CHECK_FAIL", field.getAnnotation(DateStringValid.class).message());
+                }
+            }
+
+            boolean timeStringValid = field.isAnnotationPresent(TimeStringValid.class);
+            //时间字符串校验
+            if (timeStringValid &&Objects.nonNull(fieldValue)&&fieldValue instanceof String&& StringUtils.isNotBlank((String)fieldValue)) {
+                if (!GenericValidator.isDate((String)fieldValue, "yyyy-MM-dd HH:mm:ss", true)){
+                    throw new ExceptionCustom("IMPORT_PARAM_CHECK_FAIL", field.getAnnotation(TimeStringValid.class).message());
                 }
             }
 //            //如果两个注解都有，则不能为"无"

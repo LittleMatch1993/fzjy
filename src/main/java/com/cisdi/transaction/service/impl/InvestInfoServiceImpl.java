@@ -232,8 +232,6 @@ public class InvestInfoServiceImpl extends ServiceImpl<InvestInfoMapper, InvestI
         temp.setCadreCardId(cardId);
         temp.setName(name);
         temp.setTitle(title);
-        temp.setCardName(info.getFamilyCardType());
-        temp.setCardId(info.getFamilyCardId());
         sbiList.add(temp);
         if (CollectionUtil.isNotEmpty(sbiList)) {
             //添加干部配偶，子女及其配偶数据
@@ -591,6 +589,7 @@ public class InvestInfoServiceImpl extends ServiceImpl<InvestInfoMapper, InvestI
         List<InvestInfo> investInfoList = new ArrayList<>();
 
         List<String> cardIds = list.stream().distinct().map(t -> t.getCardId()).collect(Collectors.toList());
+
         List<InvestInfo> infoList = this.lambdaQuery().in(InvestInfo::getCardId, cardIds).list();
         if (infoList.isEmpty()) {
             list.stream().forEach(t -> {

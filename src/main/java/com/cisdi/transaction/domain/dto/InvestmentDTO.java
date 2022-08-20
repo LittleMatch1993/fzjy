@@ -78,7 +78,7 @@ public class InvestmentDTO {
     private String enterpriseName;
 
     @ExcelProperty(value = "成立日期")
-    @DateStringValid(message = "成立日期格式不正确")
+    @DateStringValid
     private String establishTime;
 
     @ExcelProperty(value = "经营范围")
@@ -121,7 +121,7 @@ public class InvestmentDTO {
     private String personalRatio;
 
     @ExcelProperty(value = "投资时间")
-    @DateStringValid(message = "投资时间格式不正确")
+    @DateStringValid
     private String investTime;
 
     @ExcelProperty(value = "是否担任高级职务")
@@ -132,11 +132,11 @@ public class InvestmentDTO {
     private String seniorPositionName;
 
     @ExcelProperty(value = "担任高级职务的开始时间")
-    @DateStringValid(message = "担任高级职务的开始时间格式不正确")
+    @DateStringValid
     private String seniorPositionStartTime;
 
     @ExcelProperty(value = "担任高级职务的结束时间")
-    @DateStringValid(message = "担任高级职务的结束时间格式不正确")
+    @DateStringValid
     private String seniorPositionEndTime;
 
     @ExcelProperty(value = "该企业或其他市场主体是否与报告人所在单位（系统）直接发生过商品、劳务、服务等经济关系")

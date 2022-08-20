@@ -86,7 +86,7 @@ public class CommunityServiceDTO {
     private String operatScope;
 
     @ExcelProperty(value = "成立日期")
-    @DateStringValid(message = "成立日期格式不正确")
+    @DateStringValid
     private String establishTime;
 
     @ExcelProperty(value = "注册地（国家）")
@@ -126,7 +126,7 @@ public class CommunityServiceDTO {
     private String personalRatio;
 
     @ExcelProperty(value = "入股（合伙）时间")
-    @DateStringValid(message = "入股（合伙）时间格式不正确")
+    @DateStringValid
     private String joinTime;
 
     @ExcelProperty(value = "是否在该机构中从业")
@@ -137,7 +137,7 @@ public class CommunityServiceDTO {
     private String postName;
 
     @ExcelProperty(value = "入职时间")
-    @DateStringValid(message = "入职时间格式不正确")
+    @DateStringValid
     private String inductionTime;
 
     @ExcelProperty(value = "是否与报告人所在单位（系统）直接发生过经济关系")
