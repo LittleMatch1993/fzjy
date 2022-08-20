@@ -97,7 +97,7 @@ public class GbBasicInfoServiceImpl extends ServiceImpl<GbBasicInfoMapper, GbBas
             return list;
         }
         String asglevel = org.getAsglevel();
-        if(StrUtil.isNotEmpty(asglevel)&&asglevel.equals("1")) { //看所有
+        if(StrUtil.isNotEmpty(asglevel)&&asglevel.equals("0")) { //看所有
             QueryWrapper<GbBasicInfo> queryWrapper = new QueryWrapper();
             if(StrUtil.isNotEmpty(name)){ //有名字时
                 queryWrapper.lambda().like(GbBasicInfo::getName, name);
@@ -219,7 +219,7 @@ public class GbBasicInfoServiceImpl extends ServiceImpl<GbBasicInfoMapper, GbBas
             return null;
         }
         String asglevel = org.getAsglevel();
-        if(StrUtil.isNotEmpty(asglevel)&&asglevel.equals("1")){
+        if(StrUtil.isNotEmpty(asglevel)&&asglevel.equals("0")){
 
         }
         String pathNamecode = org.getAsgpathnamecode();
@@ -237,7 +237,7 @@ public class GbBasicInfoServiceImpl extends ServiceImpl<GbBasicInfoMapper, GbBas
         }
         String asglevel = org.getAsglevel();
         List<GbOrgInfo> list = new ArrayList<>();
-        if(StrUtil.isNotEmpty(asglevel)&&asglevel.equals("1")){
+        if(StrUtil.isNotEmpty(asglevel)&&asglevel.equals("0")){
             list =  this.baseMapper.selectByCardIds(cardIds);
         }else{
             String pathNamecode = org.getAsgpathnamecode();
@@ -247,6 +247,8 @@ public class GbBasicInfoServiceImpl extends ServiceImpl<GbBasicInfoMapper, GbBas
             return null;
         }
         List<GbOrgInfo> gbOrgInfoList = new ArrayList<>();
+        //过滤公司为null的数据
+        list = list.stream().filter(e->StrUtil.isNotEmpty(e.getUnit())).collect(Collectors.toList());
         Map<String, List<GbOrgInfo>> map = list.stream().collect(Collectors.groupingBy(go -> go.getCardId()));
         for (Map.Entry<String, List<GbOrgInfo>> m : map.entrySet()) {
             String key = m.getKey();//key 身份证

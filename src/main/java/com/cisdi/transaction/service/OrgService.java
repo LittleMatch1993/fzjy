@@ -19,6 +19,13 @@ public interface OrgService  extends IService<Org> {
      * @param dto
      */
     void saveInfo(InstitutionalFrameworkDTO dto);
+
+    /**
+     * 根据增量同步日期删除
+     * @param asgDate
+     * @return
+     */
+    boolean  removeByAsgDate(String asgDate);
     //public Org selectById(String id);
 
     /**
@@ -36,9 +43,10 @@ public interface OrgService  extends IService<Org> {
     void editOrgInfo(InstitutionalFrameworkDTO dto);
 
     /**
-     * 通过结果同步数据
+     * 通过接口同步数据
+     * @param date 增量数据的日期。为空查询所有
      */
-    void  syncDa();
+    void  syncDa(String date);
 
     /**
      * 导出

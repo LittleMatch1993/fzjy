@@ -60,7 +60,7 @@ public class InstitutionalFrameworkController {
     @PostMapping("/syncOrg")
     public ResultMsgUtil<Object> syncOrg() {
         try {
-            //orgService.syncDa();
+            //orgService.syncDa(null);
         }catch (Exception e){
             e.printStackTrace();
             return ResultMsgUtil.failure("数据同步失败，请稍后再试");

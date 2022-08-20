@@ -4,6 +4,7 @@ import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.StrUtil;
+import cn.hutool.http.HttpGlobalConfig;
 import cn.hutool.http.HttpUtil;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
@@ -557,6 +558,7 @@ public class BanDealInfoServiceImpl extends ServiceImpl<BanDealInfoMapper, BanDe
             String company = banDealInfo.getCompany();
             jbParam.put("name", company);
             //调用企业画像接口
+            HttpGlobalConfig.setTimeout(3500); //设置超时时间
             JSONObject resultOb = this.getCompanyInfoByName(jbParam);
             boolean status = resultOb.getBoolean("status");
             boolean b = resultOb.containsKey("data");
@@ -634,10 +636,16 @@ public class BanDealInfoServiceImpl extends ServiceImpl<BanDealInfoMapper, BanDe
 
     @Override
     public boolean deleteBanDealInfo(List<String> ids) {
-        //新增日志记录
-        List<BanDealInfo> infoList = this.lambdaQuery().in(BanDealInfo::getId, ids).list();
-        banDealInfoRecordService.insertBanDealInfoRecord(infoList, SystemConstant.OPERATION_TYPE_REMOVE);
-        return this.removeByIds(ids);
+        boolean b = this.removeByIds(ids);
+        if(b){
+            //新增日志记录
+            List<BanDealInfo> infoList = this.lambdaQuery().in(BanDealInfo::getId, ids).list();
+            banDealInfoRecordService.insertBanDealInfoRecord(infoList, SystemConstant.OPERATION_TYPE_REMOVE);
+            //删除采购系统那边的对应数据
+            //purchaseBanDealInfoSevice.deletePushDataForPurchase(ids);
+        }
+
+        return b;
     }
 
     @Transactional
@@ -646,7 +654,11 @@ public class BanDealInfoServiceImpl extends ServiceImpl<BanDealInfoMapper, BanDe
         QueryWrapper<BanDealInfo> queryWrapper = new QueryWrapper<>();
         queryWrapper.in("ref_id", ids);
         int delete = this.baseMapper.delete(queryWrapper);
-        return delete > 0 ? true : false;
+        boolean b = delete > 0 ? true : false;
+        if (b) {
+            //purchaseBanDealInfoSevice.deletePushDataForPurchase(ids);
+        }
+        return b;
     }
 
     @Override

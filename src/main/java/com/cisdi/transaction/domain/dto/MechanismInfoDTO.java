@@ -38,7 +38,6 @@ public class MechanismInfoDTO extends BaseDTO{
      * 干部姓名
      */
     @ApiModelProperty(value = "干部姓名")
-    @NotBlank(message = "干部姓名不能为空")
     private String gbName;
     /**
      * 身份证号
@@ -50,19 +49,16 @@ public class MechanismInfoDTO extends BaseDTO{
      * 工作单位
      */
     @ApiModelProperty(value = "工作单位")
-    @NotBlank(message = "工作单位不能为空")
     private String company;
     /**
      * 现任职务
      */
     @ApiModelProperty(value = "现任职务")
-    @NotBlank(message = "现任职务不能为空")
     private String post;
     /**
      * 职务层次
      */
     @ApiModelProperty(value = "职务层次")
-    @NotBlank(message = "职务层次不能为空")
     private String gradation;
     /**
      * 标签
@@ -73,25 +69,21 @@ public class MechanismInfoDTO extends BaseDTO{
      * 职级
      */
     @ApiModelProperty(value = "职级")
-    @NotBlank(message = "职级不能为空")
     private String gbRank;
     /**
      * 人员类型
      */
     @ApiModelProperty(value = "人员类型")
-    @NotBlank(message = "人员类型不能为空")
     private String userType;
     /**
      * 政治面貌
      */
     @ApiModelProperty(value = "政治面貌")
-    @NotBlank(message = "政治面貌不能为空")
     private String face;
     /**
      * 在职状态
      */
     @ApiModelProperty(value = "在职状态")
-    @NotBlank(message = "干部姓名不能为空")
     private String jobStatus;
     /**
      * 姓名
@@ -238,5 +230,11 @@ public class MechanismInfoDTO extends BaseDTO{
      */
     @ApiModelProperty(value = "修改人")
     private String updaterId;
+
+    @ApiModelProperty(value = "家属证件类型")
+    private String familyCardType;
+
+    @ApiModelProperty(value = "家属证件号")
+    private String familyCardId;
 
 }

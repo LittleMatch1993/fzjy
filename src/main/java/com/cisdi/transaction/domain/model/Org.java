@@ -97,7 +97,7 @@ public class Org {
     /**
      * 同步日期
      */
-   // private Date asgDate;
+    private String asgDate;
 
     /**
      * 是否分管
