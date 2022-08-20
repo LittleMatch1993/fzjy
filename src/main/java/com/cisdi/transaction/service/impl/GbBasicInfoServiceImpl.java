@@ -78,11 +78,11 @@ public class GbBasicInfoServiceImpl extends ServiceImpl<GbBasicInfoMapper, GbBas
     }
 
     @Override
-    public List<GbBasicInfo> selectGbInfoByNameAndUnitAndPost(String name,String unit,String post) {
+    public List<GbBasicInfo> selectGbInfoByNameAndUnitAndPost(String name,String unit,String post,String cardId) {
         QueryWrapper<GbBasicInfo> queryWrapper = new QueryWrapper<>();
         List<GbBasicInfo> list = this.lambdaQuery().eq(GbBasicInfo::getName, name)
                 .eq(GbBasicInfo::getUnit, unit)
-                .eq(GbBasicInfo::getPost, post).list();
+                .eq(GbBasicInfo::getPost, post).eq(StrUtil.isNotEmpty(cardId),GbBasicInfo::getCardId,cardId).list();
         return list;
     }
 

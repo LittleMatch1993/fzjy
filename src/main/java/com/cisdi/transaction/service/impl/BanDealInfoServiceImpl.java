@@ -72,6 +72,7 @@ public class BanDealInfoServiceImpl extends ServiceImpl<BanDealInfoMapper, BanDe
 
     public JSONObject getCompanyInfoByName(JSONObject jbParam) {
         System.out.println(jbParam.toString());
+        HttpGlobalConfig.setTimeout(3500); //设置超时时间
         String result = HttpUtil.post(url, jbParam.toString());
         JSONObject jb = JSON.parseObject(result);
         return jb;
@@ -132,7 +133,15 @@ public class BanDealInfoServiceImpl extends ServiceImpl<BanDealInfoMapper, BanDe
         infoList.add(info);
         banDealInfoRecordService.insertBanDealInfoRecord(infoList, SystemConstant.OPERATION_TYPE_EDIT); //编辑
     }
-
+ /*   private  void editRefSpouseBasic(BanDealInfo info){
+        String id = info.getId();
+        SpouseBasicInfo basicInfo = spouseBasicInfoService.selectByRefId(id);
+        if(Objects.nonNull(basicInfo)){
+            basicInfo.setCardId(info);
+            basicInfo.setCardName(info.getFamilyName());
+            spouseBasicInfoService.updateById(basicInfo);
+        }
+    }*/
     @Override
     public void addFamilyInfo(BanDealInfo info) {
         List<SpouseBasicInfo> sbiList = new ArrayList<>();
@@ -359,9 +368,9 @@ public class BanDealInfoServiceImpl extends ServiceImpl<BanDealInfoMapper, BanDe
         //社会企业信用代码验证
         List<BanDealInfo> newBanDealInfoList = this.validBatchCompanyCode(banDealInfoList);
         //在禁止企业交易信息表中添加数据
-        boolean b = this.saveBatch(banDealInfoList);
+        boolean b = this.saveBatch(newBanDealInfoList);
         //新增操作记录
-        boolean deal = banDealInfoRecordService.insertBanDealInfoRecord(banDealInfoList, SystemConstant.OPERATION_TYPE_ADD); //新增
+        boolean deal = banDealInfoRecordService.insertBanDealInfoRecord(newBanDealInfoList, SystemConstant.OPERATION_TYPE_ADD); //新增
 
         Map<String,Object> map = new HashMap();
         map.put("submitIds",submitId); //记录能提交的数据
@@ -529,7 +538,9 @@ public class BanDealInfoServiceImpl extends ServiceImpl<BanDealInfoMapper, BanDe
                             String tips = e.getCheckTips();
                             if (StrUtil.isBlank(tips) || !tips.contains("企业名称和统一社会信用代码/注册号不匹配")) {
                                 StringJoiner sj = new StringJoiner(",");
-                                sj.add(StrUtil.isEmpty(e.getCheckTips())?"":e.getCheckTips());
+                                if(StrUtil.isNotEmpty(e.getCheckTips())){
+                                    sj.add(e.getCheckTips());
+                                }
                                 sj.add("企业名称和统一社会信用代码/注册号不匹配");
                                 e.setCheckTips(sj.toString());
                             }
@@ -583,7 +594,9 @@ public class BanDealInfoServiceImpl extends ServiceImpl<BanDealInfoMapper, BanDe
                         String tips = banDealInfo.getCheckTips();
                         if (StrUtil.isNotBlank(tips) && !tips.contains("企业名称和统一社会信用代码/注册号不匹配")) {
                             StringJoiner sj = new StringJoiner(",");
-                            sj.add(StrUtil.isEmpty(banDealInfo.getCheckTips())?"":banDealInfo.getCheckTips());
+                            if(StrUtil.isNotEmpty(banDealInfo.getCheckTips())){
+                                sj.add(banDealInfo.getCheckTips());
+                            }
                             sj.add("企业名称和统一社会信用代码/注册号不匹配");
                             banDealInfo.setCheckTips(sj.toString());
                         }

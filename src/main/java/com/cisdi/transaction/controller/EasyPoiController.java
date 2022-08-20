@@ -92,6 +92,7 @@ public class EasyPoiController {
     @GetMapping("/test")
     @ResponseBody
     public ResultMsgUtil<Object> test(){
+        System.out.println("进入测试");
         PurchaseBanDealInfo pu = new PurchaseBanDealInfo();
         pu.setId("1111111111111");
         pu.setCreateTime(DateUtil.date());
@@ -99,9 +100,12 @@ public class EasyPoiController {
         pu.setIsExtends("是");
         boolean b = false;
         try {
+            System.out.println("开始测试");
              b = purchaseBanDealInfoSevice.save(pu);
+            System.out.println("开始成功");
         }catch (Exception e){
             e.printStackTrace();
+            System.out.println("测试失败"+e.getMessage());
             return ResultMsgUtil.failure(e.getMessage());
         }
         return ResultMsgUtil.success(b);

@@ -107,8 +107,9 @@ public class CadreController{
     @GetMapping("/selectGbInfoByNameAndUnitAndPost")
     public ResultMsgUtil<Object> selectGbInfoByNameAndUnitAndPost(@ApiParam(value = "干部姓名") @RequestParam(value = "name" ,required = false) String name,
                                                   @RequestParam(value = "unit" ,required = false) String unit,
-                                                                @RequestParam(value = "post" ,required = false) String post) {
-        List<GbBasicInfo> gbBasicInfos = gbBasicInfoService.selectGbInfoByNameAndUnitAndPost(name, unit, post);
+                                                                @RequestParam(value = "post" ,required = false) String post,
+                                                                  @RequestParam(value = "cardId" ,required = false) String cardId) {
+        List<GbBasicInfo> gbBasicInfos = gbBasicInfoService.selectGbInfoByNameAndUnitAndPost(name, unit, post,cardId);
         if(CollectionUtil.isNotEmpty(gbBasicInfos)){
              GbBasicInfo gbBasicInfo = gbBasicInfos.get(0);
              return   ResultMsgUtil.success(gbBasicInfo);

@@ -17,7 +17,7 @@ import java.util.List;
 public interface GbBasicInfoService extends IService<GbBasicInfo> {
     List<GbBasicInfo> selectByName(String name,String orgCode);
 
-    List<GbBasicInfo> selectGbInfoByNameAndUnitAndPost(String name,String unit,String post);
+    List<GbBasicInfo> selectGbInfoByNameAndUnitAndPost(String name,String unit,String post,String cardId);
 
     List<GbBasicInfo> selectGbDictVoByName(String name,String orgCode);
 
