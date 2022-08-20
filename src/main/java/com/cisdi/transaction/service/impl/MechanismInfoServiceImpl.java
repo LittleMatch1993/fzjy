@@ -220,6 +220,8 @@ public class MechanismInfoServiceImpl extends ServiceImpl<MechanismInfoMapper, M
         temp.setCadreCardId(cardId);
         temp.setName(name);
         temp.setTitle(title);
+        temp.setCardName(info.getFamilyCardType());
+        temp.setCardId(info.getFamilyCardId());
         sbiList.add(temp);
         if (CollectionUtil.isNotEmpty(sbiList)) {
             //添加干部配偶，子女及其配偶数据

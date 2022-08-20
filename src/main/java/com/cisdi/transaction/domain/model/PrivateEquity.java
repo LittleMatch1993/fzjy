@@ -288,4 +288,14 @@ public class PrivateEquity {
      * 提示
      */
     private  String tips;
+
+    /**
+     * 家属证件类型
+     */
+    private String familyCardType;
+
+    /**
+     * 家属证件号
+     */
+    private String familyCardId;
 }

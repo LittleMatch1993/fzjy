@@ -7,6 +7,7 @@ import cn.hutool.core.util.StrUtil;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.cisdi.transaction.config.utils.AuthSqlUtil;
 import com.cisdi.transaction.config.utils.HttpUtils;
@@ -65,6 +66,13 @@ public class OrgServiceImpl extends ServiceImpl<OrgMapper, Org> implements OrgSe
     }
 
     @Override
+    public boolean removeByAsgDate(String asgDate) {
+        QueryWrapper<Org> queryWrapper = new QueryWrapper<>();
+        queryWrapper.lambda().eq(Org::getAsgDate, asgDate);
+        return this.remove(queryWrapper);
+    }
+
+    @Override
     public int countByAncodeAndPathNamecode(String anCode, String pathNamecode) {
         Integer count = this.lambdaQuery().eq(Org::getAsgorgancode, anCode).eq(Org::getAsgpathnamecode, pathNamecode).count();
 
@@ -82,11 +90,14 @@ public class OrgServiceImpl extends ServiceImpl<OrgMapper, Org> implements OrgSe
 
     @Transactional(rollbackFor = Exception.class)
     @Override
-    public void syncDa() {
+    public void syncDa(String stringDate) {
         JSONObject obj = new JSONObject();
         //换成配置文件
         obj.put("app_id", "sphy");
         obj.put("table_name", "");
+        if(StrUtil.isEmpty(stringDate)){
+            stringDate = "18000101";
+        }
         obj.put("stringDate", "18000101");
         obj.put("condition", "1=1");
         obj.put("secretKey", "50857140b5b84ddeeef5f62709b32fac");
@@ -116,6 +127,16 @@ public class OrgServiceImpl extends ServiceImpl<OrgMapper, Org> implements OrgSe
                 orgs = this.repalceDictId(orgs,dictList);
                 this.remove(null);
                 this.saveBatch(orgs);
+                System.out.println("service执行组织同步定时任务成功完成");
+                /*boolean removeB = false;
+                if("18000101".equals(stringDate)){//全部更新
+                    removeB = this.remove(null);
+                }else{//增量更新
+                    removeB = this.removeByAsgDate(stringDate);
+                }
+                if(removeB){
+
+                }*/
             }
             System.out.println("service执行组织同步定时任务完成");
         }else{

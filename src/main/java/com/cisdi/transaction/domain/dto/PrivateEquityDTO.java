@@ -56,21 +56,18 @@ public class PrivateEquityDTO extends BaseDTO{
      * 工作单位
      */
     @ApiModelProperty(value = "工作单位")
-    @NotBlank(message = "工作单位不能为空")
     private String  company;
 
     /**
      * 现任职务
      */
     @ApiModelProperty(value = "现任职务")
-    @NotBlank(message = "现任职务不能为空")
     private String  post;
 
     /**
      * 职务层次
      */
     @ApiModelProperty(value = "职务层次")
-    @NotBlank(message = "职务层次不能为空")
     private String  gradation;
 
     /**
@@ -83,28 +80,24 @@ public class PrivateEquityDTO extends BaseDTO{
      * 职级
      */
     @ApiModelProperty(value = "职级")
-    @NotBlank(message = "职级不能为空")
     private String  gbRank;
 
     /**
      * 人员类别
      */
     @ApiModelProperty(value = "人员类别")
-    @NotBlank(message = "人员类别不能为空")
     private String  userType;
 
     /**
      * 政治面貌
      */
     @ApiModelProperty(value = "政治面貌")
-    @NotBlank(message = "政治面貌不能为空")
     private String  face;
 
     /**
      * 在职状态
      */
     @ApiModelProperty(value = "在职状态")
-    @NotBlank(message = "在职状态不能为空")
     private String  jobStatus;
 
     /**
@@ -282,52 +275,10 @@ public class PrivateEquityDTO extends BaseDTO{
     @NotBlank(message = "有无此类情况不能为空")
     private String  isSituation;
 
-    @Override
-    public String toString() {
-        return "PrivateEquityDTO{" +
-                "id='" + id + '\'' +
-                ", tenantId='" + tenantId + '\'' +
-                ", createTime=" + createTime +
-                ", updateTime=" + updateTime +
-                ", gbName='" + gbName + '\'' +
-                ", cardId='" + cardId + '\'' +
-                ", company='" + company + '\'' +
-                ", post='" + post + '\'' +
-                ", gradation='" + gradation + '\'' +
-                ", label='" + label + '\'' +
-                ", gbRank='" + gbRank + '\'' +
-                ", userType='" + userType + '\'' +
-                ", face='" + face + '\'' +
-                ", jobStatus='" + jobStatus + '\'' +
-                ", name='" + name + '\'' +
-                ", title='" + title + '\'' +
-                ", privateequityName='" + privateequityName + '\'' +
-                ", code='" + code + '\'' +
-                ", money='" + money + '\'' +
-                ", personalMoney='" + personalMoney + '\'' +
-                ", investDirection='" + investDirection + '\'' +
-                ", contractTime='" + contractTime + '\'' +
-                ", contractExpireTime='" + contractExpireTime + '\'' +
-                ", manager='" + manager + '\'' +
-                ", registrationNumber='" + registrationNumber + '\'' +
-                ", controller='" + controller + '\'' +
-                ", shareholder='" + shareholder + '\'' +
-                ", subscriptionMoney='" + subscriptionMoney + '\'' +
-                ", subscriptionRatio='" + subscriptionRatio + '\'' +
-                ", subscriptionTime='" + subscriptionTime + '\'' +
-                ", practice='" + practice + '\'' +
-                ", postName='" + postName + '\'' +
-                ", inductionStartTime='" + inductionStartTime + '\'' +
-                ", inductionEndTime='" + inductionEndTime + '\'' +
-                ", managerOperatScope='" + managerOperatScope + '\'' +
-                ", isRelation='" + isRelation + '\'' +
-                ", remarks='" + remarks + '\'' +
-                ", tbType='" + tbType + '\'' +
-                ", year='" + year + '\'' +
-                ", state='" + state + '\'' +
-                ", creatorId='" + creatorId + '\'' +
-                ", updaterId='" + updaterId + '\'' +
-                ", isSituation='" + isSituation + '\'' +
-                '}';
-    }
+    @ApiModelProperty(value = "家属证件类型")
+    private String familyCardType;
+
+    @ApiModelProperty(value = "家属证件号")
+    private String familyCardId;
+
 }
