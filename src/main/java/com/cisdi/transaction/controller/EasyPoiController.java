@@ -95,9 +95,16 @@ public class EasyPoiController {
         System.out.println("进入测试");
         PurchaseBanDealInfo pu = new PurchaseBanDealInfo();
         pu.setId("1111111111111");
+        pu.setSupplier("测试数据");
+        pu.setCode("测试数据");
+        pu.setBanPurchaseCode("测试数据");
+        pu.setBanPurchaseName("测试数据");
+        pu.setManageCompany("测试数据");
+        pu.setManageCompanyCode("测试数据");
         pu.setCreateTime(DateUtil.date());
-        pu.setCode("1234567");
         pu.setIsExtends("是");
+        pu.setCreator("测试数据");
+        pu.setCreatorAccount("测试数据");
         boolean b = false;
         try {
             System.out.println("开始测试");

@@ -130,7 +130,9 @@ public class BanDealInfoServiceImpl extends ServiceImpl<BanDealInfoMapper, BanDe
         this.addFamilyInfo(info);
         //新增操作记录
         List<BanDealInfo> infoList = new ArrayList<>();
-        infoList.add(info);
+        String id = info.getId();
+        BanDealInfo bd = this.getById(id);
+        infoList.add(bd);
         banDealInfoRecordService.insertBanDealInfoRecord(infoList, SystemConstant.OPERATION_TYPE_EDIT); //编辑
     }
  /*   private  void editRefSpouseBasic(BanDealInfo info){
@@ -569,7 +571,6 @@ public class BanDealInfoServiceImpl extends ServiceImpl<BanDealInfoMapper, BanDe
             String company = banDealInfo.getCompany();
             jbParam.put("name", company);
             //调用企业画像接口
-            HttpGlobalConfig.setTimeout(3500); //设置超时时间
             JSONObject resultOb = this.getCompanyInfoByName(jbParam);
             boolean status = resultOb.getBoolean("status");
             boolean b = resultOb.containsKey("data");

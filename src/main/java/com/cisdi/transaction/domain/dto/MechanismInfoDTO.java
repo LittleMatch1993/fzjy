@@ -231,4 +231,11 @@ public class MechanismInfoDTO extends BaseDTO{
     @ApiModelProperty(value = "修改人")
     private String updaterId;
 
+
+    @ApiModelProperty(value = "家属证件类型")
+    private String familyCardType;
+
+    @ApiModelProperty(value = "家属证件号")
+    private String familyCardId;
+
 }

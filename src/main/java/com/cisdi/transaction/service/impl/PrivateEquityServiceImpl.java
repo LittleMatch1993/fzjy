@@ -93,6 +93,8 @@ public class PrivateEquityServiceImpl extends ServiceImpl<PrivateEquityMapper, P
         temp.setCadreCardId(cardId);
         temp.setName(name);
         temp.setTitle(title);
+        temp.setCardName(info.getFamilyCardType());
+        temp.setCardId(info.getFamilyCardId());
         temp.setRefId(info.getId());
         sbiList.add(temp);
         if (CollectionUtil.isNotEmpty(sbiList)) {
@@ -331,6 +333,8 @@ public class PrivateEquityServiceImpl extends ServiceImpl<PrivateEquityMapper, P
             basicInfo.setCadreCardId(info.getCardId()); //干部身份证id
             basicInfo.setName(info.getName()); //家属姓名
             basicInfo.setTitle(info.getTitle());//家属关系
+            basicInfo.setCardName(info.getFamilyCardType());
+            basicInfo.setCardId(info.getFamilyCardId());
             basicInfo.setRefId(info.getId()); //关联数据id
             spouseBasicInfoService.updateById(basicInfo);
         }

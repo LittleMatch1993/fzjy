@@ -23,7 +23,6 @@ public class PurchaseBanDealInfo {
     /**
      * id
      */
-    @TableId(value = "id",type = IdType.ASSIGN_UUID)
     private String id;
     /**
      * 供应商名称
