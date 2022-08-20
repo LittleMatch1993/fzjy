@@ -189,9 +189,19 @@ public class OrgServiceImpl extends ServiceImpl<OrgMapper, Org> implements OrgSe
                 for (int i = 0; i < names.size(); i++) {
                     String name = names.get(i);
                     if(i==names.size()-1){
-                        queryWrapper.lambda().like(Org::getAsgorganname, name+"%公司");
+                        if(name.endsWith("公司")||name.endsWith("公")){
+                            queryWrapper.lambda().like(Org::getAsgorganname, name);
+                        }else{
+                            queryWrapper.lambda().like(Org::getAsgorganname, name+"%公司");
+                        }
+
                     }else{
-                        queryWrapper.lambda().like(Org::getAsgorganname, name+"%公司").or();
+                        if(name.endsWith("公司")||name.endsWith("公")){
+                            queryWrapper.lambda().like(Org::getAsgorganname, name).or();
+                        }else{
+                            queryWrapper.lambda().like(Org::getAsgorganname, name+"%公司").or();
+                        }
+                        //queryWrapper.lambda().like(Org::getAsgorganname, name+"%公司").or();
                     }
                 }
             }else{
@@ -222,6 +232,7 @@ public class OrgServiceImpl extends ServiceImpl<OrgMapper, Org> implements OrgSe
                 queryWrapper.lambda().likeRight(Org::getAsgpathnamecode,pathnamecode);
                // queryWrapper.lambda().like(Org::getAsgorganname, name);
             }else{
+                queryWrapper.lambda().likeRight(Org::getAsgpathnamecode,pathnamecode);
                 queryWrapper.lambda().likeLeft(Org::getAsgorganname, "公司").likeRight(Org::getAsgpathnamecode,pathnamecode).last(SqlConstant.ONE_SQL_YB);
             }
         }

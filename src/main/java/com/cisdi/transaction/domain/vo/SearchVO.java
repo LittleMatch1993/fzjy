@@ -12,7 +12,7 @@ import java.util.List;
 @Data
 public class SearchVO {
 
-    private List<String> keywords;
+    private List<String> keyword;
 
     private String orgCode;
 }
