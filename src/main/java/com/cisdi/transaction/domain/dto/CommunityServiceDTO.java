@@ -57,8 +57,8 @@ public class CommunityServiceDTO {
 //    @ExcelValid(message = "在职状态为空")
     private String jobStatus;
 
-    @ExcelProperty(value = "姓名")
-    @ExcelValid(message = "姓名为空")
+    @ExcelProperty(value = "家人姓名")
+    @ExcelValid(message = "家人姓名为空")
     private String name;
 
     @ExcelProperty(value = "称谓")

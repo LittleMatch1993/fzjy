@@ -6,6 +6,7 @@ import com.alibaba.excel.exception.ExcelAnalysisException;
 import com.alibaba.excel.metadata.CellData;
 import com.cisdi.transaction.config.excel.ExcelImportValid;
 import com.cisdi.transaction.config.excel.ExceptionCustom;
+import com.cisdi.transaction.constant.SystemConstant;
 import com.cisdi.transaction.domain.dto.BaseDTO;
 import com.cisdi.transaction.domain.dto.InvestmentDTO;
 import com.cisdi.transaction.domain.vo.ExportReturnMessageVO;
@@ -53,7 +54,7 @@ public class ImportInvestmentExcelListener extends AnalysisEventListener<Investm
     }
 
     private List<String> columns= Arrays.asList(
-            "干部姓名","身份证号","工作单位","现任职务","职务层次","标签","职级","人员类别","政治面貌","在职状态","姓名","称谓","统一社会信用代码/注册号","企业或其他市场主体名称","成立日期","经营范围","注册地（国家）","注册地（省）","注册地（市）","经营地","企业或其他市场主体类型","注册资本（金）或资金数额（出资额）（人民币万元）","企业状态","是否为股东（合伙人、所有人）","个人认缴出资额或个人出资额（人民币万元）","个人认缴出资比例或个人出资比例（%）","投资时间","是否担任高级职务","所担任的高级职务名称","担任高级职务的开始时间","担任高级职务的结束时间","该企业或其他市场主体是否与报告人所在单位（系统）直接发生过商品、劳务、服务等经济关系","备注","填报类型","年度","有无此类情况"
+            "干部姓名","身份证号","工作单位","现任职务","职务层次","标签","职级","人员类别","政治面貌","在职状态","家人姓名","称谓","统一社会信用代码/注册号","企业或其他市场主体名称","成立日期","经营范围","注册地（国家）","注册地（省）","注册地（市）","经营地","企业或其他市场主体类型","注册资本（金）或资金数额（出资额）（人民币万元）","企业状态","是否为股东（合伙人、所有人）","个人认缴出资额或个人出资额（人民币万元）","个人认缴出资比例或个人出资比例（%）","投资时间","是否担任高级职务","所担任的高级职务名称","担任高级职务的开始时间","担任高级职务的结束时间","该企业或其他市场主体是否与报告人所在单位（系统）直接发生过商品、劳务、服务等经济关系","备注","填报类型","年度","有无此类情况"
     );
 
     @Override
@@ -77,6 +78,20 @@ public class ImportInvestmentExcelListener extends AnalysisEventListener<Investm
 
             dto.setColumnNumber(i++);
             dto.setIsSituation("有此类情况");
+
+            //不是股东（合伙人、所有人）时将个人认缴出资额或个人出资额、个人认缴出资比例或个人出资比例、投资时间置空
+            if (SystemConstant.WHETHER_NO.equals(dto.getShareholder())){
+                dto.setPersonalCapital(null);
+                dto.setPersonalRatio(null);
+                dto.setInvestTime(null);
+            }
+            //未担任高级职务时将所担任的高级职务名称、担任高级职务的时间置空
+            if (SystemConstant.WHETHER_NO.equals(dto.getSeniorPosition())){
+                dto.setSeniorPositionName(null);
+                dto.setSeniorPositionEndTime(null);
+                dto.setSeniorPositionStartTime(null);
+            }
+
             //通用方法数据校验
             ExcelImportValid.valid(dto);
         } catch (ExceptionCustom e) {
