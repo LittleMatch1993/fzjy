@@ -38,7 +38,7 @@ public class MultithreadScheduleTask {
         long j = DateUtil.date().getTime();
         System.out.println("执行组织同步定时任务完成:"+(j-i));
     }
-    @Scheduled(cron = "0 0 21 *  *  ? ") //每天晚上九点执行 增量查询
+   // @Scheduled(cron = "0 0 21 *  *  ? ") //每天晚上九点执行 增量查询
     public  void syncOrgInfo(){
         long i = DateUtil.date().getTime();
         System.out.println("执行组织同步定时任务");

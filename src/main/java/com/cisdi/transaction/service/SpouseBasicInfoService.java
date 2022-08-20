@@ -50,6 +50,13 @@ public interface SpouseBasicInfoService extends IService<SpouseBasicInfo> {
     List<SpouseBasicInfo> selectAll();
 
     /**
+     * 根据管理数据唯一id查询家属信息
+     * @param refId
+     * @return
+     */
+    SpouseBasicInfo selectByRefId(String refId);
+
+    /**
      * 根据干部查询家属信息
      * @param cardId
      * @param pageSize

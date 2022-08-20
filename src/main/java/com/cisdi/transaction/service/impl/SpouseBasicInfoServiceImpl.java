@@ -94,6 +94,12 @@ public class SpouseBasicInfoServiceImpl extends ServiceImpl<SpouseBasicInfoMappe
     }
 
     @Override
+    public SpouseBasicInfo selectByRefId(String refId) {
+        SpouseBasicInfo spouse = this.lambdaQuery().eq(SpouseBasicInfo::getRefId,refId).one();
+        return spouse;
+    }
+
+    @Override
     public Map<String,Object>  selectGbFamilyInfoByCardId(String cardId, int pageSize, int pageIndex) {
         Map<String,Object> resultMap = new HashMap<>();
         IPage<SpouseBasicInfo> page = new Page<>(pageIndex,pageSize);

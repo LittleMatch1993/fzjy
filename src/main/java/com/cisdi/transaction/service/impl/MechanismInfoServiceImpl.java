@@ -221,6 +221,9 @@ public class MechanismInfoServiceImpl extends ServiceImpl<MechanismInfoMapper, M
         temp.setCadreCardId(cardId);
         temp.setName(name);
         temp.setTitle(title);
+        temp.setCardName(info.getFamilyCardType());
+        temp.setCardId(info.getFamilyCardId());
+        temp.setRefId(info.getId());
         sbiList.add(temp);
         if (CollectionUtil.isNotEmpty(sbiList)) {
             //添加干部配偶，子女及其配偶数据
@@ -343,7 +346,23 @@ public class MechanismInfoServiceImpl extends ServiceImpl<MechanismInfoMapper, M
         info.setUpdaterId(dto.getServiceUserId());
         info = this.valid(info);
         this.updateById(info);
-        addFamilyInfo(info);
+        //addFamilyInfo(info);
+        this.editRefSpouseBasic(info);
+    }
+    private  void editRefSpouseBasic(MechanismInfo info){
+        String id = info.getId();
+        SpouseBasicInfo basicInfo = spouseBasicInfoService.selectByRefId(id);
+        if(Objects.nonNull(basicInfo)){
+            basicInfo.setUpdateTime(DateUtil.date());
+            basicInfo.setCadreName(info.getGbName()); //干部姓名
+            basicInfo.setCadreCardId(info.getCardId()); //干部身份证id
+            basicInfo.setName(info.getName()); //家属姓名
+            basicInfo.setTitle(info.getTitle());//家属关系
+            basicInfo.setCardName(info.getFamilyCardType()); //家属证件类型
+            basicInfo.setCardId(info.getFamilyCardId()); //家属证件号
+            basicInfo.setRefId(info.getId()); //关联数据id
+            spouseBasicInfoService.updateById(basicInfo);
+        }
     }
 
     @Override

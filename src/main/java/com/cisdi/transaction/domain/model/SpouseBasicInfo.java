@@ -69,4 +69,9 @@ public class SpouseBasicInfo {
      * 修改人
      */
     private String updaterId;
+
+    /**
+     * 管理数据id
+     */
+    private String refId;
 }

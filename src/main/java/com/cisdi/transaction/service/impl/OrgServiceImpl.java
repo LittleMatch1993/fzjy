@@ -184,7 +184,7 @@ public class OrgServiceImpl extends ServiceImpl<OrgMapper, Org> implements OrgSe
         }
         QueryWrapper<Org> queryWrapper = new QueryWrapper<>();
         String asglevel = org.getAsglevel();
-        if(StrUtil.isNotEmpty(asglevel)&&asglevel.equals("1")){ //看所有
+        if(StrUtil.isNotEmpty(asglevel)&&asglevel.equals("0")){ //看所有
             if(CollectionUtil.isNotEmpty(names)){
                 for (int i = 0; i < names.size(); i++) {
                     String name = names.get(i);
@@ -195,7 +195,7 @@ public class OrgServiceImpl extends ServiceImpl<OrgMapper, Org> implements OrgSe
                     }
                 }
             }else{
-                queryWrapper.lambda().last(SqlConstant.ONE_SQL_YB);
+                queryWrapper.lambda().like(Org::getAsgorganname, "公司").last(SqlConstant.ONE_SQL_YB);
             }
         }else{
             String pathnamecode = org.getAsgpathnamecode();
@@ -212,7 +212,7 @@ public class OrgServiceImpl extends ServiceImpl<OrgMapper, Org> implements OrgSe
                 queryWrapper.lambda().likeRight(Org::getAsgpathnamecode,pathnamecode);
                // queryWrapper.lambda().like(Org::getAsgorganname, name);
             }else{
-                queryWrapper.lambda().likeRight(Org::getAsgpathnamecode,pathnamecode).last(SqlConstant.ONE_SQL_YB);
+                queryWrapper.lambda().like(Org::getAsgorganname, "公司").likeRight(Org::getAsgpathnamecode,pathnamecode).last(SqlConstant.ONE_SQL_YB);
             }
         }
 
@@ -232,9 +232,8 @@ public class OrgServiceImpl extends ServiceImpl<OrgMapper, Org> implements OrgSe
         }
         QueryWrapper<Org> queryWrapper = new QueryWrapper<>();
         String asglevel = org.getAsglevel();
-        if(StrUtil.isNotEmpty(asglevel)&&asglevel.equals("1")){ //看所有
+        if(StrUtil.isNotEmpty(asglevel)&&asglevel.equals("0")){ //看所有
             if(StrUtil.isNotEmpty(name)){
-                ;
                 if(name.endsWith("公司")||name.endsWith("公")){
                     queryWrapper.lambda().like(Org::getAsgorganname, name);
                 }else{
@@ -248,7 +247,11 @@ public class OrgServiceImpl extends ServiceImpl<OrgMapper, Org> implements OrgSe
             String pathnamecode = org.getAsgpathnamecode();
             if(StrUtil.isNotEmpty(name)){
                 queryWrapper.lambda().likeRight(Org::getAsgpathnamecode,pathnamecode);
-                queryWrapper.lambda().like(Org::getAsgorganname, name+"%公司");
+                if(name.endsWith("公司")||name.endsWith("公")){
+                    queryWrapper.lambda().like(Org::getAsgorganname, name);
+                }else{
+                    queryWrapper.lambda().like(Org::getAsgorganname, name+"%公司");
+                }
             }else{
                 queryWrapper.lambda().likeLeft(Org::getAsgorganname, "公司");
                 queryWrapper.lambda().likeRight(Org::getAsgpathnamecode,pathnamecode).last(SqlConstant.ONE_SQL_YB);

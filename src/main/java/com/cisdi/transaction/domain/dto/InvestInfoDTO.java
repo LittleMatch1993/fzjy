@@ -87,7 +87,6 @@ public class InvestInfoDTO extends BaseDTO {
      * 在职状态
      */
     @ApiModelProperty(value = "在职状态")
-    @NotBlank(message = "在职状态不能为空")
     private String jobStatus;
     /**
      * 姓名
