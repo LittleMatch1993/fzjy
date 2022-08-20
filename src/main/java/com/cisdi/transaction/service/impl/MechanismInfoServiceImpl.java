@@ -8,6 +8,7 @@ import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.cisdi.transaction.config.base.ResultMsgUtil;
 import com.cisdi.transaction.config.utils.AuthSqlUtil;
+import com.cisdi.transaction.config.utils.CalendarUtil;
 import com.cisdi.transaction.config.utils.NumberUtils;
 import com.cisdi.transaction.constant.ModelConstant;
 import com.cisdi.transaction.constant.SqlConstant;
@@ -843,6 +844,18 @@ public class MechanismInfoServiceImpl extends ServiceImpl<MechanismInfoMapper, M
                     exportReturnVO.getFailMessage().add(new ExportReturnMessageVO(e.getColumnNumber(),"以下内容必须为数：注册资本（金）或资金数额（出资额）,个人认缴出资额或个人出资额,个人认缴出资比例或个人出资比例,年度。"));
                     return false;
                 }
+                if (StringUtils.isNotBlank(e.getEstablishTime())&& CalendarUtil.greaterThanNow(e.getEstablishTime())){
+                    exportReturnVO.setFailNumber(exportReturnVO.getFailNumber()+1);
+                    exportReturnVO.getFailMessage().add(new ExportReturnMessageVO(e.getColumnNumber(),"成立日期不能大于当前日期。"));
+                    return false;
+                }
+                if (StringUtils.isNotBlank(e.getJoinTime())&& CalendarUtil.greaterThanNow(e.getJoinTime())){
+                    exportReturnVO.setFailNumber(exportReturnVO.getFailNumber()+1);
+                    exportReturnVO.getFailMessage().add(new ExportReturnMessageVO(e.getColumnNumber(),"入股（合伙）时间不能大于当前日期。"));
+                    return false;
+                }
+
+
             }
             return true;
         }).collect(Collectors.toList());

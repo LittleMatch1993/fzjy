@@ -8,6 +8,7 @@ import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.cisdi.transaction.config.base.ResultMsgUtil;
 import com.cisdi.transaction.config.utils.AuthSqlUtil;
+import com.cisdi.transaction.config.utils.CalendarUtil;
 import com.cisdi.transaction.config.utils.NumberUtils;
 import com.cisdi.transaction.constant.ModelConstant;
 import com.cisdi.transaction.constant.SqlConstant;
@@ -501,6 +502,32 @@ public class PrivateEquityServiceImpl extends ServiceImpl<PrivateEquityMapper, P
                 if (!NumberUtils.isAllNumeric(numbers)){
                     exportReturnVO.setFailNumber(exportReturnVO.getFailNumber()+1);
                     exportReturnVO.getFailMessage().add(new ExportReturnMessageVO(e.getColumnNumber(),"以下内容必须为数：基金总实缴金额,个人实缴金额,认缴金额,认缴比例,年度。"));
+                    return false;
+                }
+                if (StringUtils.isNotBlank(e.getContractTime())&& CalendarUtil.greaterThanNow(e.getContractTime())){
+                    exportReturnVO.setFailNumber(exportReturnVO.getFailNumber()+1);
+                    exportReturnVO.getFailMessage().add(new ExportReturnMessageVO(e.getColumnNumber(),"基金合同签署日不能大于当前日期。"));
+                    return false;
+                }
+                if (StringUtils.isNotBlank(e.getSubscriptionTime())&& CalendarUtil.greaterThanNow(e.getSubscriptionTime())){
+                    exportReturnVO.setFailNumber(exportReturnVO.getFailNumber()+1);
+                    exportReturnVO.getFailMessage().add(new ExportReturnMessageVO(e.getColumnNumber(),"认缴时间不能大于当前日期。"));
+                    return false;
+                }
+                if (StringUtils.isNotBlank(e.getInductionStartTime())){
+                    if (CalendarUtil.greaterThanNow(e.getInductionStartTime())){
+                        exportReturnVO.setFailNumber(exportReturnVO.getFailNumber()+1);
+                        exportReturnVO.getFailMessage().add(new ExportReturnMessageVO(e.getColumnNumber(),"担任高级职务的开始时间不能大于当前日期。"));
+                        return false;
+                    }
+                    if (StringUtils.isNotBlank(e.getInductionEndTime())&&CalendarUtil.compare(e.getInductionStartTime(),e.getInductionEndTime())){
+                        exportReturnVO.setFailNumber(exportReturnVO.getFailNumber()+1);
+                        exportReturnVO.getFailMessage().add(new ExportReturnMessageVO(e.getColumnNumber(),"担任高级职务的结束时间不能大于开始时间。"));
+                        return false;
+                    }
+                }else if (StringUtils.isNotBlank(e.getInductionEndTime())&&CalendarUtil.greaterThanNow(e.getInductionEndTime())){
+                    exportReturnVO.setFailNumber(exportReturnVO.getFailNumber()+1);
+                    exportReturnVO.getFailMessage().add(new ExportReturnMessageVO(e.getColumnNumber(),"担任高级职务的结束时间不能大于当前时间。"));
                     return false;
                 }
             }
