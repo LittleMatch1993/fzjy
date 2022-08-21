@@ -60,6 +60,9 @@ public class BanDealInfoServiceImpl extends ServiceImpl<BanDealInfoMapper, BanDe
 
     @Autowired
     private OrgService orgService;
+
+    @Autowired
+    private  GbBasicInfoService gbBasicInfoService;
     @Value("${wk.url}")
     private String url;
 
@@ -217,7 +220,7 @@ public class BanDealInfoServiceImpl extends ServiceImpl<BanDealInfoMapper, BanDe
 
                     //13-1表中的，显示X（个人认缴出资额或个人出资额（人民币万元））,Y（个人认缴出资比例或个人出资比例（%））,AA（是否担任高级职务），AB（所担任的高级职务名称）列内容
                     //----如果AA值为是，则拼接AB列，否则不拼接
-                    String engageInfo = "个人认缴出资额或个人出资额(人民币万元):" +(StrUtil.isEmpty( info.getPersonalCapital())?"": info.getPersonalCapital()) + "；个人认缴出资比例或个人出资比例(%):" + (StrUtil.isEmpty(info.getPersonalRatio())?"":info.getPersonalRatio())
+                    String engageInfo = "个人认缴出资额或个人出资额(人民币万元):" +(StrUtil.isEmpty( info.getPersonalCapital())?"": info.getPersonalCapital()+"万元") + "；个人认缴出资比例或个人出资比例(%):" + (StrUtil.isEmpty(info.getPersonalRatio())?"":info.getPersonalRatio()+"%")
                             + ("是".equals(sysDictBizService.getDictValue(info.getSeniorPosition(),dictList)) ? "；担任高级职务名称:" + (StrUtil.isEmpty(info.getSeniorPositionName())?"":info.getSeniorPositionName()) : "");
 
                     bandealInfo.setEngageInfo(engageInfo);
@@ -249,7 +252,19 @@ public class BanDealInfoServiceImpl extends ServiceImpl<BanDealInfoMapper, BanDe
                             purchaseName = "中国五矿集团有限公司";
                         } else if ("总部处长".equals(sysDictBizService.getDictValue(banPostType,dictList))) {
                             whether = sysDictBizService.getDictId(SystemConstant.WHETHER_NO,dictList);
-                            Org org = orgService.getOrgByUnitCodeAndDepartmentName(gbOrgInfo.getUnitCode(),gbOrgInfo.getDeparment());
+                            String deparmentName = gbOrgInfo.getDeparment();
+                            if(StrUtil.isEmpty(deparmentName)){
+                                GbBasicInfo gb = gbBasicInfoService.getById(gbOrgInfo.getId());
+                                if(Objects.isNull(gb)){
+                                    KVVO vo = new KVVO();
+                                    vo.setId(info.getId());
+                                    vo.setName("未找到干部部门信息");
+                                    submitFailId.add(vo);
+                                    continue;
+                                }
+                                deparmentName = gb.getDepartment();
+                            }
+                            Org org = orgService.getOrgByUnitCodeAndDepartmentName(gbOrgInfo.getUnitCode(),deparmentName);
                             purchaseCode = Objects.isNull(org) ? "" : org.getAsgorgancode();//禁止交易采购单位代码
                             purchaseName = Objects.isNull(org) ? "" : org.getAsgorganname();
                         }
@@ -315,9 +330,9 @@ public class BanDealInfoServiceImpl extends ServiceImpl<BanDealInfoMapper, BanDe
                     bandealInfo.setEngageType(sysDictBizService.getDictId("投资私募股权投资基金或者担任高级职务",dictList));
                     //13-3表中的，显示M（投资的私募股权投资基金产品名称），O（基金总实缴金额（人民币万元）），P（个人实缴金额（人民币万元））,Q（基金投向），X（认缴金额（人民币万元）），Y（认缴比例（%）），AA（是否担任该基金管理人高级职务），AB（所担任的高级职务名称）列内容
                     //------如果AA值为是，则拼接AB列，否则不拼接
-                    String engageInfo = "投资的私募股权投资基金产品名称:" + (StrUtil.isEmpty(info.getPrivateequityName())?"":info.getPrivateequityName()) + "；基金总实缴金额（人民币万元）:" + (StrUtil.isEmpty(info.getMoney())?"":info.getMoney())
-                            + "；个人实缴金额（人民币万元）:" +(StrUtil.isEmpty(info.getPersonalMoney())?"":info.getPersonalMoney())  + "；基金投向:" + (StrUtil.isEmpty(info.getInvestDirection())?"":info.getInvestDirection())
-                            + "；认缴金额（人民币万元）:" + info.getSubscriptionMoney() + "；认缴比例（%）:" + info.getSubscriptionRatio()
+                    String engageInfo = "投资的私募股权投资基金产品名称:" + (StrUtil.isEmpty(info.getPrivateequityName())?"":info.getPrivateequityName()) + "；基金总实缴金额（人民币万元）:" + (StrUtil.isEmpty(info.getMoney())?"":info.getMoney()+"万元")
+                            + "；个人实缴金额（人民币万元）:" +(StrUtil.isEmpty(info.getPersonalMoney())?"":info.getPersonalMoney()+"万元")  + "；基金投向:" + (StrUtil.isEmpty(info.getInvestDirection())?"":info.getInvestDirection())
+                            + "；认缴金额（人民币万元）:" +(StrUtil.isEmpty(info.getSubscriptionMoney())?"": info.getSubscriptionMoney()+"万元") + "；认缴比例（%）:" + (StrUtil.isEmpty(info.getSubscriptionRatio())?"":info.getSubscriptionRatio()+"%")
                             + ("是".equals(sysDictBizService.getDictValue(info.getPractice(),dictList)) ? "；所担任的高级职务名称:" + (StrUtil.isEmpty(info.getPostName())?"":info.getPostName()) : "");
 
                     bandealInfo.setEngageInfo(engageInfo);
@@ -342,7 +357,19 @@ public class BanDealInfoServiceImpl extends ServiceImpl<BanDealInfoMapper, BanDe
                             purchaseName = "中国五矿集团有限公司";
                         } else if ("总部处长".equals(sysDictBizService.getDictValue(banPostType,dictList))) {
                             whether = sysDictBizService.getDictId(SystemConstant.WHETHER_NO,dictList);//是否继承关系
-                            Org org = orgService.getOrgByUnitCodeAndDepartmentName(gbOrgInfo.getUnitCode(),gbOrgInfo.getDeparment());
+                            String deparmentName = gbOrgInfo.getDeparment();
+                            if(StrUtil.isEmpty(deparmentName)){
+                                GbBasicInfo gb = gbBasicInfoService.getById(gbOrgInfo.getId());
+                                if(Objects.isNull(gb)){
+                                    KVVO vo = new KVVO();
+                                    vo.setId(info.getId());
+                                    vo.setName("未找到干部部门信息");
+                                    submitFailId.add(vo);
+                                    continue;
+                                }
+                                deparmentName = gb.getDepartment();
+                            }
+                            Org org = orgService.getOrgByUnitCodeAndDepartmentName(gbOrgInfo.getUnitCode(),deparmentName);
                             purchaseCode = Objects.isNull(org) ? "" : org.getAsgorgancode();//禁止交易采购单位代码
                             purchaseName = Objects.isNull(org) ? "" : org.getAsgorganname();
                         }
@@ -412,7 +439,7 @@ public class BanDealInfoServiceImpl extends ServiceImpl<BanDealInfoMapper, BanDe
                     bandealInfo.setEngageType(sysDictBizService.getDictId("开办有偿社会中介和法律服务结构或从业",dictList));
                     //13-2表中的，显示Z（个人认缴出资额或个人出资额（人民币万元）），AA（个人认缴出资比例或个人出资比例（%）），AC（是否在该机构中从业），AD（所担任的职务名称）列内容
                     //------如果AC值为是，则拼接AD列，否则不拼接
-                    String engageInfo = "个人认缴出资额或个人出资额（人民币万元）:" +(StrUtil.isEmpty( info.getPersonalCapital())?"": info.getPersonalCapital()) + "；个人认缴出资比例或个人出资比例（%）:" + (StrUtil.isEmpty(info.getPersonalRatio())?"":info.getPersonalRatio())
+                    String engageInfo = "个人认缴出资额或个人出资额（人民币万元）:" +(StrUtil.isEmpty( info.getPersonalCapital())?"": info.getPersonalCapital()+"万元") + "；个人认缴出资比例或个人出资比例（%）:" + (StrUtil.isEmpty(info.getPersonalRatio())?"":info.getPersonalRatio()+"%")
                             + ("是".equals(sysDictBizService.getDictValue(info.getPractice(),dictList)) ? "；所担任的职务名称:" + (StrUtil.isEmpty(info.getPostName())?"":info.getPostName()) : "");
 
                     bandealInfo.setEngageInfo(engageInfo);
@@ -437,7 +464,19 @@ public class BanDealInfoServiceImpl extends ServiceImpl<BanDealInfoMapper, BanDe
                             purchaseName = "中国五矿集团有限公司";
                         } else if ("总部处长".equals(sysDictBizService.getDictValue(banPostType,dictList))) {
                             whether = SystemConstant.WHETHER_NO;//是否继承关系
-                            Org org = orgService.getOrgByUnitCodeAndDepartmentName(gbOrgInfo.getUnitCode(),gbOrgInfo.getDeparment());
+                            String deparmentName = gbOrgInfo.getDeparment();
+                            if(StrUtil.isEmpty(deparmentName)){
+                                GbBasicInfo gb = gbBasicInfoService.getById(gbOrgInfo.getId());
+                                if(Objects.isNull(gb)){
+                                    KVVO vo = new KVVO();
+                                    vo.setId(info.getId());
+                                    vo.setName("未找到干部部门信息");
+                                    submitFailId.add(vo);
+                                    continue;
+                                }
+                                deparmentName = gb.getDepartment();
+                            }
+                            Org org = orgService.getOrgByUnitCodeAndDepartmentName(gbOrgInfo.getUnitCode(),deparmentName);
                             purchaseCode = Objects.isNull(org) ? "" : org.getAsgorgancode();//禁止交易采购单位代码
                             purchaseName = Objects.isNull(org) ? "" : org.getAsgorganname();//禁止交易采购单位名称
 

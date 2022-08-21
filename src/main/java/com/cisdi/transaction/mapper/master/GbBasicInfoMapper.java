@@ -37,7 +37,7 @@ public interface GbBasicInfoMapper extends BaseMapper<GbBasicInfo> {
      * @param ids
      * @return
      */
-    @Select("<script>select a.name,a.card_id,a.unit, c.asgorgancode \"unit_code\",  CONVERT(c.asglevel,SIGNED) 'asglevel',c.asgpathnamecode,\n" +
+    @Select("<script>select a.id,a.name,a.card_id,a.unit, c.asgorgancode \"unit_code\",  CONVERT(c.asglevel,SIGNED) 'asglevel',c.asgpathnamecode,\n" +
             "            department,\n" +
             "          \n" +
             "            post,post_type,a.allot_type from `69654103_gb_basic_info` a left join  \n" +

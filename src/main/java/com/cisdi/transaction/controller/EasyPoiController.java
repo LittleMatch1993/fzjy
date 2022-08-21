@@ -1,12 +1,15 @@
 package com.cisdi.transaction.controller;
 
+import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.date.DateUtil;
 import com.cisdi.transaction.config.base.ResultCode;
 import com.cisdi.transaction.config.base.ResultMsgUtil;
 import com.cisdi.transaction.domain.dto.CityDTO;
 import com.cisdi.transaction.domain.dto.TestDTO;
-import com.cisdi.transaction.domain.model.GlobalCityInfo;
-import com.cisdi.transaction.domain.model.PurchaseBanDealInfo;
+import com.cisdi.transaction.domain.model.*;
+import com.cisdi.transaction.service.GbBasicInfoService;
+import com.cisdi.transaction.service.GbBasicInfoThreeService;
 import com.cisdi.transaction.service.GlobalCityInfoService;
 import com.cisdi.transaction.service.PurchaseBanDealInfoSevice;
 import io.swagger.annotations.Api;
@@ -18,8 +21,10 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.lang.reflect.Member;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 /**
@@ -35,7 +40,13 @@ public class EasyPoiController {
     private GlobalCityInfoService globalCityInfoService;
 
     @Autowired
+    private GbBasicInfoService gbBasicInfoService;
+
+    @Autowired
     private PurchaseBanDealInfoSevice purchaseBanDealInfoSevice;
+
+    @Autowired
+    private GbBasicInfoThreeService threeService;
 
     @ApiOperation("从Excel导入会员列表")
     @RequestMapping(value = "/importMemberList", method = RequestMethod.POST)
@@ -94,7 +105,7 @@ public class EasyPoiController {
     public ResultMsgUtil<Object> test(){
         System.out.println("进入测试");
         PurchaseBanDealInfo pu = new PurchaseBanDealInfo();
-        pu.setId("1111111111111");
+        pu.setId(UUID.randomUUID().toString());
         pu.setSupplier("测试数据");
         pu.setCode("测试数据");
         pu.setBanPurchaseCode("测试数据");
@@ -113,6 +124,54 @@ public class EasyPoiController {
         }catch (Exception e){
             e.printStackTrace();
             System.out.println("测试失败"+e.getMessage());
+            return ResultMsgUtil.failure(e.getMessage());
+        }
+        return ResultMsgUtil.success(b);
+    }
+    @GetMapping("/test2")
+    @ResponseBody
+    public ResultMsgUtil<Object> test2(){
+        System.out.println("进入测试2");
+        boolean b = false;
+        try {
+            System.out.println("开始测试2");
+            List<GbBasicInfo> list = gbBasicInfoService.lambdaQuery().list();
+            list.stream().forEach(e->{
+                System.out.println(e.getName()+"----"+e.getName().replaceAll("[　*| *| *|//s*]*", ""));
+            });
+
+
+            System.out.println("开始成功2");
+        }catch (Exception e){
+            e.printStackTrace();
+            System.out.println("测试失败2"+e.getMessage());
+            return ResultMsgUtil.failure(e.getMessage());
+        }
+        return ResultMsgUtil.success(b);
+    }
+
+    @GetMapping("/test3")
+    @ResponseBody
+    public ResultMsgUtil<Object> test3(){
+        System.out.println("进入测试3");
+        boolean b = false;
+        try {
+            System.out.println("开始测试3");
+            List<GbBasicInfoThree> gbBasicInfoThrees = gbBasicInfoService.selectOldGbBasicInfo();
+            List<OldGbData> oldList = new ArrayList<>();
+            if(CollectionUtil.isNotEmpty(gbBasicInfoThrees)){
+                for (GbBasicInfoThree gbBasicInfoThree : gbBasicInfoThrees) {
+                    OldGbData info = new OldGbData();
+                    BeanUtil.copyProperties(gbBasicInfoThree, info);
+                    String name = gbBasicInfoThree.getName();
+                    name  = name.replaceAll("[　*| *| *|//s*]*", "");
+                    info.setName(name);
+                    oldList.add(info);
+                }
+            }
+        }catch (Exception e){
+            e.printStackTrace();
+            System.out.println("测试失败3"+e.getMessage());
             return ResultMsgUtil.failure(e.getMessage());
         }
         return ResultMsgUtil.success(b);

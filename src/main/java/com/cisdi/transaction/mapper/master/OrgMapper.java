@@ -21,8 +21,7 @@ public interface OrgMapper extends BaseMapper<Org> {
 //
 //    public Org selectById(String id);
 
-    @Select("<script>(select asgpathname from 69654103_org where asgorgancode=#{code}) b where\n" +
-            "         a.asgpathname = concat(b.asgpathname,\"-\",#{name})</script>")
+    @Select("<script>select a.* from 69654103_org a, 69654103_org b where b.asgorgancode='60000001' and  a.id = b.id and a.asgpathname = concat(b.asgpathname,\"-\",#{name})</script>")
     public List<Org> getOrgByUnitCodeAndDepartmentName(@Param("code")String code,String name);
 
     @Select("<script> SELECT \n" +

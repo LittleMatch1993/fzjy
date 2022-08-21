@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.extension.service.IService;
 import com.cisdi.transaction.domain.dto.CadreDTO;
 import com.cisdi.transaction.domain.dto.CadreFamilyExportDto;
 import com.cisdi.transaction.domain.model.GbBasicInfo;
+import com.cisdi.transaction.domain.model.GbBasicInfoThree;
 import com.cisdi.transaction.domain.model.GbOrgInfo;
 import com.cisdi.transaction.domain.vo.CadreExcelVO;
 
@@ -33,6 +34,12 @@ public interface GbBasicInfoService extends IService<GbBasicInfo> {
      * 同步数据
      */
     void syncData();
+
+    /**
+     * 获取原数据
+     */
+    public List<GbBasicInfoThree> selectOldGbBasicInfo();
+
 
     /**
      * 导出

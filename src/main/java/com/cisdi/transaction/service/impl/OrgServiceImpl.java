@@ -189,23 +189,13 @@ public class OrgServiceImpl extends ServiceImpl<OrgMapper, Org> implements OrgSe
                 for (int i = 0; i < names.size(); i++) {
                     String name = names.get(i);
                     if(i==names.size()-1){
-                        if(name.endsWith("公司")||name.endsWith("公")){
-                            queryWrapper.lambda().like(Org::getAsgorganname, name);
-                        }else{
-                            queryWrapper.lambda().like(Org::getAsgorganname, name+"%公司");
-                        }
-
+                        queryWrapper.lambda().like(Org::getAsgorganname, name);
                     }else{
-                        if(name.endsWith("公司")||name.endsWith("公")){
-                            queryWrapper.lambda().like(Org::getAsgorganname, name).or();
-                        }else{
-                            queryWrapper.lambda().like(Org::getAsgorganname, name+"%公司").or();
-                        }
-                        //queryWrapper.lambda().like(Org::getAsgorganname, name+"%公司").or();
+                        queryWrapper.lambda().like(Org::getAsgorganname, name).or();
                     }
                 }
             }else{
-                queryWrapper.lambda().likeLeft(Org::getAsgorganname, "公司").last(SqlConstant.ONE_SQL_YB);
+                queryWrapper.lambda().last(SqlConstant.ONE_SQL_YB);
             }
         }else{
             String pathnamecode = org.getAsgpathnamecode();
@@ -214,27 +204,17 @@ public class OrgServiceImpl extends ServiceImpl<OrgMapper, Org> implements OrgSe
                 for (int i = 0; i < names.size(); i++) {
                     String name = names.get(i);
                     if(i==names.size()-1){
-                        if(name.endsWith("公司")||name.endsWith("公")){
-                            queryWrapper.lambda().like(Org::getAsgorganname, name);
-                        }else{
-                            queryWrapper.lambda().like(Org::getAsgorganname, name+"%公司");
-                        }
+                        queryWrapper.lambda().like(Org::getAsgorganname, name);
 
                     }else{
-                        if(name.endsWith("公司")||name.endsWith("公")){
-                            queryWrapper.lambda().like(Org::getAsgorganname, name).or();
-                        }else{
-                            queryWrapper.lambda().like(Org::getAsgorganname, name+"%公司").or();
-                        }
-                        //queryWrapper.lambda().like(Org::getAsgorganname, name+"%公司").or();
+                        queryWrapper.lambda().like(Org::getAsgorganname, name).or();
+
                     }
                 }
-                queryWrapper.lambda().likeRight(Org::getAsgpathnamecode,pathnamecode);
+
                // queryWrapper.lambda().like(Org::getAsgorganname, name);
-            }else{
-                queryWrapper.lambda().likeRight(Org::getAsgpathnamecode,pathnamecode);
-                queryWrapper.lambda().likeLeft(Org::getAsgorganname, "公司").likeRight(Org::getAsgpathnamecode,pathnamecode).last(SqlConstant.ONE_SQL_YB);
             }
+            queryWrapper.lambda().likeRight(Org::getAsgpathnamecode,pathnamecode).last(SqlConstant.ONE_SQL_YB);;
         }
 
         return this.baseMapper.selectList(queryWrapper);

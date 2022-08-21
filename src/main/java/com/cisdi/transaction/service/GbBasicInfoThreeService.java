@@ -14,4 +14,5 @@ import java.util.List;
 public interface GbBasicInfoThreeService extends IService<GbBasicInfoThree> {
 
     public List<GbBasicInfoThree> selectGbBasicInfo();
+    public List<GbBasicInfoThree> selectOldGbBasicInfo();
 }

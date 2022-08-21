@@ -179,6 +179,11 @@ public class GbBasicInfoServiceImpl extends ServiceImpl<GbBasicInfoMapper, GbBas
     }
 
     @Override
+    public List<GbBasicInfoThree> selectOldGbBasicInfo() {
+        return gbBasicInfoThreeService.selectOldGbBasicInfo();
+    }
+
+    @Override
     public List<CadreExcelVO> export(CadreFamilyExportDto dto) {
         List<SysDictBiz> dictList = sysDictBizService.selectList();
         /**
@@ -247,8 +252,25 @@ public class GbBasicInfoServiceImpl extends ServiceImpl<GbBasicInfoMapper, GbBas
             return null;
         }
         List<GbOrgInfo> gbOrgInfoList = new ArrayList<>();
+        //只有单位数据没有部门数据
+        List<GbBasicInfo> gbBasicInfoList = this.lambdaQuery().in(GbBasicInfo::getCardId, cardIds).list();
         //过滤公司为null的数据
         list = list.stream().filter(e->StrUtil.isNotEmpty(e.getUnit())).collect(Collectors.toList());
+        if(CollectionUtil.isNotEmpty(gbBasicInfoList)){
+            //已id分组
+            Map<String, List<GbBasicInfo>> map = gbBasicInfoList.stream().collect(Collectors.groupingBy(GbBasicInfo::getId));
+            list.stream().forEach(e->{
+                 String id = e.getId();
+                 boolean b = map.containsKey(id);
+                 if(b){
+                     List<GbBasicInfo> gbBasicInfos = map.get(id);
+                     if(CollectionUtil.isNotEmpty(gbBasicInfos)){
+                          GbBasicInfo gb = gbBasicInfos.get(0);
+                          e.setDeparment(gb.getDepartment());
+                     }
+                 }
+            });
+        }
         Map<String, List<GbOrgInfo>> map = list.stream().collect(Collectors.groupingBy(go -> go.getCardId()));
         for (Map.Entry<String, List<GbOrgInfo>> m : map.entrySet()) {
             String key = m.getKey();//key 身份证

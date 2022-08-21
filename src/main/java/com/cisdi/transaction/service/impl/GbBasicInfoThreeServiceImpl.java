@@ -20,4 +20,9 @@ public class GbBasicInfoThreeServiceImpl extends ServiceImpl<GbBasicInfoThreeMap
     public List<GbBasicInfoThree> selectGbBasicInfo() {
         return this.baseMapper.selectGbBasicInfo();
     }
+
+    @Override
+    public List<GbBasicInfoThree> selectOldGbBasicInfo() {
+        return this.baseMapper.selectOldGbBasicInfo();
+    }
 }
