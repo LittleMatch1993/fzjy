@@ -618,7 +618,7 @@ public class PrivateEquityServiceImpl extends ServiceImpl<PrivateEquityMapper, P
             if (!privateEquity.isEmpty()) {
                 this.saveBatch(privateEquity);
                 spouseBasicInfoService.addBatchSpouse(privateEquity.stream().map(investInfo ->
-                        new SpouseBasicInfo().setCreateTime(DateUtil.date()).setTenantId(baseDTO.getServiceLesseeId())
+                        new SpouseBasicInfo().setRefId(investInfo.getId()).setCreateTime(DateUtil.date()).setTenantId(baseDTO.getServiceLesseeId())
                                 .setCreatorId(baseDTO.getServiceUserId()).setUpdaterId(baseDTO.getServiceUserId()).setUpdateTime(DateUtil.date())
                                 .setCadreCardId(investInfo.getCardId()).setName(investInfo.getName()).setTitle(investInfo.getTitle()).setCadreName(investInfo.getGbName())
                 ).collect(Collectors.toList()));
@@ -762,7 +762,7 @@ public class PrivateEquityServiceImpl extends ServiceImpl<PrivateEquityMapper, P
         if (!privateEquity.isEmpty()) {
             this.saveBatch(privateEquity);
             spouseBasicInfoService.addBatchSpouse(privateEquity.stream().map(investInfo ->
-                    new SpouseBasicInfo().setCreateTime(DateUtil.date()).setTenantId(baseDTO.getServiceLesseeId())
+                    new SpouseBasicInfo().setRefId(investInfo.getId()).setCreateTime(DateUtil.date()).setTenantId(baseDTO.getServiceLesseeId())
                             .setCreatorId(baseDTO.getServiceUserId()).setUpdaterId(baseDTO.getServiceUserId()).setUpdateTime(DateUtil.date())
                             .setCadreCardId(investInfo.getCardId()).setName(investInfo.getName()).setTitle(investInfo.getTitle()).setCadreName(investInfo.getGbName())
             ).collect(Collectors.toList()));
@@ -770,7 +770,7 @@ public class PrivateEquityServiceImpl extends ServiceImpl<PrivateEquityMapper, P
         if (!updateList.isEmpty()) {
             this.updateBatchById(updateList);
             spouseBasicInfoService.addBatchSpouse(updateList.stream().map(investInfo ->
-                    new SpouseBasicInfo().setCreateTime(DateUtil.date()).setTenantId(baseDTO.getServiceLesseeId())
+                    new SpouseBasicInfo().setRefId(investInfo.getId()).setCreateTime(DateUtil.date()).setTenantId(baseDTO.getServiceLesseeId())
                             .setCreatorId(baseDTO.getServiceUserId()).setUpdaterId(baseDTO.getServiceUserId()).setUpdateTime(DateUtil.date())
                             .setCadreCardId(investInfo.getCardId()).setName(investInfo.getName()).setTitle(investInfo.getTitle()).setCadreName(investInfo.getGbName())
             ).collect(Collectors.toList()));
