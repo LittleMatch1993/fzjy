@@ -26,6 +26,9 @@ public class CommunityServiceDTO {
     @ExcelValid(message = "身份证号为空")
     private String cardId;
 
+    @ExcelProperty(value = "干部类型")
+    private String postType;
+
     @ExcelProperty(value = "工作单位")
 //    @ExcelValid(message = "工作单位为空")
     private String company;

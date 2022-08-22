@@ -54,6 +54,11 @@ public class PrivateEquity {
     private String  cardId;
 
     /**
+     * 干部类型
+     */
+    private String postType;
+
+    /**
      * 工作单位
      */
     private String  company;

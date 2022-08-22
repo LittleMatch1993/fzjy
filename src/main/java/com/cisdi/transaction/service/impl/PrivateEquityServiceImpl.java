@@ -820,6 +820,7 @@ public class PrivateEquityServiceImpl extends ServiceImpl<PrivateEquityMapper, P
         String shareholder=null;
         String practice=null;
         String isRelation=null;
+        String postType=null;
         if (StringUtils.isNotBlank(t.getIsSituation())){
             isSituation =sysDictBizService.getDictId(t.getIsSituation(),dictList);
             if (StringUtils.isBlank(isSituation)){
@@ -862,6 +863,12 @@ public class PrivateEquityServiceImpl extends ServiceImpl<PrivateEquityMapper, P
                 return "是否与报告人所在单位（系统）直接发生过经济关系字典项不存在";
             }
         }
+        if (StringUtils.isNotBlank(t.getPostType())){
+            postType =sysDictBizService.getDictId(t.getPostType(),dictList);
+            if (StringUtils.isBlank(postType)){
+                return "干部类型字典项不存在";
+            }
+        }
         System.out.println("--"+title);
         t.setIsSituation(isSituation);
         t.setTitle(title);
@@ -869,6 +876,7 @@ public class PrivateEquityServiceImpl extends ServiceImpl<PrivateEquityMapper, P
         t.setShareholder(shareholder);
         t.setPractice(practice);
         t.setIsRelation(isRelation);
+        t.setPostType(postType);
         return null;
     }
 }

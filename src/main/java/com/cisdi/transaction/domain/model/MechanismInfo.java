@@ -51,6 +51,10 @@ public class MechanismInfo {
      */
     private String post;
     /**
+     * 干部类型
+     */
+    private String postType;
+    /**
      * 职务层次
      */
     private String gradation;

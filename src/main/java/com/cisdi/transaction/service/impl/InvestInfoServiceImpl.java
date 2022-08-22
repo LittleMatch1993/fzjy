@@ -959,6 +959,7 @@ public class InvestInfoServiceImpl extends ServiceImpl<InvestInfoMapper, InvestI
         String shareholder = null;
         String seniorPosition = null;
         String isRelation = null;
+        String postType=null;
 
         if (StringUtils.isNotBlank(dto.getIsSituation())){
             isSituation=sysDictBizService.getDictId(dto.getIsSituation(),dictList);
@@ -1002,6 +1003,12 @@ public class InvestInfoServiceImpl extends ServiceImpl<InvestInfoMapper, InvestI
                 return "该企业或其他市场主体是否与报告人所在单位字典项不存在";
             }
         }
+        if (StringUtils.isNotBlank(dto.getPostType())){
+            postType =sysDictBizService.getDictId(dto.getPostType(),dictList);
+            if (StringUtils.isBlank(postType)){
+                return "干部类型字典项不存在";
+            }
+        }
         dto.setIsSituation(isSituation);
         dto.setTitle(title);
         dto.setEnterpriseState(enterpriseState);
@@ -1009,6 +1016,7 @@ public class InvestInfoServiceImpl extends ServiceImpl<InvestInfoMapper, InvestI
         dto.setShareholder(shareholder);
         dto.setSeniorPosition(seniorPosition);
         dto.setIsRelation(isRelation);
+        dto.setPostType(postType);
         return null;
     }
 }

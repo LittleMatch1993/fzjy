@@ -914,6 +914,7 @@ public class MechanismInfoServiceImpl extends ServiceImpl<MechanismInfoMapper, M
         String operatState=null;
         String shareholder=null;
         String practice=null;
+        String postType=null;
 
         String isRelation=null;
         //字典对应项
@@ -964,7 +965,13 @@ public class MechanismInfoServiceImpl extends ServiceImpl<MechanismInfoMapper, M
             }
         }
 
-        System.out.println("--"+title);
+        if (StringUtils.isNotBlank(t.getPostType())){
+            postType =sysDictBizService.getDictId(t.getPostType(),dictList);
+            if (StringUtils.isBlank(postType)){
+                return "干部类型字典项不存在";
+            }
+        }
+
         t.setIsSituation(isSituation);
         t.setTitle(title);
         t.setOrganizationType(organizationType);
@@ -972,6 +979,7 @@ public class MechanismInfoServiceImpl extends ServiceImpl<MechanismInfoMapper, M
         t.setShareholder(shareholder);
         t.setPractice(practice);
         t.setIsRelation(isRelation);
+        t.setPostType(postType);
         return null;
     }
 }
