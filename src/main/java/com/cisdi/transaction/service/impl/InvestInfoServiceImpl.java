@@ -7,6 +7,7 @@ import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.cisdi.transaction.config.base.ResultMsgUtil;
+import com.cisdi.transaction.config.exception.BusinessException;
 import com.cisdi.transaction.config.utils.AuthSqlUtil;
 import com.cisdi.transaction.config.utils.CalendarUtil;
 import com.cisdi.transaction.config.utils.NumberUtils;
@@ -113,10 +114,10 @@ public class InvestInfoServiceImpl extends ServiceImpl<InvestInfoMapper, InvestI
         if (CollectionUtil.isEmpty(infoList)) {
             return ResultMsgUtil.failure("数据不存在了");
         }
-        long count = infoList.stream().filter(e -> SystemConstant.VALID_STATE.equals(e.getState())).count();
+        /*long count = infoList.stream().filter(e -> SystemConstant.VALID_STATE.equals(e.getState())).count();
         if (count > 0) {
             return ResultMsgUtil.failure("当前表中的有效数据不能重复提交到禁止交易信息表中!");
-        }
+        }*/
         List<SysDictBiz> dictList = sysDictBizService.selectList();
         long j = infoList.stream().filter(e -> "无此类情况".equals(sysDictBizService.getDictValue(e.getIsSituation(),dictList))).count();
         if (j > 0) {
@@ -135,7 +136,9 @@ public class InvestInfoServiceImpl extends ServiceImpl<InvestInfoMapper, InvestI
                 //gbOrgList = gbBasicInfoService.selectGbOrgInfoByCardIds(cardIds);
                 String orgCode = subDto.getOrgCode();
                 gbOrgList = gbBasicInfoService.selectByOrgCodeAndCardIds(orgCode,cardIds);
-            }catch (Exception e){
+            }catch (BusinessException e){
+                return ResultMsgUtil.failure(e.getMsg());
+            } catch (Exception e){
                 e.printStackTrace();
                 return ResultMsgUtil.failure("干部组织信息查询失败");
             }

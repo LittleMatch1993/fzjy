@@ -247,7 +247,7 @@ public class BanDealInfoServiceImpl extends ServiceImpl<BanDealInfoMapper, BanDe
                         String purchaseCode = Objects.isNull(gbOrgInfo) ? "" : gbOrgInfo.getUnitCode();//禁止交易采购单位代码
                         String purchaseName = Objects.isNull(gbOrgInfo) ? "" : gbOrgInfo.getUnit();
                         ;//禁止交易采购单位名称
-                        if ("党组管理干部正职".equals(sysDictBizService.getDictValue(banPostType,dictList))) {
+                        if ("党组管干部正职".equals(sysDictBizService.getDictValue(banPostType,dictList))) {
                             purchaseCode = "60000001";
                             purchaseName = "中国五矿集团有限公司";
                         } else if ("总部处长".equals(sysDictBizService.getDictValue(banPostType,dictList))) {
@@ -352,7 +352,7 @@ public class BanDealInfoServiceImpl extends ServiceImpl<BanDealInfoMapper, BanDe
                         String purchaseCode = Objects.isNull(gbOrgInfo) ? "" : gbOrgInfo.getUnitCode();//禁止交易采购单位代码
                         String purchaseName = Objects.isNull(gbOrgInfo) ? "" : gbOrgInfo.getUnit();
                         ;//禁止交易采购单位名称
-                        if ("党组管理干部正职".equals(sysDictBizService.getDictValue(banPostType,dictList))) {
+                        if ("党组管干部正职".equals(sysDictBizService.getDictValue(banPostType,dictList))) {
                             purchaseCode = "60000001";
                             purchaseName = "中国五矿集团有限公司";
                         } else if ("总部处长".equals(sysDictBizService.getDictValue(banPostType,dictList))) {
@@ -459,7 +459,7 @@ public class BanDealInfoServiceImpl extends ServiceImpl<BanDealInfoMapper, BanDe
                         String purchaseCode = Objects.isNull(gbOrgInfo) ? "" : gbOrgInfo.getUnitCode();//禁止交易采购单位代码
                         String purchaseName = Objects.isNull(gbOrgInfo) ? "" : gbOrgInfo.getUnit();
                         ;//禁止交易采购单位名称
-                        if ("党组管理干部正职".equals(sysDictBizService.getDictValue(banPostType,dictList))) {
+                        if ("党组管干部正职".equals(sysDictBizService.getDictValue(banPostType,dictList))) {
                             purchaseCode = "60000001";
                             purchaseName = "中国五矿集团有限公司";
                         } else if ("总部处长".equals(sysDictBizService.getDictValue(banPostType,dictList))) {

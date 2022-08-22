@@ -70,5 +70,11 @@ public class ParameterExceptionAdvice {
         exception.printStackTrace();
         return ResultMsgUtil.failure(ResultCode.RC999.getCode(), "程序错误：" + exception.getMessage(), null);
     }
+    @ResponseBody
+    @ExceptionHandler(BusinessException.class)
+    public ResultMsgUtil businessException(BusinessException exception) {
+        exception.printStackTrace();
+        return ResultMsgUtil.failure(ResultCode.RC999.getCode(), "数据处理错误：" + exception.getMessage(), null);
+    }
 
 }

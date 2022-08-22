@@ -134,12 +134,16 @@ public class CadreController{
          if(CollectionUtil.isNotEmpty(list)){
              list.stream().forEach(e->{
                  KVVO kv = new KVVO();
-                 String id = e.getId();
-                 String gbname = e.getName();
+
                  String unit = e.getUnit();
-                 kv.setId(id+"_"+gbname);
-                 kv.setName(gbname+"-"+unit);
-                 kvvoList.add(kv);
+                 if(StrUtil.isNotEmpty(unit)){
+                     String id = e.getId();
+                     String gbname = e.getName();
+                     kv.setId(id+"_"+gbname);
+                     kv.setName(gbname+"-"+unit);
+                     kvvoList.add(kv);
+                 }
+
              });
          }
         return ResultMsgUtil.success(kvvoList);
