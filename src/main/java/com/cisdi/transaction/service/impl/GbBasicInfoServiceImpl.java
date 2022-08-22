@@ -317,11 +317,14 @@ public class GbBasicInfoServiceImpl extends ServiceImpl<GbBasicInfoMapper, GbBas
                  String otherUnit = null;
                  String otherUnitCode = null;
                  if(CollectionUtil.isNotEmpty(otherLevelList)){
-                     List<GbOrgInfo> temp = new ArrayList<>();
+                     List<GbOrgInfo> temp = new ArrayList<>(); //保存那些不在最高等级组织链上的数据
+                     //高等级单位的编组织code码链
                      List<String> pathCodeList = levelList.stream().map(GbOrgInfo::getAsgpathnamecode).collect(Collectors.toList());
                      otherLevelList.stream().forEach(e->{
-                          String asgpathnamecode = e.getAsgpathnamecode();
-                          boolean b = pathCodeList.contains(asgpathnamecode);
+                          String asgpathnamecode = e.getAsgpathnamecode();//低等级单位的组织code编码链
+                         //低等级单位的组织code编码链 比 高等级单位的编组织code码链长
+                         //boolean b = pathCodeList.contains(asgpathnamecode);
+                         boolean b = pathCodeList.stream().anyMatch(a->asgpathnamecode.startsWith(a));
                          if (!b) {
                              temp.add(e);
                          }
@@ -346,15 +349,17 @@ public class GbBasicInfoServiceImpl extends ServiceImpl<GbBasicInfoMapper, GbBas
                           tempPost +=","+otherPost;
                       }
                       levlGbOrg.setPost(tempPost);
-                      if(index==1&&StrUtil.isNotEmpty(otherPost)){
+                      if(index==1&&StrUtil.isNotEmpty(otherUnit)){
                          tempUnit +=","+otherUnit;
+
                      }
                      levlGbOrg.setUnit(tempUnit);
-                     if(index==1&&StrUtil.isNotEmpty(otherPost)){
+                     if(index==1&&StrUtil.isNotEmpty(otherUnitCode)){
                          tempUnitCode +=","+otherUnitCode;
                      }
                      levlGbOrg.setUnitCode(tempUnitCode);
                      gbOrgInfoList.add(levlGbOrg);
+                     index++;
                  }
              }
         }

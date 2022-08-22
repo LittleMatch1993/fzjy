@@ -128,7 +128,6 @@ public class BanDealInfoServiceImpl extends ServiceImpl<BanDealInfoMapper, BanDe
         List<String> ids = new ArrayList<>();
         ids.add(infoDto.getId());
         this.updateById(info);
-         //purchaseBanDealInfoSevice.deletePushDataForPurchase(ids);
         //加入干部家属信息
         this.addFamilyInfo(info);
         //新增操作记录
@@ -208,7 +207,7 @@ public class BanDealInfoServiceImpl extends ServiceImpl<BanDealInfoMapper, BanDe
                     bandealInfo.setCardId(gbCardId);
                     bandealInfo.setName(gbOrgInfo.getName());
                     bandealInfo.setCompany(gbOrgInfo.getUnit());
-                    bandealInfo.setPost(gbOrgInfo.getPost());
+                    bandealInfo.setPost(StrUtil.isEmpty(gbOrgInfo.getPost())?"":gbOrgInfo.getPost());
                     bandealInfo.setPostType(gbOrgInfo.getPostType());
                     bandealInfo.setBanPostType(gbOrgInfo.getPostType());//禁止职务类型
 
@@ -320,7 +319,7 @@ public class BanDealInfoServiceImpl extends ServiceImpl<BanDealInfoMapper, BanDe
                     bandealInfo.setCardId(gbCardId);
                     bandealInfo.setName(gbOrgInfo.getName());
                     bandealInfo.setCompany(gbOrgInfo.getUnit());
-                    bandealInfo.setPost(gbOrgInfo.getPost());
+                    bandealInfo.setPost(StrUtil.isEmpty(gbOrgInfo.getPost())?"":gbOrgInfo.getPost());
                     bandealInfo.setPostType(gbOrgInfo.getPostType());
                     bandealInfo.setBanPostType(gbOrgInfo.getPostType());//禁止职务类型
                     bandealInfo.setCreateTime(DateUtil.date());
@@ -427,7 +426,7 @@ public class BanDealInfoServiceImpl extends ServiceImpl<BanDealInfoMapper, BanDe
                     bandealInfo.setCardId(gbCardId);
                     bandealInfo.setName(gbOrgInfo.getName());
                     bandealInfo.setCompany(gbOrgInfo.getUnit());
-                    bandealInfo.setPost(gbOrgInfo.getPost());
+                    bandealInfo.setPost(StrUtil.isEmpty(gbOrgInfo.getPost())?"":gbOrgInfo.getPost());
                     bandealInfo.setPostType(gbOrgInfo.getPostType());
                     bandealInfo.setBanPostType(gbOrgInfo.getPostType());//禁止职务类型
 
@@ -524,16 +523,16 @@ public class BanDealInfoServiceImpl extends ServiceImpl<BanDealInfoMapper, BanDe
         boolean b = false;
         List<BanDealInfo> infoList = this.lambdaQuery().in(BanDealInfo::getId, ids).list();
         if (CollectionUtil.isNotEmpty(infoList)) {
-            long count = infoList.stream().filter(e -> SystemConstant.VALID_STATE.equals(e.getState())).count();
+            /*long count = infoList.stream().filter(e -> SystemConstant.VALID_STATE.equals(e.getState())).count();
             if (count > 0) {
                 return ResultMsgUtil.failure("当前表中的有效数据不能重复提交!");
-            }
+            }*/
             long index = infoList.stream().filter(e -> SystemConstant.INVALID_STATE.equals(e.getState())).count();
             if(index>0){
-                return ResultMsgUtil.failure("不能提交无效数据!");
+                return ResultMsgUtil.failure("当前提交数据含有状态为无效的数据,不能提交!");
             }
             //验证社会统一信用代码 不符合则在数据校验提示列中显示
-            infoList = this.validBatchCompanyCode(infoList);
+            //infoList = this.validBatchCompanyCode(infoList);
             //验证证供应商名称 信用代码  禁止交易采购单位代码是否都有。没有则置为无效，否则设置为有效
             infoList = validBatchSupplierAndCodeAndBanPurchaseCode(infoList, SystemConstant.VALID_STATE); //有效
             //修改数据
@@ -542,7 +541,7 @@ public class BanDealInfoServiceImpl extends ServiceImpl<BanDealInfoMapper, BanDe
         }
         if (b) {
             //推送有效数据给采购平台
-           //purchaseBanDealInfoSevice.pushDatchDataForPurchase(infoList);
+           purchaseBanDealInfoSevice.pushDatchDataForPurchase(infoList);
         }
         return ResultMsgUtil.success("提交成功");
     }
@@ -550,7 +549,7 @@ public class BanDealInfoServiceImpl extends ServiceImpl<BanDealInfoMapper, BanDe
     @Override
     public List<BanDealInfo> validBatchCompanyCode(List<BanDealInfo> infoList) {
         try {
-            List<String> companyList = infoList.stream().map(BanDealInfo::getCompany).collect(Collectors.toList());
+            List<String> companyList = infoList.stream().map(BanDealInfo::getSupplier).collect(Collectors.toList());
             JSONObject jbParam = new JSONObject();
             jbParam.put("name", companyList);
             //调用企业画像接口
@@ -607,7 +606,7 @@ public class BanDealInfoServiceImpl extends ServiceImpl<BanDealInfoMapper, BanDe
     public BanDealInfo validCompanyCode(BanDealInfo banDealInfo) {
         try {
             JSONObject jbParam = new JSONObject();
-            String company = banDealInfo.getCompany();
+            String company = banDealInfo.getSupplier();
             jbParam.put("name", company);
             //调用企业画像接口
             JSONObject resultOb = this.getCompanyInfoByName(jbParam);
@@ -695,7 +694,7 @@ public class BanDealInfoServiceImpl extends ServiceImpl<BanDealInfoMapper, BanDe
             List<BanDealInfo> infoList = this.lambdaQuery().in(BanDealInfo::getId, ids).list();
             banDealInfoRecordService.insertBanDealInfoRecord(infoList, SystemConstant.OPERATION_TYPE_REMOVE);
             //删除采购系统那边的对应数据
-            //purchaseBanDealInfoSevice.deletePushDataForPurchase(ids);
+            purchaseBanDealInfoSevice.deletePushDataForPurchase(ids);
         }
 
         return b;
@@ -709,7 +708,7 @@ public class BanDealInfoServiceImpl extends ServiceImpl<BanDealInfoMapper, BanDe
         int delete = this.baseMapper.delete(queryWrapper);
         boolean b = delete > 0 ? true : false;
         if (b) {
-            //purchaseBanDealInfoSevice.deletePushDataForPurchase(ids);
+            purchaseBanDealInfoSevice.deletePushDataForPurchase(ids);
         }
         return b;
     }

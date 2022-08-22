@@ -47,7 +47,7 @@ public class InvestInfo {
     private String cardId;
 
     /**
-     * 干部类型
+     * 干部类职务类型
      */
     private String postType;
     /**

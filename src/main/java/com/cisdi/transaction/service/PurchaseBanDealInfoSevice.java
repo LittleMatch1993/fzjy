@@ -23,7 +23,7 @@ public interface PurchaseBanDealInfoSevice extends IService<PurchaseBanDealInfo>
     public boolean pushDataForPurchase(BanDealInfo info);
 
     /**
-     * 为采购平台推送多条效数据
+     * 为采购平台推送多条效数据,会先删除关联数据
      * @param infos
      * @return
      */
