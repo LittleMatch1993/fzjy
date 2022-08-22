@@ -9,6 +9,7 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.cisdi.transaction.config.exception.BusinessException;
 import com.cisdi.transaction.config.utils.AuthSqlUtil;
 import com.cisdi.transaction.constant.ModelConstant;
 import com.cisdi.transaction.constant.SqlConstant;
@@ -161,13 +162,13 @@ public class GbBasicInfoServiceImpl extends ServiceImpl<GbBasicInfoMapper, GbBas
         List<GbBasicInfoThree> gbBasicInfoThrees = gbBasicInfoThreeService.selectGbBasicInfo();
         if(CollectionUtil.isNotEmpty(gbBasicInfoThrees)){
             for (GbBasicInfoThree gbBasicInfoThree : gbBasicInfoThrees) {
+                String name = gbBasicInfoThree.getName();
+                name  = name.replaceAll("[　*| *| *|//s*]*", "");
+                gbBasicInfoThree.setName(name);
                 GbBasicInfo info = new GbBasicInfo();
                 BeanUtil.copyProperties(gbBasicInfoThree, info);
                 info.setCreateTime(DateUtil.date());
                 info.setUpdateTime(DateUtil.date());
-                String name = gbBasicInfoThree.getName();
-                name  = name.replaceAll("[　*| *| *|//s*]*", "");
-                info.setName(name);
                 dataList.add(info);
             }
             List<SysDictBiz> dictList = sysDictBizService.selectList();
@@ -284,7 +285,7 @@ public class GbBasicInfoServiceImpl extends ServiceImpl<GbBasicInfoMapper, GbBas
                 List<GbOrgInfo> unitGroupList = unitGoup.getValue();
                 Map<String, List<GbOrgInfo>> postTypeGroupMap = unitGroupList.stream().collect(Collectors.groupingBy(e -> e.getPostType()));
                 if (postTypeGroupMap.size() > 1) {//同一单位下 多个职务类型 。
-                    throw new RuntimeException(gbName + "同一单位下多个职务类型");
+                    throw new BusinessException(gbName + "同一单位下多个职务类型");
                 }
             }
             int unitSize = unitGroupMap.size();

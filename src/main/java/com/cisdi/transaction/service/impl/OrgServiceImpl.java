@@ -195,9 +195,8 @@ public class OrgServiceImpl extends ServiceImpl<OrgMapper, Org> implements OrgSe
                         queryWrapper.lambda().like(Org::getAsgorganname, name).or();
                     }
                 }
-            }else{
-                queryWrapper.lambda().last(SqlConstant.ONE_SQL_YB);
             }
+            queryWrapper.lambda().last(SqlConstant.ONE_SQL_YB);
         }else{
             String pathnamecode = org.getAsgpathnamecode();
             if(CollectionUtil.isNotEmpty(names)){
