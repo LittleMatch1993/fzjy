@@ -58,6 +58,12 @@ public class InvestInfoDTO extends BaseDTO {
      */
     @ApiModelProperty(value = "现任职务")
     private String post;
+
+    /**
+     * 干部类职务类型
+     */
+    @ApiModelProperty(value = "干部职务类型")
+    private String postType;
     /**
      * 职务层次
      */

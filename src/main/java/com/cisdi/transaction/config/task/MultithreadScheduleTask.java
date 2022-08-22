@@ -34,7 +34,7 @@ public class MultithreadScheduleTask {
         System.out.println("执行组织同步定时任务");
         String stringDate = DateUtil.format(new Date(), "yyyyMMdd");
         System.out.println("当前时间"+stringDate);
-        //orgService.syncDa(null);
+        orgService.syncDa(null);
         long j = DateUtil.date().getTime();
         System.out.println("执行组织同步定时任务完成:"+(j-i));
     }

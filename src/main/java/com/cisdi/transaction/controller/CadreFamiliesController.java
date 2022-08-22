@@ -120,11 +120,11 @@ public class CadreFamiliesController {
             String id = one.getId();
             investInfoService.overrideInvestInfo(id,infoDto);
             //如果状态是有效的 还需要删除禁止交易信息表中数据
-            if(SystemConstant.VALID_STATE.equals(one.getState())){
+           /* if(SystemConstant.VALID_STATE.equals(one.getState())){
                 List<String> ids = new ArrayList<>();
                 ids.add(id);
                 banDealInfoService.deleteBanDealInfoByRefId(ids);
-            }
+            }*/
             return ResultMsgUtil.success("数据重复,已覆盖");
         }
         investInfoService.saveInvestInfo(infoDto);
@@ -187,11 +187,11 @@ public class CadreFamiliesController {
             String id = one.getId();
             privateEquityService.overrideInvestInfo(id,dto);
             //如果状态是有效的 还需要删除禁止交易信息表中数据
-            if(SystemConstant.VALID_STATE.equals(one.getState())){
+            /*if(SystemConstant.VALID_STATE.equals(one.getState())){
                 List<String> ids = new ArrayList<>();
                 ids.add(id);
                 banDealInfoService.deleteBanDealInfoByRefId(ids);
-            }
+            }*/
             return ResultMsgUtil.failure("数据重复,已覆盖");
         }
         privateEquityService.savePrivateEquity(dto);
@@ -252,11 +252,11 @@ public class CadreFamiliesController {
             String id = one.getId();
             mechanismInfoService.overrideInvestInfo(id,dto);
             //如果状态是有效的 还需要删除禁止交易信息表中数据
-            if(SystemConstant.VALID_STATE.equals(one.getState())){
+           /* if(SystemConstant.VALID_STATE.equals(one.getState())){
                 List<String> ids = new ArrayList<>();
                 ids.add(id);
                 banDealInfoService.deleteBanDealInfoByRefId(ids);
-            }
+            }*/
             return ResultMsgUtil.failure("数据重复,已覆盖");
         }
         mechanismInfoService.saveMechanismInfo(dto);

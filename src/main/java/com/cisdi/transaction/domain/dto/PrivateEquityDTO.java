@@ -65,6 +65,12 @@ public class PrivateEquityDTO extends BaseDTO{
     private String  post;
 
     /**
+     * 干部类职务类型
+     */
+    @ApiModelProperty(value = "干部职务类型")
+    private String postType;
+
+    /**
      * 职务层次
      */
     @ApiModelProperty(value = "职务层次")
