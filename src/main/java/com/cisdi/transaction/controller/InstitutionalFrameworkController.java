@@ -11,10 +11,7 @@ import com.cisdi.transaction.domain.dto.CadreFamilyExportDto;
 import com.cisdi.transaction.domain.dto.InstitutionalFrameworkDTO;
 import com.cisdi.transaction.domain.model.GbBasicInfo;
 import com.cisdi.transaction.domain.model.Org;
-import com.cisdi.transaction.domain.vo.BusinessTransactionExcelVO;
-import com.cisdi.transaction.domain.vo.InstitutionalFrameworkExcelVO;
-import com.cisdi.transaction.domain.vo.OrgDictVo;
-import com.cisdi.transaction.domain.vo.SearchVO;
+import com.cisdi.transaction.domain.vo.*;
 import com.cisdi.transaction.service.OrgService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -142,5 +139,12 @@ public class InstitutionalFrameworkController {
             });
         }
         return ResultMsgUtil.success(voList);
+    }
+
+    @ApiOperation("根据编码查询组织机构树")
+    @PostMapping("/selectOrgByOrgCode")
+    public ResultMsgUtil<List> selectOrgByOrgCode(@RequestBody OrgConditionVO searchVO) {
+        List<OrgVo> orgVos= orgService.selectOrgByOrgCode(searchVO);
+        return ResultMsgUtil.success(orgVos);
     }
 }

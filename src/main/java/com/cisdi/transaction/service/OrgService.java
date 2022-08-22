@@ -5,6 +5,8 @@ import com.cisdi.transaction.domain.dto.CadreFamilyExportDto;
 import com.cisdi.transaction.domain.dto.InstitutionalFrameworkDTO;
 import com.cisdi.transaction.domain.model.Org;
 import com.cisdi.transaction.domain.vo.InstitutionalFrameworkExcelVO;
+import com.cisdi.transaction.domain.vo.OrgConditionVO;
+import com.cisdi.transaction.domain.vo.OrgVo;
 
 import java.util.List;
 
@@ -70,4 +72,6 @@ public interface OrgService  extends IService<Org> {
     String getOrgNamesByCodePath(String codePath);
 
     List<InstitutionalFrameworkExcelVO> export(CadreFamilyExportDto dto);
+
+    List<OrgVo> selectOrgByOrgCode(OrgConditionVO searchVO);
 }

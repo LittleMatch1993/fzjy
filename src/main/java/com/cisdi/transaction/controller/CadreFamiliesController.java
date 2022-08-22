@@ -23,6 +23,7 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.bag.SynchronizedSortedBag;
 import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
@@ -44,6 +45,7 @@ import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * @author yuw
@@ -436,21 +438,22 @@ public class CadreFamiliesController {
     @GetMapping("/regionDropDownBox")
     public ResultMsgUtil<Object> regionDropDownBox() {
        List<RegionDropDownBoxVO>  list=globalCityInfoService.regionDropDownBox();
-        return ResultMsgUtil.success(list);
+
+        return ResultMsgUtil.success(moveChinaToFirst(list));
     }
 
     @ApiOperation("国家下拉框")
     @GetMapping("/getCountryDropDownBox")
     public ResultMsgUtil<Object> getCountryDropDownBox() {
         List<RegionDropDownBoxVO>  list=globalCityInfoService.getCountryDropDownBox();
-        return ResultMsgUtil.success(list);
+        return ResultMsgUtil.success(moveChinaToFirst(list));
     }
 
     @ApiOperation("省份/市下拉框")
     @GetMapping("/getProvinceDropDownBox")
     public ResultMsgUtil<Object> getProvinceDropDownBox(@ApiParam(value = "国家/省份id",required = true) @RequestParam String countryId) {
         List<RegionDropDownBoxVO>  list=globalCityInfoService.getProvinceDropDownBox(countryId);
-        return ResultMsgUtil.success(list);
+        return ResultMsgUtil.success(moveChinaToFirst(list));
     }
     private void packaging(HttpServletRequest request, HttpServletResponse response, String fileName) throws UnsupportedEncodingException {
         String userAgent = request.getHeader("User-Agent");
@@ -462,6 +465,21 @@ public class CadreFamiliesController {
         response.setContentType("application/vnd.ms-excel");
         response.setCharacterEncoding("utf-8");
         response.setHeader("Content-disposition", "attachment;filename=" + fileName + ".xlsx");
+    }
+
+    /**
+     * 将中国放到第一个
+     * @param regionDropDownBoxVOS
+     * @return
+     */
+    private List<RegionDropDownBoxVO> moveChinaToFirst(List<RegionDropDownBoxVO> regionDropDownBoxVOS){
+        if (CollectionUtils.isEmpty(regionDropDownBoxVOS)||!regionDropDownBoxVOS.stream().map(RegionDropDownBoxVO::getName).collect(Collectors.toList()).contains("中国")){
+            return regionDropDownBoxVOS;
+        }
+        List<RegionDropDownBoxVO> regionDropDownBoxVOList=Lists.newArrayList();
+        regionDropDownBoxVOList.add(regionDropDownBoxVOS.stream().filter(regionDropDownBoxVO -> "中国".equals(regionDropDownBoxVO.getName())).collect(Collectors.toList()).get(0));
+        regionDropDownBoxVOList.addAll(regionDropDownBoxVOS.stream().filter(regionDropDownBoxVO -> !"中国".equals(regionDropDownBoxVO.getName()) ).collect(Collectors.toList()));
+        return regionDropDownBoxVOList;
     }
 }
 

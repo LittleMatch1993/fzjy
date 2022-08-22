@@ -19,22 +19,23 @@ import com.cisdi.transaction.domain.dto.InvestmentDTO;
 import com.cisdi.transaction.domain.model.Org;
 import com.cisdi.transaction.domain.model.SysDictBiz;
 import com.cisdi.transaction.domain.vo.InstitutionalFrameworkExcelVO;
+import com.cisdi.transaction.domain.vo.OrgConditionVO;
+import com.cisdi.transaction.domain.vo.OrgVo;
 import com.cisdi.transaction.mapper.master.OrgMapper;
 import com.cisdi.transaction.service.OrgService;
 import com.cisdi.transaction.service.SysDictBizService;
 import com.cisdi.transaction.util.ThreadLocalUtils;
+import com.google.common.collect.Lists;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 
 import java.net.BindException;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -313,6 +314,72 @@ public class OrgServiceImpl extends ServiceImpl<OrgMapper, Org> implements OrgSe
             BeanUtils.copyProperties(t, vo);
             return vo;
         }).collect(Collectors.toList());
+    }
+
+    @Override
+    public List<OrgVo> selectOrgByOrgCode(OrgConditionVO searchVO) {
+        //查询的orgCode
+        String searchOrgCode = searchVO.getSearchOrgCode();
+        //当前操作员的orgCode
+        String orgCode = searchVO.getOrgCode();
+        List<Org> currentUserOrg = this.lambdaQuery().eq(Org::getAsgorgancode, orgCode).apply(" limit 1").list();
+        //当前操作员机构
+        Org org = currentUserOrg.get(0);
+        if (StringUtils.isBlank(searchOrgCode)){
+            //第一级编码
+            String firstLevel = org.getAsgpathnamecode().split("-")[1];
+            Org returnOrg = this.lambdaQuery().eq(Org::getAsgorgancode, firstLevel).apply(" limit 1").list().get(0);
+            return Collections.singletonList(new OrgVo(returnOrg.getAsgorgancode() + "-" + returnOrg.getAsgorganname(), returnOrg.getAsgorganname(), Boolean.TRUE));
+        }else {
+            List<Org> currentOrgs = this.lambdaQuery().eq(Org::getAsgorgancode, searchOrgCode).apply(" limit 1").list();
+            if (CollectionUtils.isEmpty(currentOrgs)){
+                return null;
+            }
+            //当前组织机构
+            Org currentOrg = currentOrgs.get(0);
+            //查询的组织机构层级
+            int i = Integer.parseInt(currentOrg.getAsglevel());
+            //当前操作员组织机构层级
+            int j = Integer.parseInt(org.getAsglevel());
+            //如果查询的组织机构小于当前操作员组织机构层级则取则只返回下级的一个
+            if (i < j){
+                //获取下一级机构信息
+                List<Org> nextOrgList = this.lambdaQuery().eq(Org::getAsgorgancode, org.getAsgpathnamecode().split("-")[i+2]).apply(" limit 1").list();
+                Org nextOrg = nextOrgList.get(0);
+                //如果相差一级以上，则存在children
+                if (j-i>1){
+                    return Collections.singletonList(new OrgVo(nextOrg.getAsgorgancode() + "-" + nextOrg.getAsgorganname(), nextOrg.getAsgorganname(), Boolean.TRUE));
+                }else {
+                    //如果相差未超过一级，则需要查询是否存在子类
+                    List<Org> orgs = this.lambdaQuery().likeRight(Org::getAsgpathnamecode, org.getAsgpathnamecode() + "-").apply(" limit 1 ").list();
+                    if (!CollectionUtils.isEmpty(orgs)){
+                        return Collections.singletonList(new OrgVo(nextOrg.getAsgorgancode() + "-" + nextOrg.getAsgorganname(), nextOrg.getAsgorganname(), Boolean.TRUE));
+                    }
+                }
+                return Collections.singletonList(new OrgVo(nextOrg.getAsgorgancode() + "-" + nextOrg.getAsgorganname(), nextOrg.getAsgorganname(), Boolean.FALSE));
+
+            }else{
+                //获取下一级机构信息
+                List<Org> newOrgs = this.lambdaQuery().likeRight(Org::getAsgpathnamecode, org.getAsgpathnamecode()+"-").eq(Org::getAsglevel,(i+1)+"").list();
+                if (CollectionUtils.isEmpty(newOrgs)){
+                    return null;
+                }else {
+                    //查询下下级列表
+                    List<Org> nextOrgList = this.lambdaQuery().likeRight(Org::getAsgpathnamecode, org.getAsgpathnamecode()+"-").eq(Org::getAsglevel,(i+2)+"").list();
+                    List<String> asgpathnamecodeList = nextOrgList.stream().map(Org::getAsgpathnamecode).collect(Collectors.toList());
+                    //通过路径编码映射是否存在子机构
+                    Map<String, Boolean> asgpathnamecodeHaveChildrenMap = newOrgs.stream().collect(Collectors.toMap(Org::getAsgpathnamecode, org1 -> {
+                        for (String asgpathnamecode : asgpathnamecodeList) {
+                            if (asgpathnamecode.startsWith(org1.getAsgpathnamecode())) {
+                                return true;
+                            }
+                        }
+                        return false;
+                    }));
+                    return newOrgs.stream().map(org1 -> new OrgVo(org1.getAsgorgancode() + "-" + org1.getAsgorganname(), org1.getAsgorganname(),asgpathnamecodeHaveChildrenMap.get(org1.getAsgpathnamecode()) )).collect(Collectors.toList());
+                }
+            }
+        }
     }
 
 
