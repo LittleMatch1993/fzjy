@@ -129,7 +129,7 @@ public class InstitutionalFrameworkController {
         List<OrgDictVo> voList = new ArrayList<>();
         List<String> keywordList = search.getKeyword();
         String orgCode = search.getOrgCode();
-        List<Org> list = orgService.selectByName(keywordList,orgCode);
+        List<Org> list = orgService.selectByName(search);
         if(CollectionUtil.isNotEmpty(list)){
             list.stream().forEach(e->{
                 OrgDictVo vo = new OrgDictVo();

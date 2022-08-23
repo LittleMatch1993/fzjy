@@ -15,4 +15,6 @@ public class SearchVO {
     private List<String> keyword;
 
     private String orgCode;
+
+    private List<String> codes;
 }

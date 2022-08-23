@@ -6,6 +6,7 @@ import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.cisdi.transaction.config.base.ResultCode;
 import com.cisdi.transaction.config.base.ResultMsgUtil;
 import com.cisdi.transaction.config.exception.BusinessException;
 import com.cisdi.transaction.config.utils.AuthSqlUtil;
@@ -107,7 +108,8 @@ public class InvestInfoServiceImpl extends ServiceImpl<InvestInfoMapper, InvestI
 
     @Transactional(rollbackFor = Exception.class)
     @Override
-    public ResultMsgUtil<String> submitInvestInfo(SubmitDto subDto) {
+    public ResultMsgUtil<Object> submitInvestInfo(SubmitDto subDto) {
+        List<String> submitFailIdList = null;
         String resutStr = "提交成功";
         List<String> ids = subDto.getIds();
         List<InvestInfo> infoList = this.lambdaQuery().in(InvestInfo::getId, ids).list();
@@ -161,26 +163,26 @@ public class InvestInfoServiceImpl extends ServiceImpl<InvestInfoMapper, InvestI
             StringJoiner sj = new StringJoiner(",");
             if(CollectionUtil.isNotEmpty(submitFailId)){
                 this.updateBathTips(submitFailId);
+                submitFailIdList = submitFailId.stream().map(KVVO::getId).collect(Collectors.toList());
+            }
+            if(CollectionUtil.isNotEmpty(submitIds)){
+                this.updateState(submitIds,SystemConstant.VALID_STATE);
+                this.baseMapper.cleanBatchTips(submitIds);
             }
             if(!Boolean.valueOf(banDeal)){
-                sj.add("提交数据失败");
+                sj.add("数据库新增数据失败");
                 return ResultMsgUtil.failure(sj.toString());
             }else{
                 sj.add("提交数据成功");
-                if(CollectionUtil.isNotEmpty(submitIds)){
-                    this.updateState(submitIds,SystemConstant.VALID_STATE);
-                    int beferIndex = infoList.size();
-                    int afterIndex = submitIds.size();
-                    int index = beferIndex-afterIndex;
-                    if(index>0){
-                        sj.add(",其中"+index+"条数据提交失败");
-                    }
-
+                if(CollectionUtil.isNotEmpty(submitFailId)){
+                    sj.add("其中"+(submitFailId.size())+"数据提交失败");
+                    resutStr = sj.toString();
+                    return ResultMsgUtil.success(ResultCode.WARING.getCode(), resutStr,submitFailIdList);
                 }
             }
             resutStr = sj.toString();
         }
-        return ResultMsgUtil.success(resutStr);
+        return ResultMsgUtil.success(resutStr,null);
     }
 
     @Override

@@ -25,6 +25,7 @@ import com.cisdi.transaction.domain.vo.ProhibitTransactionExcelVO;
 import com.cisdi.transaction.mapper.master.BanDealInfoMapper;
 import com.cisdi.transaction.mapper.slave.PurchaseBanDealInfoMapper;
 import com.cisdi.transaction.service.*;
+import com.google.common.base.Splitter;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
@@ -207,7 +208,13 @@ public class BanDealInfoServiceImpl extends ServiceImpl<BanDealInfoMapper, BanDe
                     bandealInfo.setCardId(gbCardId);
                     bandealInfo.setName(gbOrgInfo.getName());
                     bandealInfo.setCompany(gbOrgInfo.getUnit());
-                    bandealInfo.setPost(StrUtil.isEmpty(gbOrgInfo.getPost())?"":gbOrgInfo.getPost());
+                    String tempPost = StrUtil.isEmpty(gbOrgInfo.getPost())?"":gbOrgInfo.getPost();
+                    //去除重复的职务
+                    if(StrUtil.isNotEmpty(tempPost)){
+                         List<String> str = Splitter.on(",").trimResults().splitToList(tempPost);
+                         tempPost = str.stream().distinct().collect(Collectors.joining(","));
+                    }
+                    bandealInfo.setPost(tempPost);
                     bandealInfo.setPostType(gbOrgInfo.getPostType());
                     bandealInfo.setBanPostType(gbOrgInfo.getPostType());//禁止职务类型
 
@@ -319,7 +326,13 @@ public class BanDealInfoServiceImpl extends ServiceImpl<BanDealInfoMapper, BanDe
                     bandealInfo.setCardId(gbCardId);
                     bandealInfo.setName(gbOrgInfo.getName());
                     bandealInfo.setCompany(gbOrgInfo.getUnit());
-                    bandealInfo.setPost(StrUtil.isEmpty(gbOrgInfo.getPost())?"":gbOrgInfo.getPost());
+                    String tempPost = StrUtil.isEmpty(gbOrgInfo.getPost())?"":gbOrgInfo.getPost();
+                    //去除重复的职务
+                    if(StrUtil.isNotEmpty(tempPost)){
+                        List<String> str = Splitter.on(",").trimResults().splitToList(tempPost);
+                        tempPost = str.stream().distinct().collect(Collectors.joining(","));
+                    }
+                    bandealInfo.setPost(tempPost);
                     bandealInfo.setPostType(gbOrgInfo.getPostType());
                     bandealInfo.setBanPostType(gbOrgInfo.getPostType());//禁止职务类型
                     bandealInfo.setCreateTime(DateUtil.date());
@@ -426,7 +439,13 @@ public class BanDealInfoServiceImpl extends ServiceImpl<BanDealInfoMapper, BanDe
                     bandealInfo.setCardId(gbCardId);
                     bandealInfo.setName(gbOrgInfo.getName());
                     bandealInfo.setCompany(gbOrgInfo.getUnit());
-                    bandealInfo.setPost(StrUtil.isEmpty(gbOrgInfo.getPost())?"":gbOrgInfo.getPost());
+                    String tempPost = StrUtil.isEmpty(gbOrgInfo.getPost())?"":gbOrgInfo.getPost();
+                    //去除重复的职务
+                    if(StrUtil.isNotEmpty(tempPost)){
+                        List<String> str = Splitter.on(",").trimResults().splitToList(tempPost);
+                        tempPost = str.stream().distinct().collect(Collectors.joining(","));
+                    }
+                    bandealInfo.setPost(tempPost);
                     bandealInfo.setPostType(gbOrgInfo.getPostType());
                     bandealInfo.setBanPostType(gbOrgInfo.getPostType());//禁止职务类型
 
@@ -454,7 +473,7 @@ public class BanDealInfoServiceImpl extends ServiceImpl<BanDealInfoMapper, BanDe
                     String department = gbOrgInfo.getDeparment();
                     if ((StrUtil.isEmpty(company)||StrUtil.isEmpty(department)) || !(company.contains("中国五矿集团有限公司")&&department.contains("专职董(监)事办公室"))) { //如果该干部在集团专职董监事,禁止交易采购单位名称手动录入
                         String banPostType = bandealInfo.getBanPostType();
-                        String whether = SystemConstant.WHETHER_YES;
+                        String whether =sysDictBizService.getDictId(SystemConstant.WHETHER_YES,dictList);
                         String purchaseCode = Objects.isNull(gbOrgInfo) ? "" : gbOrgInfo.getUnitCode();//禁止交易采购单位代码
                         String purchaseName = Objects.isNull(gbOrgInfo) ? "" : gbOrgInfo.getUnit();
                         ;//禁止交易采购单位名称
@@ -462,7 +481,7 @@ public class BanDealInfoServiceImpl extends ServiceImpl<BanDealInfoMapper, BanDe
                             purchaseCode = "60000001";
                             purchaseName = "中国五矿集团有限公司";
                         } else if ("总部处长".equals(sysDictBizService.getDictValue(banPostType,dictList))) {
-                            whether = SystemConstant.WHETHER_NO;//是否继承关系
+                            whether = sysDictBizService.getDictId(SystemConstant.WHETHER_NO,dictList);//是否继承关系
                             String deparmentName = gbOrgInfo.getDeparment();
                             if(StrUtil.isEmpty(deparmentName)){
                                 GbBasicInfo gb = gbBasicInfoService.getById(gbOrgInfo.getId());
@@ -569,7 +588,7 @@ public class BanDealInfoServiceImpl extends ServiceImpl<BanDealInfoMapper, BanDe
             if (map != null && map.size() > 0) {
                 //List<String> ids = new ArrayList<>();
                 infoList.stream().forEach(e -> {
-                    String company = e.getCompany();
+                    String company = e.getSupplier();
                     boolean ck = map.containsKey(company);
                     if (ck) {
                         String code = e.getCode();
@@ -624,7 +643,7 @@ public class BanDealInfoServiceImpl extends ServiceImpl<BanDealInfoMapper, BanDe
             }
             if (map != null && map.size() > 0) {
                 //List<String> ids = new ArrayList<>();
-                String companyName = banDealInfo.getCompany();
+                String companyName = banDealInfo.getSupplier();
                 boolean ck = map.containsKey(companyName);
                 if (ck) {
                     String code = banDealInfo.getCode();

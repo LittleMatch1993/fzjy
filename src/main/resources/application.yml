@@ -131,8 +131,8 @@ wk:
   url: http://113.207.43.93:28500/api/wk/supplier/getCompanyInfoByName
 #组织接口
 org:
-  url: https://podev.minmetals.com.cn:50001/RESTAdapter/BS_OA/BS_MDM/GetAssHrTreeGxb
-  #url: https://sapen2aspo.minmetals.com.cn:44301/RESTAdapter/BS_OA/BS_MDM/GetAssHrTreeGxb
+  #url: https://podev.minmetals.com.cn:50001/RESTAdapter/BS_OA/BS_MDM/GetAssHrTreeGxb
+  url: https://sapen2aspo.minmetals.com.cn:44301/RESTAdapter/BS_OA/BS_MDM/GetAssHrTreeGxb
 #minio配置
 minio:
   endpoint: http://113.207.43.93:8088

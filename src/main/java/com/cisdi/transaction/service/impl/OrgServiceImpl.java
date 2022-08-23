@@ -21,6 +21,7 @@ import com.cisdi.transaction.domain.model.SysDictBiz;
 import com.cisdi.transaction.domain.vo.InstitutionalFrameworkExcelVO;
 import com.cisdi.transaction.domain.vo.OrgConditionVO;
 import com.cisdi.transaction.domain.vo.OrgVo;
+import com.cisdi.transaction.domain.vo.SearchVO;
 import com.cisdi.transaction.mapper.master.OrgMapper;
 import com.cisdi.transaction.service.OrgService;
 import com.cisdi.transaction.service.SysDictBizService;
@@ -172,10 +173,10 @@ public class OrgServiceImpl extends ServiceImpl<OrgMapper, Org> implements OrgSe
     }
 
     @Override
-    public List<Org> selectByName(List<String> names,String orgCode) {
+    public List<Org> selectByName(SearchVO search) {
         List<Org> list = new ArrayList<>();
         //Object orgCode = ThreadLocalUtils.get("orgCode");
-
+        String orgCode = search.getOrgCode();
         if(StrUtil.isEmpty(orgCode)){
             return list;
         }
@@ -185,6 +186,9 @@ public class OrgServiceImpl extends ServiceImpl<OrgMapper, Org> implements OrgSe
         }
         QueryWrapper<Org> queryWrapper = new QueryWrapper<>();
         String asglevel = org.getAsglevel();
+        List<String> names = search.getKeyword();
+        List<String> codes = search.getCodes();
+        queryWrapper.lambda().in(CollectionUtil.isNotEmpty(codes), Org::getAsgorgancode,codes);
         if(StrUtil.isNotEmpty(asglevel)&&asglevel.equals("0")){ //看所有
             if(CollectionUtil.isNotEmpty(names)){
                 for (int i = 0; i < names.size(); i++) {

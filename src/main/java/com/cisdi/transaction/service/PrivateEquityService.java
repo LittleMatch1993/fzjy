@@ -49,7 +49,7 @@ public interface PrivateEquityService extends IService<PrivateEquity> {
 
     PrivateEquity getRepeatInvestInfo(String name, String cardId, String code);
 
-    public ResultMsgUtil<String> submitPrivateEquity(SubmitDto subDto);
+    public ResultMsgUtil<Object> submitPrivateEquity(SubmitDto subDto);
 
     /**
      * 新增

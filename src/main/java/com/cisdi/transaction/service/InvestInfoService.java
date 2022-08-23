@@ -47,7 +47,7 @@ public interface InvestInfoService extends IService<InvestInfo> {
 
     int  countByNameAndCardIdAndCode(String name,String cardId,String code);
 
-    public ResultMsgUtil<String> submitInvestInfo(SubmitDto ids);
+    public ResultMsgUtil<Object> submitInvestInfo(SubmitDto ids);
 
     /**
      * 新增

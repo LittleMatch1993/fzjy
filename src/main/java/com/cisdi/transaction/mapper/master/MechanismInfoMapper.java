@@ -34,4 +34,12 @@ public interface MechanismInfoMapper extends BaseMapper<MechanismInfo> {
             "            where id = #{item.id,jdbcType=VARCHAR}\n" +
             "     </foreach></script>")
     public void  updateBatchTips(@Param("list") List<KVVO> kvList);
+
+    @Select("<script>" +
+            "update 69654103_mechanism_info set tips = null " +
+            "where id in " +
+            "<foreach collection=\"list\" index=\"index\" item=\"item\"  separator=\",\" open=\"(\" close=\")\">" +
+            "#{item}" +
+            "</foreach></script>")
+    public void  cleanBatchTips(@Param("list") List<String> idsList);
 }

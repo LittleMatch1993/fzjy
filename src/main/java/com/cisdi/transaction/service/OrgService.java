@@ -7,6 +7,7 @@ import com.cisdi.transaction.domain.model.Org;
 import com.cisdi.transaction.domain.vo.InstitutionalFrameworkExcelVO;
 import com.cisdi.transaction.domain.vo.OrgConditionVO;
 import com.cisdi.transaction.domain.vo.OrgVo;
+import com.cisdi.transaction.domain.vo.SearchVO;
 
 import java.util.List;
 
@@ -61,7 +62,7 @@ public interface OrgService  extends IService<Org> {
 
     List<Org> selectChildOrgByPathnamecode(String pathnamecode);
 
-    List<Org> selectByName(List<String> name,String orgCode);
+    List<Org> selectByName(SearchVO search);
 
     List<Org> selectUnitByName(String name,String orgCode);
 

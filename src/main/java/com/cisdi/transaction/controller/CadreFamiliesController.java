@@ -31,6 +31,7 @@ import org.apache.commons.fileupload.FileItemFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.jdbc.CannotGetJdbcConnectionException;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -89,10 +90,10 @@ public class CadreFamiliesController {
     @ApiOperation("投资企业或担任高级职务情况 提交生成 禁止交易信息")
     @PostMapping("/submitInvestInfo")
     @ResponseBody
-    public ResultMsgUtil<String> submitInvestInfo(@ApiParam(value = "id集合", required = true)
+    public ResultMsgUtil<Object> submitInvestInfo(@ApiParam(value = "id集合", required = true)
                                                  @RequestBody SubmitDto ids) {
         //提交数据至禁止交易表
-        ResultMsgUtil<String> result = null;
+        ResultMsgUtil<Object> result = null;
         try {
             result = investInfoService.submitInvestInfo(ids);
         }catch (Exception e){
@@ -157,9 +158,9 @@ public class CadreFamiliesController {
      */
     @ApiOperation("配偶、子女及其配偶投资私募股权投资基金或者担任高级职务的情况 提交生成 禁止交易信息")
     @PostMapping("/submitPrivateEquity")
-    public ResultMsgUtil<String> submitPrivateEquity(@ApiParam(value = "id集合", required = true)
+    public ResultMsgUtil<Object> submitPrivateEquity(@ApiParam(value = "id集合", required = true)
                                                      @RequestBody SubmitDto ids) {
-        ResultMsgUtil<String> result = null;
+        ResultMsgUtil<Object> result = null;
         try {
             //向禁止交易表中提交数据
             result = privateEquityService.submitPrivateEquity(ids);
@@ -223,9 +224,9 @@ public class CadreFamiliesController {
      */
     @ApiOperation("配偶、子女及其配偶开办有偿社会中介和法律服务机构或者从业的情况 提交生成 禁止交易信息")
     @PostMapping("/submitMechanismInfo")
-    public ResultMsgUtil<String> submitMechanismInfo(@ApiParam(value = "id集合", required = true)
+    public ResultMsgUtil<Object> submitMechanismInfo(@ApiParam(value = "id集合", required = true)
                                                      @RequestBody SubmitDto ids) {
-        ResultMsgUtil<String> result = null;
+        ResultMsgUtil<Object> result = null;
         try {
             result = mechanismInfoService.submitMechanismInfo(ids);
         }catch (Exception e){

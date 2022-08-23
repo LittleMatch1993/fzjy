@@ -44,7 +44,7 @@ public interface MechanismInfoService extends IService<MechanismInfo> {
 
     MechanismInfo getRepeatInvestInfo(String name, String cardId, String code);
 
-    ResultMsgUtil<String> submitMechanismInfo(SubmitDto submitDto);
+    ResultMsgUtil<Object> submitMechanismInfo(SubmitDto submitDto);
 
     /**
      * 新增家属信息

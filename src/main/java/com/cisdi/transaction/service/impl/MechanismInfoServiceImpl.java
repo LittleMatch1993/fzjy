@@ -6,6 +6,7 @@ import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.cisdi.transaction.config.base.ResultCode;
 import com.cisdi.transaction.config.base.ResultMsgUtil;
 import com.cisdi.transaction.config.exception.BusinessException;
 import com.cisdi.transaction.config.utils.AuthSqlUtil;
@@ -133,7 +134,8 @@ public class MechanismInfoServiceImpl extends ServiceImpl<MechanismInfoMapper, M
 
     @Transactional(rollbackFor = Exception.class)
     @Override
-    public ResultMsgUtil<String> submitMechanismInfo(SubmitDto submitDto) {
+    public ResultMsgUtil<Object> submitMechanismInfo(SubmitDto submitDto) {
+        List<String> submitFailIdList = null;
         String resutStr = "提交成功";
         List<String> ids = submitDto.getIds();
         List<MechanismInfo> infoList = this.lambdaQuery().in(MechanismInfo::getId, ids).list();
@@ -185,23 +187,33 @@ public class MechanismInfoServiceImpl extends ServiceImpl<MechanismInfoMapper, M
             List<String> submitIds = (List<String>)data.get("submitIds");
             List<KVVO> submitFailId = (List<KVVO>)data.get("submitFailId"); //无法提交的数据id
             StringJoiner sj = new StringJoiner(",");
-            if(CollectionUtil.isNotEmpty(submitFailId)){
+            if(CollectionUtil.isNotEmpty(submitFailId)){//提交失败的数据
                 this.updateBathTips(submitFailId);
+                submitFailIdList = submitFailId.stream().map(KVVO::getId).collect(Collectors.toList());
+            }
+            if(CollectionUtil.isNotEmpty(submitIds)){ //提交成功的数据
+                this.updateState(submitIds,SystemConstant.VALID_STATE);
+                this.baseMapper.cleanBatchTips(submitIds);
             }
             if(!Boolean.valueOf(banDeal)){
-                sj.add("提交数据失败");
+                sj.add("数据库新增数据失败");
+                resutStr = sj.toString();
+                return ResultMsgUtil.failure(resutStr);
             }else{
                 sj.add("提交数据成功");
-                if(CollectionUtil.isNotEmpty(submitIds)){
-                    this.updateState(submitIds,SystemConstant.VALID_STATE);
+                if(CollectionUtil.isNotEmpty(submitFailId)){
+                   /* this.updateState(submitIds,SystemConstant.VALID_STATE);
                     int beferIndex = infoList.size();
                     int afterIndex = submitIds.size();
-                    sj.add(",其中"+(beferIndex-afterIndex)+"数据提交失败");
+                    sj.add(",其中"+(beferIndex-afterIndex)+"数据提交失败");*/
+                    sj.add("其中"+(submitFailId.size())+"数据提交失败");
+                    resutStr = sj.toString();
+                    return ResultMsgUtil.success(ResultCode.WARING.getCode(), resutStr,submitFailIdList);
                 }
             }
             resutStr = sj.toString();
         }
-        return ResultMsgUtil.success();
+        return ResultMsgUtil.success(resutStr,null);
     }
 
     @Override
