@@ -321,16 +321,16 @@ public class OrgServiceImpl extends ServiceImpl<OrgMapper, Org> implements OrgSe
         String searchOrgCode = searchVO.getSearchOrgCode();
         //当前操作员的orgCode
         String orgCode = searchVO.getOrgCode();
-        List<Org> currentUserOrg = this.lambdaQuery().eq(Org::getAsgorgancode, orgCode).apply(" limit 1").list();
+        List<Org> currentUserOrg = this.lambdaQuery().eq(Org::getAsgorgancode, orgCode).last(SqlConstant.ONE_SQL).list();
         //当前操作员机构
         Org org = currentUserOrg.get(0);
         if (StringUtils.isBlank(searchOrgCode)){
             //第一级编码
             String firstLevel = org.getAsgpathnamecode().split("-")[1];
-            Org returnOrg = this.lambdaQuery().eq(Org::getAsgorgancode, firstLevel).apply(" limit 1").list().get(0);
+            Org returnOrg = this.lambdaQuery().eq(Org::getAsgorgancode, firstLevel).last(SqlConstant.ONE_SQL).list().get(0);
             return Collections.singletonList(new OrgVo(returnOrg.getAsgorgancode() + "-" + returnOrg.getAsgorganname(), returnOrg.getAsgorganname(), Boolean.TRUE));
         }else {
-            List<Org> currentOrgs = this.lambdaQuery().eq(Org::getAsgorgancode, searchOrgCode).apply(" limit 1").list();
+            List<Org> currentOrgs = this.lambdaQuery().eq(Org::getAsgorgancode, searchOrgCode).last(SqlConstant.ONE_SQL).list();
             if (CollectionUtils.isEmpty(currentOrgs)){
                 return null;
             }
@@ -342,15 +342,18 @@ public class OrgServiceImpl extends ServiceImpl<OrgMapper, Org> implements OrgSe
             int j = Integer.parseInt(org.getAsglevel());
             //如果查询的组织机构小于当前操作员组织机构层级则取则只返回下级的一个
             if (i < j){
+                if (!org.getAsgpathnamecode().startsWith(currentOrg.getAsgpathnamecode())){
+                    return null;
+                }
                 //获取下一级机构信息
-                List<Org> nextOrgList = this.lambdaQuery().eq(Org::getAsgorgancode, org.getAsgpathnamecode().split("-")[i+2]).apply(" limit 1").list();
+                List<Org> nextOrgList = this.lambdaQuery().eq(Org::getAsgorgancode, org.getAsgpathnamecode().split("-")[i+2]).last(SqlConstant.ONE_SQL).list();
                 Org nextOrg = nextOrgList.get(0);
                 //如果相差一级以上，则存在children
                 if (j-i>1){
                     return Collections.singletonList(new OrgVo(nextOrg.getAsgorgancode() + "-" + nextOrg.getAsgorganname(), nextOrg.getAsgorganname(), Boolean.TRUE));
                 }else {
                     //如果相差未超过一级，则需要查询是否存在子类
-                    List<Org> orgs = this.lambdaQuery().likeRight(Org::getAsgpathnamecode, org.getAsgpathnamecode() + "-").apply(" limit 1 ").list();
+                    List<Org> orgs = this.lambdaQuery().likeRight(Org::getAsgpathnamecode, org.getAsgpathnamecode() + "-").last(SqlConstant.ONE_SQL).list();
                     if (!CollectionUtils.isEmpty(orgs)){
                         return Collections.singletonList(new OrgVo(nextOrg.getAsgorgancode() + "-" + nextOrg.getAsgorganname(), nextOrg.getAsgorganname(), Boolean.TRUE));
                     }
@@ -358,6 +361,9 @@ public class OrgServiceImpl extends ServiceImpl<OrgMapper, Org> implements OrgSe
                 return Collections.singletonList(new OrgVo(nextOrg.getAsgorgancode() + "-" + nextOrg.getAsgorganname(), nextOrg.getAsgorganname(), Boolean.FALSE));
 
             }else{
+                if (!currentOrg.getAsgpathnamecode().startsWith(org.getAsgpathnamecode())){
+                    return null;
+                }
                 //获取下一级机构信息
                 List<Org> newOrgs = this.lambdaQuery().likeRight(Org::getAsgpathnamecode, org.getAsgpathnamecode()+"-").eq(Org::getAsglevel,(i+1)+"").list();
                 if (CollectionUtils.isEmpty(newOrgs)){
@@ -379,6 +385,29 @@ public class OrgServiceImpl extends ServiceImpl<OrgMapper, Org> implements OrgSe
                 }
             }
         }
+    }
+
+    @Override
+    public String selectAsgpathnamecodeByOrgCode(OrgConditionVO searchVO) {
+        //当前操作员orgCode
+        String orgCode = searchVO.getOrgCode();
+        //查询的orgCode
+        String searchOrgCode = searchVO.getSearchOrgCode();
+
+        if (StringUtils.isBlank(searchOrgCode)){
+            return null;
+        }
+        //当前操作员组织机构
+        Org org = this.lambdaQuery().eq(Org::getAsgorgancode, orgCode).last(SqlConstant.ONE_SQL).one();
+        //当前查询的组织机构
+        Org currentOrg = this.lambdaQuery().eq(Org::getAsgorgancode, searchOrgCode).last(SqlConstant.ONE_SQL).one();
+        if (Objects.isNull(currentOrg)){
+            return null;
+        }
+        if (org.getAsgpathnamecode().startsWith(currentOrg.getAsgpathnamecode())||currentOrg.getAsgpathnamecode().startsWith(org.getAsgpathnamecode())){
+            return currentOrg.getAsgpathnamecode();
+        }
+        return null;
     }
 
 

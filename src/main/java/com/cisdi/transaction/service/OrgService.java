@@ -74,4 +74,6 @@ public interface OrgService  extends IService<Org> {
     List<InstitutionalFrameworkExcelVO> export(CadreFamilyExportDto dto);
 
     List<OrgVo> selectOrgByOrgCode(OrgConditionVO searchVO);
+
+    String selectAsgpathnamecodeByOrgCode(OrgConditionVO searchVO);
 }
