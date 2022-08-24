@@ -1014,7 +1014,7 @@ public class InvestInfoServiceImpl extends ServiceImpl<InvestInfoMapper, InvestI
         String shareholder = null;
         String seniorPosition = null;
         String isRelation = null;
-        String postType=null;
+       // String postType=null;
 
         if (StringUtils.isNotBlank(dto.getIsSituation())){
             isSituation=sysDictBizService.getDictId(dto.getIsSituation(),dictList);
