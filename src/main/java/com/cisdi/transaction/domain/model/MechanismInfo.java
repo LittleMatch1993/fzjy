@@ -50,10 +50,10 @@ public class MechanismInfo {
      * 现任职务
      */
     private String post;
-    /**
-     * 干部类型
-     */
-    private String postType;
+//    /**
+//     * 干部类型
+//     */
+//    private String postType;
     /**
      * 职务层次
      */
