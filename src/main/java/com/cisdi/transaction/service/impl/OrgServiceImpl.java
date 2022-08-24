@@ -369,12 +369,12 @@ public class OrgServiceImpl extends ServiceImpl<OrgMapper, Org> implements OrgSe
                     return null;
                 }
                 //获取下一级机构信息
-                List<Org> newOrgs = this.lambdaQuery().likeRight(Org::getAsgpathnamecode, org.getAsgpathnamecode()+"-").eq(Org::getAsglevel,(i+1)+"").list();
+                List<Org> newOrgs = this.lambdaQuery().likeRight(Org::getAsgpathnamecode, currentOrg.getAsgpathnamecode()+"-").eq(Org::getAsglevel,(i+1)+"").list();
                 if (CollectionUtils.isEmpty(newOrgs)){
                     return null;
                 }else {
                     //查询下下级列表
-                    List<Org> nextOrgList = this.lambdaQuery().likeRight(Org::getAsgpathnamecode, org.getAsgpathnamecode()+"-").eq(Org::getAsglevel,(i+2)+"").list();
+                    List<Org> nextOrgList = this.lambdaQuery().likeRight(Org::getAsgpathnamecode, currentOrg.getAsgpathnamecode()+"-").eq(Org::getAsglevel,(i+2)+"").list();
                     List<String> asgpathnamecodeList = nextOrgList.stream().map(Org::getAsgpathnamecode).collect(Collectors.toList());
                     //通过路径编码映射是否存在子机构
                     Map<String, Boolean> asgpathnamecodeHaveChildrenMap = newOrgs.stream().collect(Collectors.toMap(Org::getAsgpathnamecode, org1 -> {
