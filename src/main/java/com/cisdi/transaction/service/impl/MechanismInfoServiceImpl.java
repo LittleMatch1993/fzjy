@@ -1015,12 +1015,12 @@ public class MechanismInfoServiceImpl extends ServiceImpl<MechanismInfoMapper, M
             }
         }
 
-//        if (StringUtils.isNotBlank(t.getPostType())){
-//            postType =sysDictBizService.getDictId(t.getPostType(),dictList);
-//            if (StringUtils.isBlank(postType)){
-//                return "干部类型字典项不存在";
-//            }
-//        }
+        if (StringUtils.isNotBlank(t.getPostType())){
+            postType =sysDictBizService.getDictId(t.getPostType(),dictList);
+            if (StringUtils.isBlank(postType)){
+                return "干部类型字典项不存在";
+            }
+        }
 
         t.setIsSituation(isSituation);
         t.setTitle(title);
@@ -1029,7 +1029,7 @@ public class MechanismInfoServiceImpl extends ServiceImpl<MechanismInfoMapper, M
         t.setShareholder(shareholder);
         t.setPractice(practice);
         t.setIsRelation(isRelation);
-//        t.setPostType(postType);
+        t.setPostType(postType);
         return null;
     }
 }
