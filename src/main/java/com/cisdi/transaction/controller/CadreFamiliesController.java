@@ -165,7 +165,7 @@ public class CadreFamiliesController {
             //向禁止交易表中提交数据
             result = privateEquityService.submitPrivateEquity(ids);
         }catch (Exception e){
-            return ResultMsgUtil.success("提交失败,程序处理数据异常");
+            return ResultMsgUtil.failure("提交失败,程序处理数据异常");
         }
 
         return result;
