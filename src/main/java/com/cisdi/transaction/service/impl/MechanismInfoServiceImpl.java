@@ -1000,7 +1000,7 @@ public class MechanismInfoServiceImpl extends ServiceImpl<MechanismInfoMapper, M
         }
 
         if (StringUtils.isNotBlank(t.getOperatState())){
-            operatState =sysDictBizService.getDictId(t.getOperatState(),dictList);
+            operatState =sysDictBizService.getOperatStateDictId(t.getOperatState(),dictList);
             if (StringUtils.isBlank(operatState)){
                 return "经营状态字典项不存在";
             }

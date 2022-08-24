@@ -51,4 +51,22 @@ public class SysDictBizServiceImpl extends ServiceImpl<SysDictBizMapper, SysDict
         }
         return dict.getId().toString();
     }
+
+    @Override
+    public String getEnterpriseStateDictId(String enterpriseState, List<SysDictBiz> dictList) {
+        SysDictBiz dict = dictList.stream().filter(e -> e.getValue().equals(enterpriseState)&&"1552585398045290496".equals(e.getParentId())).findAny().orElse(null);
+        if(Objects.isNull(dict)){
+            return null;
+        }
+        return dict.getId().toString();
+    }
+
+    @Override
+    public String getOperatStateDictId(String operatState, List<SysDictBiz> dictList) {
+        SysDictBiz dict = dictList.stream().filter(e -> e.getValue().equals(operatState)&&"1552594376078831616".equals(e.getParentId())).findAny().orElse(null);
+        if(Objects.isNull(dict)){
+            return null;
+        }
+        return dict.getId().toString();
+    }
 }

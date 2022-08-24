@@ -1085,7 +1085,7 @@ public class InvestInfoServiceImpl extends ServiceImpl<InvestInfoMapper, InvestI
             }
         }
         if (StringUtils.isNotBlank(dto.getEnterpriseState())){
-            enterpriseState=sysDictBizService.getDictId(dto.getEnterpriseState(),dictList);
+            enterpriseState=sysDictBizService.getEnterpriseStateDictId(dto.getEnterpriseState(),dictList);
             if (StringUtils.isBlank(enterpriseState)){
                 return "企业状态字典项不存在";
             }

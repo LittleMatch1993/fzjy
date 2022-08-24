@@ -18,5 +18,5 @@ import java.lang.annotation.Target;
 @Target({ ElementType.FIELD, ElementType.TYPE })
 @Retention(RetentionPolicy.RUNTIME)
 public @interface DateStringValid {
-    String message() default "日期正确格式为yyyy-MM-dd";
+    String message() default "填写的日期数值或格式不正确，正确格式为yyyy-MM-dd";
 }

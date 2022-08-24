@@ -45,4 +45,8 @@ public interface SysDictBizService extends IService<SysDictBiz> {
      */
     public String getDictValue(String id,List<SysDictBiz> dictList);
     public String getDictId(String value,List<SysDictBiz> dictList);
+
+    String getEnterpriseStateDictId(String enterpriseState, List<SysDictBiz> dictList);
+
+    String getOperatStateDictId(String operatState, List<SysDictBiz> dictList);
 }
