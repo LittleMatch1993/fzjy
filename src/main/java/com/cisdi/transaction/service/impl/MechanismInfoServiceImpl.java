@@ -602,7 +602,7 @@ public class MechanismInfoServiceImpl extends ServiceImpl<MechanismInfoMapper, M
                 if (t.getIsSituation().equals(SystemConstant.IS_SITUATION_YES)) {
                     if (StringUtils.isNotBlank(t.getName()) && StringUtils.isNotBlank(t.getCode())) {
                         //校验国家/省/市
-                        String returnMessage = checkArea(t);
+                        String returnMessage = checkImportArea(t);
                         if (StringUtils.isNotBlank(returnMessage)){
                             exportReturnVO.setFailNumber(exportReturnVO.getFailNumber()+1);
                             exportReturnVO.getFailMessage().add(new ExportReturnMessageVO(t.getColumnNumber(),returnMessage));
@@ -685,7 +685,7 @@ public class MechanismInfoServiceImpl extends ServiceImpl<MechanismInfoMapper, M
                     //校验姓名和统一社会信用代码不能为空
                     if (StringUtils.isNotBlank(t.getName())&&StringUtils.isNotBlank(t.getTitle())  && StringUtils.isNotBlank(t.getCode())) {
                         //校验国家/省/市
-                        String returnMessage = checkArea(t);
+                        String returnMessage = checkImportArea(t);
                         if (StringUtils.isNotBlank(returnMessage)){
                             exportReturnVO.setFailNumber(exportReturnVO.getFailNumber()+1);
                             exportReturnVO.getFailMessage().add(new ExportReturnMessageVO(t.getColumnNumber(),returnMessage));
@@ -778,7 +778,7 @@ public class MechanismInfoServiceImpl extends ServiceImpl<MechanismInfoMapper, M
                 } else {
                     if (StringUtils.isNotBlank(t.getName()) && StringUtils.isNotBlank(t.getCode())) {
                         //校验国家/省/市
-                        String returnMessage = checkArea(t);
+                        String returnMessage = checkImportArea(t);
                         if (StringUtils.isNotBlank(returnMessage)){
                             exportReturnVO.setFailNumber(exportReturnVO.getFailNumber()+1);
                             exportReturnVO.getFailMessage().add(new ExportReturnMessageVO(t.getColumnNumber(),returnMessage));
@@ -912,8 +912,19 @@ public class MechanismInfoServiceImpl extends ServiceImpl<MechanismInfoMapper, M
                 List<String> numbers = Stream.of(e.getRegisterCapital(), e.getPersonalCapital(), e.getPersonalRatio(), e.getYear()).filter(StringUtils::isNotBlank).collect(Collectors.toList());
                 if (!NumberUtils.isAllNumeric(numbers)){
                     exportReturnVO.setFailNumber(exportReturnVO.getFailNumber()+1);
-                    exportReturnVO.getFailMessage().add(new ExportReturnMessageVO(e.getColumnNumber(),"以下内容必须为数：注册资本（金）或资金数额（出资额）,个人认缴出资额或个人出资额,个人认缴出资比例或个人出资比例,年度。"));
+                    exportReturnVO.getFailMessage().add(new ExportReturnMessageVO(e.getColumnNumber(),"以下内容必须为正数：注册资本（金）或资金数额（出资额）,个人认缴出资额或个人出资额,个人认缴出资比例或个人出资比例,年度。"));
                     return false;
+                }else {
+                    String year = e.getYear();
+                    if (year.contains(".")){
+                        exportReturnVO.setFailNumber(exportReturnVO.getFailNumber()+1);
+                        exportReturnVO.getFailMessage().add(new ExportReturnMessageVO(e.getColumnNumber(),"年份不能为小数。"));
+                        return false;
+                    }else if (Integer.parseInt(year)>Calendar.getInstance().get(Calendar.YEAR)){
+                        exportReturnVO.setFailNumber(exportReturnVO.getFailNumber()+1);
+                        exportReturnVO.getFailMessage().add(new ExportReturnMessageVO(e.getColumnNumber(),"年份不能当前年份。"));
+                        return false;
+                    }
                 }
                 if (StringUtils.isNotBlank(e.getEstablishTime())&& CalendarUtil.greaterThanNow(e.getEstablishTime())){
                     exportReturnVO.setFailNumber(exportReturnVO.getFailNumber()+1);
@@ -1031,5 +1042,46 @@ public class MechanismInfoServiceImpl extends ServiceImpl<MechanismInfoMapper, M
         t.setIsRelation(isRelation);
         //t.setPostType(postType);
         return null;
+    }
+
+    private String checkImportArea(CommunityServiceDTO dto) {
+        //校验国家/省份/市是否合法
+        //国家
+        if (StringUtils.isBlank(dto.getRegisterCountry())) {
+//                throw new RuntimeException("在有此类情况下，注册地国家信息不能为空");
+            return "在有此类情况下，注册地国家信息不能为空";
+        }
+        GlobalCityInfo country = globalCityInfoService.lambdaQuery().eq(GlobalCityInfo::getName, dto.getRegisterCountry()).last(SqlConstant.ONE_SQL).one();
+        if (country == null) {
+//                throw new RuntimeException(dto.getRegisterCountry() + ":" + "国家不存在");
+            return dto.getRegisterCountry() + ":" + "国家不存在";
+        }
+        //如果是中国下的，校验省份和市
+        if (country.getAreaCode().equals(SystemConstant.CHINA_AREA_CODE)) {
+            if (StringUtils.isBlank(dto.getRegisterProvince())) {
+//                    throw new RuntimeException(dto.getRegisterCountry() + ":" + "国家下的省份或地级市信息不能为空");
+                return dto.getRegisterCountry() + ":" + "国家下的省份信息不能为空";
+            }
+            //省份
+            GlobalCityInfo province = globalCityInfoService.lambdaQuery().eq(GlobalCityInfo::getName, dto.getRegisterProvince()).eq(GlobalCityInfo::getParentId,country.getCountryId()).last(SqlConstant.ONE_SQL).one();
+
+            if (Objects.isNull(province)) {
+//                    throw new RuntimeException(dto.getRegisterCountry() + ":" + "国家下的省份和地级市不存在");
+                return dto.getRegisterCountry() + ":" + "国家下的省份不存在";
+            }
+            //Map<String, GlobalCityInfo> infoMap = infoList.stream().collect(Collectors.toMap(GlobalCityInfo::getParentId, Function.identity()));
+            //Map<String, List<GlobalCityInfo>> collect = infoList.stream().collect(Collectors.groupingBy(GlobalCityInfo::getParentId));
+            //GlobalCityInfo info = infoMap.get(country.getCountryId());//省份
+            //市
+            if (StringUtils.isNotBlank(dto.getCity())){
+                GlobalCityInfo city = globalCityInfoService.lambdaQuery().eq(GlobalCityInfo::getName, dto.getCity()).isNull(GlobalCityInfo::getCountryId).last(SqlConstant.ONE_SQL).one();
+                if (Objects.isNull(city)){
+                    return dto.getRegisterProvince() + ":" + "省份下的市不存在";
+                }
+            }
+
+        }
+        return null;
+
     }
 }

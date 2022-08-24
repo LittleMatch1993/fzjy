@@ -93,7 +93,7 @@ public class InvestmentDTO {
     private String registerCountry;
 
     @ExcelProperty(value = "注册地（省）")
-    @ExcelValid(message = "注册地（省）为空")
+//    @ExcelValid(message = "注册地（省）为空")
     private String registerProvince;
 
     @ExcelProperty(value = "注册地（市）")

@@ -532,8 +532,19 @@ public class PrivateEquityServiceImpl extends ServiceImpl<PrivateEquityMapper, P
                 List<String> numbers = Stream.of(e.getMoney(), e.getPersonalMoney(), e.getSubscriptionMoney(),e.getSubscriptionRatio(), e.getYear()).filter(StringUtils::isNotBlank).collect(Collectors.toList());
                 if (!NumberUtils.isAllNumeric(numbers)){
                     exportReturnVO.setFailNumber(exportReturnVO.getFailNumber()+1);
-                    exportReturnVO.getFailMessage().add(new ExportReturnMessageVO(e.getColumnNumber(),"以下内容必须为数：基金总实缴金额,个人实缴金额,认缴金额,认缴比例,年度。"));
+                    exportReturnVO.getFailMessage().add(new ExportReturnMessageVO(e.getColumnNumber(),"以下内容必须为正数：基金总实缴金额,个人实缴金额,认缴金额,认缴比例,年度。"));
                     return false;
+                }else {
+                    String year = e.getYear();
+                    if (year.contains(".")){
+                        exportReturnVO.setFailNumber(exportReturnVO.getFailNumber()+1);
+                        exportReturnVO.getFailMessage().add(new ExportReturnMessageVO(e.getColumnNumber(),"年份不能为小数。"));
+                        return false;
+                    }else if (Integer.parseInt(year)>Calendar.getInstance().get(Calendar.YEAR)){
+                        exportReturnVO.setFailNumber(exportReturnVO.getFailNumber()+1);
+                        exportReturnVO.getFailMessage().add(new ExportReturnMessageVO(e.getColumnNumber(),"年份不能当前年份。"));
+                        return false;
+                    }
                 }
                 if (StringUtils.isNotBlank(e.getContractTime())&& CalendarUtil.greaterThanNow(e.getContractTime())){
                     exportReturnVO.setFailNumber(exportReturnVO.getFailNumber()+1);
