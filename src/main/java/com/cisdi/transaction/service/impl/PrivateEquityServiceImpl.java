@@ -869,7 +869,7 @@ public class PrivateEquityServiceImpl extends ServiceImpl<PrivateEquityMapper, P
         String shareholder=null;
         String practice=null;
         String isRelation=null;
-        String postType=null;
+        //String postType=null;
         if (StringUtils.isNotBlank(t.getIsSituation())){
             isSituation =sysDictBizService.getDictId(t.getIsSituation(),dictList);
             if (StringUtils.isBlank(isSituation)){
