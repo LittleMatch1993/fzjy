@@ -70,7 +70,7 @@ public interface GbBasicInfoMapper extends BaseMapper<GbBasicInfo> {
             "                        GROUP BY \n" +
             "                                gbi.card_id \n" +
             "                        HAVING \n" +
-            "                                sort in (3,4,5)\n" +
+            "                                sort in (4,5,6)\n" +
             "                        ) t4 ON t3.card_id = t4.card_id \n" +
             "                        AND t3.sort = t4.sort \n" +
             "                        INNER JOIN ( SELECT DISTINCT asgorganname,asgorgancode FROM 69654103_org WHERE asgpathnamecode LIKE concat(#{pathNameCode},'%')) t5 ON t5.asgorganname = t3.unit")
@@ -107,7 +107,7 @@ public interface GbBasicInfoMapper extends BaseMapper<GbBasicInfo> {
             "                        GROUP BY \n" +
             "                                gbi.card_id \n" +
             "                        HAVING \n" +
-            "                                sort in (3,4,5) \n" +
+            "                                sort in (4,5,6) \n" +
             "                        ) t4 ON t3.card_id = t4.card_id \n" +
             "                        AND t3.sort = t4.sort \n" +
             "                        INNER JOIN ( SELECT DISTINCT asgorganname,asgorgancode,asglevel,asgpathnamecode FROM 69654103_org WHERE asgpathnamecode LIKE concat(#{pathNameCode},'%')) t5 ON t5.asgorganname = t3.unit </script> ")
@@ -163,7 +163,7 @@ public interface GbBasicInfoMapper extends BaseMapper<GbBasicInfo> {
             "                        GROUP BY \n" +
             "                                gbi.card_id \n" +
             "                        HAVING \n" +
-            "                                sort in (3,4,5)  \n" +
+            "                                sort in (4,5,6) \n" +
             "                        ) t4 ON t3.card_id = t4.card_id \n" +
             "                        AND t3.sort = t4.sort \n" +
             "                        INNER JOIN ( SELECT DISTINCT asgorganname,asgorgancode FROM 69654103_org WHERE asgpathnamecode LIKE concat(#{pathNameCode},'%')) t5 ON t5.asgorganname = t3.unit")
@@ -190,7 +190,7 @@ public interface GbBasicInfoMapper extends BaseMapper<GbBasicInfo> {
             "                        GROUP BY \n" +
             "                                gbi.card_id \n" +
             "                        HAVING \n" +
-            "                                sort in (3,4,5)  \n" +
+            "                                sort in (4,5,6)  \n" +
             "                        ) t4 ON t3.card_id = t4.card_id \n" +
             "                        AND t3.sort = t4.sort \n" +
             "                        INNER JOIN ( SELECT DISTINCT asgorganname FROM 69654103_org WHERE asgpathnamecode LIKE concat(#{pathNameCode},'%')) t5 ON t5.asgorganname = t3.unit </script>")
@@ -216,7 +216,7 @@ public interface GbBasicInfoMapper extends BaseMapper<GbBasicInfo> {
             "                        GROUP BY " +
             "                                gbi.card_id " +
             "                        HAVING " +
-            "                                sort in (3,4,5)  " +
+            "                                sort in (4,5,6)  " +
             "                        ) t4 ON t3.card_id = t4.card_id " +
             "                        AND t3.sort = t4.sort " +
             "                        INNER JOIN ( SELECT DISTINCT asgorganname FROM 69654103_org WHERE asgpathnamecode LIKE concat(#{pathNameCode},'%')) t5 ON t5.asgorganname = t3.unit limit 200" +

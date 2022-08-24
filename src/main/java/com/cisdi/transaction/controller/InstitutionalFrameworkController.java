@@ -107,9 +107,10 @@ public class InstitutionalFrameworkController {
     }
 
     @ApiOperation("根据组织名获取单位信息")
-    @GetMapping("/selectByName")
-    public ResultMsgUtil<List> selectGbInfoByName(@ApiParam(value = "组织名") @RequestParam(value = "keyword" ,required = false) String keyword,
-                                                  @RequestParam(value = "orgCode" ,required = false) String orgCode) {
+    @PostMapping("/selectByName")
+    public ResultMsgUtil<List> selectGbInfoByName(@RequestBody SelectByNameVO nameVo) {
+        String keyword = nameVo.getKeyword();
+        String orgCode = nameVo.getOrgCode();
         List<Org> list = orgService.selectUnitByName(keyword,orgCode);
         List<OrgDictVo> voList = new ArrayList<>();
         if(CollectionUtil.isNotEmpty(list)){
