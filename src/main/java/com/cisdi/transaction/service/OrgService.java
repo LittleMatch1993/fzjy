@@ -1,6 +1,7 @@
 package com.cisdi.transaction.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.cisdi.transaction.domain.OrgTree;
 import com.cisdi.transaction.domain.dto.CadreFamilyExportDto;
 import com.cisdi.transaction.domain.dto.InstitutionalFrameworkDTO;
 import com.cisdi.transaction.domain.model.Org;
@@ -77,4 +78,11 @@ public interface OrgService  extends IService<Org> {
     List<OrgVo> selectOrgByOrgCode(OrgConditionVO searchVO);
 
     String selectAsgpathnamecodeByOrgCode(OrgConditionVO searchVO);
+
+    /**
+     * 按权限获取组织结构树
+     * @param orgCode
+     * @return
+     */
+    List<OrgTree> selectOrgTree(String orgCode);
 }
