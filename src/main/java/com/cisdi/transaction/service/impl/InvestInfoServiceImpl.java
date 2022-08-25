@@ -999,11 +999,12 @@ public class InvestInfoServiceImpl extends ServiceImpl<InvestInfoMapper, InvestI
                     return false;
                 }else {
                     String year = e.getYear();
-                    if (year.contains(".")){
+                    if (StringUtils.isNotBlank(year)&&year.contains(".")){
                         exportReturnVO.setFailNumber(exportReturnVO.getFailNumber()+1);
                         exportReturnVO.getFailMessage().add(new ExportReturnMessageVO(e.getColumnNumber(),"年份不能为小数。"));
                         return false;
-                    }else if (Integer.parseInt(year)>Calendar.getInstance().get(Calendar.YEAR)){
+                    }
+                    if (StringUtils.isNotBlank(year)&&Integer.parseInt(year)>Calendar.getInstance().get(Calendar.YEAR)){
                         exportReturnVO.setFailNumber(exportReturnVO.getFailNumber()+1);
                         exportReturnVO.getFailMessage().add(new ExportReturnMessageVO(e.getColumnNumber(),"年份不能大于当前年份。"));
                         return false;
