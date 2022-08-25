@@ -380,6 +380,17 @@ public class GbBasicInfoServiceImpl extends ServiceImpl<GbBasicInfoMapper, GbBas
 
     }
 
+    @Override
+    public List<String> selectNoAuthCardIds(String orgCode) {
+
+        List<String> list =  this.baseMapper.selectList(new LambdaQueryWrapper<GbBasicInfo>().apply(AuthSqlUtil.getAuthSqlByTableNameAndOrgCode(ModelConstant.GB_BASIC_INFO,orgCode))
+        ).stream().map(GbBasicInfo::getCardId).collect(Collectors.toList());
+        if (CollectionUtils.isEmpty(list)){
+            return this.list().stream().map(GbBasicInfo::getCardId).collect(Collectors.toList());
+        }
+        return this.baseMapper.selectList(new LambdaQueryWrapper<GbBasicInfo>().notIn(GbBasicInfo::getCardId,list)).stream().map(GbBasicInfo::getCardId).collect(Collectors.toList());
+    }
+
     private List<CadreExcelVO> replaceDictValue(List<CadreExcelVO> list, List<SysDictBiz> dictList){
         list.parallelStream().forEach(vo->{
             String postType =sysDictBizService.getDictValue(vo.getPostType(),dictList);

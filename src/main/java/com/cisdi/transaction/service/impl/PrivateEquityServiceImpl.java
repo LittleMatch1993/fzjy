@@ -26,6 +26,7 @@ import com.cisdi.transaction.service.PrivateEquityService;
 import com.cisdi.transaction.service.SpouseBasicInfoService;
 import com.cisdi.transaction.service.SysDictBizService;
 import com.cisdi.transaction.util.ThreadLocalUtils;
+import com.google.common.collect.Lists;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -499,8 +500,9 @@ public class PrivateEquityServiceImpl extends ServiceImpl<PrivateEquityMapper, P
         return list;
     }
 
-    private List<EquityFundsDTO> checkParams(List<EquityFundsDTO> list, ExportReturnVO exportReturnVO) {
+    private List<EquityFundsDTO> checkParams(List<EquityFundsDTO> list, ExportReturnVO exportReturnVO,String orgCode) {
         List<String> isOrNotList = Arrays.asList(SystemConstant.WHETHER_YES, SystemConstant.WHETHER_NO);
+        List<String> cardIds = Optional.ofNullable(gbBasicInfoService.selectNoAuthCardIds(orgCode)).orElse(Lists.newArrayList());
         return list.stream().filter(e->{
             if (SystemConstant.IS_SITUATION_YES.equals(e.getIsSituation())){
 //                if (StringUtils.isBlank(e.getName())||StringUtils.isBlank(e.getTitle())||StringUtils.isBlank(e.getPrivateequityName())||StringUtils.isBlank(e.getCode())||StringUtils.isBlank(e.getMoney())||StringUtils.isBlank(e.getPersonalMoney())||StringUtils.isBlank(e.getContractTime()
@@ -542,7 +544,7 @@ public class PrivateEquityServiceImpl extends ServiceImpl<PrivateEquityMapper, P
                         return false;
                     }else if (Integer.parseInt(year)>Calendar.getInstance().get(Calendar.YEAR)){
                         exportReturnVO.setFailNumber(exportReturnVO.getFailNumber()+1);
-                        exportReturnVO.getFailMessage().add(new ExportReturnMessageVO(e.getColumnNumber(),"年份不能当前年份。"));
+                        exportReturnVO.getFailMessage().add(new ExportReturnMessageVO(e.getColumnNumber(),"年份不能大于当前年份。"));
                         return false;
                     }
                 }
@@ -572,6 +574,11 @@ public class PrivateEquityServiceImpl extends ServiceImpl<PrivateEquityMapper, P
                     exportReturnVO.getFailMessage().add(new ExportReturnMessageVO(e.getColumnNumber(),"担任高级职务的结束时间不能大于当前时间。"));
                     return false;
                 }
+                if (cardIds.contains(e.getCardId())){
+                    exportReturnVO.setFailNumber(exportReturnVO.getFailNumber()+1);
+                    exportReturnVO.getFailMessage().add(new ExportReturnMessageVO(e.getColumnNumber(),"没有当前干部权限:"+e.getCardId()+"。"));
+                    return false;
+                }
             }
             return true;
         }).collect(Collectors.toList());
@@ -582,7 +589,7 @@ public class PrivateEquityServiceImpl extends ServiceImpl<PrivateEquityMapper, P
     public void saveBatchInvestmentInfo(List<EquityFundsDTO> lists, BaseDTO baseDTO, ExportReturnVO exportReturnVO) {
         //过滤掉必填校验未通过的字段
         List<EquityFundsDTO> list = lists.stream().filter(e -> StringUtils.isBlank(e.getMessage())).collect(Collectors.toList());
-        list=checkParams(list,exportReturnVO);
+        list=checkParams(list,exportReturnVO,baseDTO.getOrgCode());
         if (CollectionUtils.isEmpty(list)){
             return;
         }

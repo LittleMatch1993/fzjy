@@ -23,6 +23,7 @@ import com.cisdi.transaction.domain.vo.KVVO;
 import com.cisdi.transaction.mapper.master.InvestInfoMapper;
 import com.cisdi.transaction.service.*;
 import com.cisdi.transaction.util.ThreadLocalUtils;
+import com.google.common.collect.Lists;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -648,7 +649,7 @@ public class InvestInfoServiceImpl extends ServiceImpl<InvestInfoMapper, InvestI
     public void saveBatchInvestmentInfo(List<InvestmentDTO> lists, BaseDTO baseDTO, ExportReturnVO exportReturnVO) {
         //过滤掉必填校验未通过的字段
         List<InvestmentDTO> list = lists.stream().filter(e -> StringUtils.isBlank(e.getMessage())).collect(Collectors.toList());
-        list=checkParams(list,exportReturnVO);
+        list=checkParams(list,exportReturnVO,baseDTO.getOrgCode());
         if (CollectionUtils.isEmpty(list)){
             return;
         }
@@ -959,8 +960,9 @@ public class InvestInfoServiceImpl extends ServiceImpl<InvestInfoMapper, InvestI
         return list;
     }
 
-    private List<InvestmentDTO> checkParams(List<InvestmentDTO> list, ExportReturnVO exportReturnVO) {
+    private List<InvestmentDTO> checkParams(List<InvestmentDTO> list, ExportReturnVO exportReturnVO,String orgCode) {
         List<String> isOrNotList = Arrays.asList(SystemConstant.WHETHER_YES, SystemConstant.WHETHER_NO);
+        List<String> cardIds = Optional.ofNullable(gbBasicInfoService.selectNoAuthCardIds(orgCode)).orElse(Lists.newArrayList());
         return list.stream().filter(e->{
             if (SystemConstant.IS_SITUATION_YES.equals(e.getIsSituation())){
 //                if (StringUtils.isBlank(e.getName())||StringUtils.isBlank(e.getTitle())||StringUtils.isBlank(e.getEnterpriseName())||StringUtils.isBlank(e.getEnterpriseType())||StringUtils.isBlank(e.getCode())||StringUtils.isBlank(e.getEstablishTime())||StringUtils.isBlank(e.getRegisterCountry())||StringUtils.isBlank(e.getRegisterProvince())
@@ -1003,7 +1005,7 @@ public class InvestInfoServiceImpl extends ServiceImpl<InvestInfoMapper, InvestI
                         return false;
                     }else if (Integer.parseInt(year)>Calendar.getInstance().get(Calendar.YEAR)){
                         exportReturnVO.setFailNumber(exportReturnVO.getFailNumber()+1);
-                        exportReturnVO.getFailMessage().add(new ExportReturnMessageVO(e.getColumnNumber(),"年份不能当前年份。"));
+                        exportReturnVO.getFailMessage().add(new ExportReturnMessageVO(e.getColumnNumber(),"年份不能大于当前年份。"));
                         return false;
                     }
                 }
@@ -1031,6 +1033,11 @@ public class InvestInfoServiceImpl extends ServiceImpl<InvestInfoMapper, InvestI
                 }else if (StringUtils.isNotBlank(e.getSeniorPositionEndTime())&&CalendarUtil.greaterThanNow(e.getSeniorPositionEndTime())){
                     exportReturnVO.setFailNumber(exportReturnVO.getFailNumber()+1);
                     exportReturnVO.getFailMessage().add(new ExportReturnMessageVO(e.getColumnNumber(),"担任高级职务的结束时间不能大于当前时间。"));
+                    return false;
+                }
+                if (cardIds.contains(e.getCardId())){
+                    exportReturnVO.setFailNumber(exportReturnVO.getFailNumber()+1);
+                    exportReturnVO.getFailMessage().add(new ExportReturnMessageVO(e.getColumnNumber(),"没有当前干部权限:"+e.getCardId()+"。"));
                     return false;
                 }
             }

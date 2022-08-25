@@ -64,4 +64,6 @@ public interface GbBasicInfoService extends IService<GbBasicInfo> {
     List<GbOrgInfo> selectByOrgCodeAndCardIds(String orgCode,List<String> cardIds);
 
     List<GbOrgInfo> selectByOrgCodeAndGbName(String orgCode,String name);
+
+    List<String> selectNoAuthCardIds(String orgCode);
 }

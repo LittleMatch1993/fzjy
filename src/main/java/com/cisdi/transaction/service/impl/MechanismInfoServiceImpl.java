@@ -23,6 +23,7 @@ import com.cisdi.transaction.domain.vo.KVVO;
 import com.cisdi.transaction.mapper.master.MechanismInfoMapper;
 import com.cisdi.transaction.service.*;
 import com.cisdi.transaction.util.ThreadLocalUtils;
+import com.google.common.collect.Lists;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
@@ -587,7 +588,7 @@ public class MechanismInfoServiceImpl extends ServiceImpl<MechanismInfoMapper, M
     public void saveBatchInvestInfo(List<CommunityServiceDTO> lists, BaseDTO baseDTO, ExportReturnVO exportReturnVO) {
         //过滤掉必填校验未通过的字段
         List<CommunityServiceDTO> list = lists.stream().filter(e -> StringUtils.isBlank(e.getMessage())).collect(Collectors.toList());
-        list=checkParams(list,exportReturnVO);
+        list=checkParams(list,exportReturnVO,baseDTO.getOrgCode());
         if (CollectionUtils.isEmpty(list)){
             return;
         }
@@ -876,8 +877,9 @@ public class MechanismInfoServiceImpl extends ServiceImpl<MechanismInfoMapper, M
         return list;
     }
 
-    private List<CommunityServiceDTO> checkParams(List<CommunityServiceDTO> list, ExportReturnVO exportReturnVO) {
+    private List<CommunityServiceDTO> checkParams(List<CommunityServiceDTO> list, ExportReturnVO exportReturnVO,String orgCode) {
         List<String> isOrNotList = Arrays.asList(SystemConstant.WHETHER_YES, SystemConstant.WHETHER_NO);
+        List<String> cardIds = Optional.ofNullable(gbBasicInfoService.selectNoAuthCardIds(orgCode)).orElse(Lists.newArrayList());
         return list.stream().filter(e->{
             if (SystemConstant.IS_SITUATION_YES.equals(e.getIsSituation())){
 //                if (StringUtils.isBlank(e.getName())||StringUtils.isBlank(e.getTitle())||StringUtils.isBlank(e.getQualificationName())
@@ -922,7 +924,7 @@ public class MechanismInfoServiceImpl extends ServiceImpl<MechanismInfoMapper, M
                         return false;
                     }else if (Integer.parseInt(year)>Calendar.getInstance().get(Calendar.YEAR)){
                         exportReturnVO.setFailNumber(exportReturnVO.getFailNumber()+1);
-                        exportReturnVO.getFailMessage().add(new ExportReturnMessageVO(e.getColumnNumber(),"年份不能当前年份。"));
+                        exportReturnVO.getFailMessage().add(new ExportReturnMessageVO(e.getColumnNumber(),"年份不能大于当前年份。"));
                         return false;
                     }
                 }
@@ -936,7 +938,11 @@ public class MechanismInfoServiceImpl extends ServiceImpl<MechanismInfoMapper, M
                     exportReturnVO.getFailMessage().add(new ExportReturnMessageVO(e.getColumnNumber(),"入股（合伙）时间不能大于当前日期。"));
                     return false;
                 }
-
+                if (cardIds.contains(e.getCardId())){
+                    exportReturnVO.setFailNumber(exportReturnVO.getFailNumber()+1);
+                    exportReturnVO.getFailMessage().add(new ExportReturnMessageVO(e.getColumnNumber(),"没有当前干部权限:"+e.getCardId()+"。"));
+                    return false;
+                }
 
             }
             return true;
