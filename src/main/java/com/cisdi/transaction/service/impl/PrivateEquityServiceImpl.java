@@ -319,7 +319,8 @@ public class PrivateEquityServiceImpl extends ServiceImpl<PrivateEquityMapper, P
         equity.setCreateAccount(dto.getServiceUserAccount());
         equity.setCreateName(dto.getServicePersonName());
         equity.setOrgCode(dto.getOrgCode());
-        equity.setOrgName(dto.getOrgName());
+        //equity.setOrgName(dto.getOrgName());
+        equity.setOrgName(dto.getServiceLesseeName());
         equity = this.valid(equity);
         //新增
         this.save(equity);

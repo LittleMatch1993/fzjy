@@ -216,7 +216,8 @@ public class InvestInfoServiceImpl extends ServiceImpl<InvestInfoMapper, InvestI
         info.setCreateAccount(dto.getServiceUserAccount());
         info.setCreateName(dto.getServicePersonName());
         info.setOrgCode(dto.getOrgCode());
-        info.setOrgName(dto.getOrgName());
+        //info.setOrgName(dto.getOrgName());
+        info.setOrgName(dto.getServiceLesseeName());
         info = this.valid(info);
         //新增
         this.save(info);

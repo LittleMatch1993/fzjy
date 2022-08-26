@@ -102,7 +102,7 @@ public class BanDealInfoServiceImpl extends ServiceImpl<BanDealInfoMapper, BanDe
             info.setManageCompanyCode(infoDto.getOrgCode());
         }
         String engageType = info.getEngageType();
-        if(!engageType.equals("投资私募股权投资基金或者担任高级职务")){
+        if(!engageType.equals("1552934977441804288")){
             //验证企业社会信用代码
             info = validCompanyCode(info);
         }
@@ -666,6 +666,8 @@ public class BanDealInfoServiceImpl extends ServiceImpl<BanDealInfoMapper, BanDe
                             }
                             sj.add("企业名称和统一社会信用代码/注册号不匹配");
                             banDealInfo.setCheckTips(sj.toString());
+                        }else{
+                            banDealInfo.setCheckTips("企业名称和统一社会信用代码/注册号不匹配");
                         }
 
                         // ids.add(e.getId());

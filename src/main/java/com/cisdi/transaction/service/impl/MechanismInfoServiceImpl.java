@@ -320,7 +320,8 @@ public class MechanismInfoServiceImpl extends ServiceImpl<MechanismInfoMapper, M
         info.setCreateAccount(dto.getServiceUserAccount());
         info.setCreateName(dto.getServicePersonName());
         info.setOrgCode(dto.getOrgCode());
-        info.setOrgName(dto.getOrgName());
+        //info.setOrgName(dto.getOrgName());
+        info.setOrgName(dto.getServiceLesseeName());
         info = this.valid(info);
         this.save(info);
         addFamilyInfo(info);
