@@ -181,6 +181,9 @@ public class EasyPoiController {
     @ResponseBody
     public ResultMsgUtil<Object> test4(String orgCode){
          List<OrgTree> treeList = orgService.selectOrgTree(orgCode);
+         if(CollectionUtil.isNotEmpty(treeList)){
+             treeList = treeList.get(0).getChildSelect();
+         }
          return ResultMsgUtil.success(treeList);
     }
 }

@@ -974,31 +974,42 @@ public class InvestInfoServiceImpl extends ServiceImpl<InvestInfoMapper, InvestI
         String asglevel = org.getAsglevel();
         if(StrUtil.isNotEmpty(asglevel)&&asglevel.equals("0")) { //看所有
             QueryWrapper<InvestInfo> queryWrapper = new QueryWrapper<>();
-            queryWrapper.select("DISTINCT  create_account","org_name","create_name");
+            queryWrapper.select("DISTINCT  create_account","create_name");
             list = this.baseMapper.selectList(queryWrapper);
         }else{
             String asgpathnamecode = org.getAsgpathnamecode();
-            List<Org> orgs = orgService.selectByAsgpathnamecode(asgpathnamecode);
-            List<String> nameList = orgs.stream().map(Org::getAsgorganname).distinct().collect(Collectors.toList());
+            List<String > cardIds = orgService.getCardIdsByAsgpathnamecode(asgpathnamecode);
+            if(CollectionUtil.isEmpty(cardIds)){
+                return new ArrayList<>();
+            }
+            cardIds.add("-9999qq");//
             QueryWrapper<InvestInfo> queryWrapper = new QueryWrapper<>();
-            queryWrapper.select("DISTINCT  create_account","org_name","create_name").in( "org_name",nameList);
+            queryWrapper.select("DISTINCT  create_account","create_name").in( "card_id",cardIds);
             list = this.baseMapper.selectList(queryWrapper);
         }
         List<KVVO> resultList = new ArrayList<>();
         if(CollectionUtil.isNotEmpty(list)){
+            List<AuthUser> authUsers = gbBasicInfoService.selectAuthUser();
+            if(CollectionUtil.isEmpty(authUsers)){
+                return new ArrayList<>();
+            }
             for (InvestInfo info : list) {
                 if(Objects.isNull(info)){
                     continue;
                 }
                 String account = info.getCreateAccount();
                 String userName= info.getCreateName();
-                String orgName = info.getOrgName();
-                if(StrUtil.isEmpty(account)||StrUtil.isEmpty(orgName)||StrUtil.isEmpty(userName)){
+               // String orgName = info.getOrgName();
+                if(StrUtil.isEmpty(account)){
+                    continue;
+                }
+                AuthUser authUser = authUsers.stream().filter(e -> account.equals(e.getUserName())).findAny().orElse(null);
+                if(Objects.isNull(authUser)){
                     continue;
                 }
                 KVVO kvvo = new KVVO();
                 kvvo.setId(account);
-                kvvo.setName(userName+"-"+orgName);
+                kvvo.setName(userName+"-"+authUser.getUnit());
                 resultList.add(kvvo);
             }
         }

@@ -3,6 +3,7 @@ package com.cisdi.transaction.service;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.cisdi.transaction.domain.dto.CadreDTO;
 import com.cisdi.transaction.domain.dto.CadreFamilyExportDto;
+import com.cisdi.transaction.domain.model.AuthUser;
 import com.cisdi.transaction.domain.model.GbBasicInfo;
 import com.cisdi.transaction.domain.model.GbBasicInfoThree;
 import com.cisdi.transaction.domain.model.GbOrgInfo;
@@ -66,4 +67,10 @@ public interface GbBasicInfoService extends IService<GbBasicInfo> {
     List<GbOrgInfo> selectByOrgCodeAndGbName(String orgCode,String name);
 
     List<String> selectNoAuthCardIds(String orgCode);
+
+    /**
+     * 获取当前系统可登录账户信息
+     * @return
+     */
+    public List<AuthUser> selectAuthUser();
 }

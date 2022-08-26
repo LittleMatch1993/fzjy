@@ -472,7 +472,11 @@ public class OrgServiceImpl extends ServiceImpl<OrgMapper, Org> implements OrgSe
             tree.setName(name);
             List<OrgTree> tempTreeList = new ArrayList<>();
             List<OrgTree> orgTree = this.getOrgTree(orgList, tempTreeList, pathcode, Integer.parseInt(asglevel));
-            tree.setChildSelect(orgTree);
+            if(CollectionUtil.isEmpty(orgTree)){
+                tree.setChildSelect(null);
+            }else{
+                tree.setChildSelect(orgTree);
+            }
             orgTreeList.add(tree);
         }
 

@@ -125,7 +125,7 @@ public class BanDealInfoServiceImpl extends ServiceImpl<BanDealInfoMapper, BanDe
         info.setUpdateTime(DateUtil.date());
         info.setUpdaterId(infoDto.getServiceUserId());
         String engageType = info.getEngageType();
-        if(!engageType.equals("投资私募股权投资基金或者担任高级职务")){
+        if(!engageType.equals("1552934977441804288")){
             //验证企业社会信用代码
             info = validCompanyCode(info);
         }
@@ -214,7 +214,7 @@ public class BanDealInfoServiceImpl extends ServiceImpl<BanDealInfoMapper, BanDe
                     bandealInfo.setCardId(gbCardId);
                     bandealInfo.setName(gbOrgInfo.getName());
                     bandealInfo.setCompany(gbOrgInfo.getUnit());
-                    String tempPost = StrUtil.isEmpty(gbOrgInfo.getPost())?"":gbOrgInfo.getPost();
+                    String tempPost = StrUtil.isEmpty(gbOrgInfo.getPost())||"null".equals(gbOrgInfo.getPost())?"":gbOrgInfo.getPost();
                     //去除重复的职务
                     if(StrUtil.isNotEmpty(tempPost)){
                          List<String> str = Splitter.on(",").trimResults().splitToList(tempPost);
@@ -232,8 +232,8 @@ public class BanDealInfoServiceImpl extends ServiceImpl<BanDealInfoMapper, BanDe
 
                     //13-1表中的，显示X（个人认缴出资额或个人出资额（人民币万元））,Y（个人认缴出资比例或个人出资比例（%））,AA（是否担任高级职务），AB（所担任的高级职务名称）列内容
                     //----如果AA值为是，则拼接AB列，否则不拼接
-                    String engageInfo = "个人认缴出资额或个人出资额(人民币万元):" +(StrUtil.isEmpty( info.getPersonalCapital())?"": info.getPersonalCapital()+"万元") + "；个人认缴出资比例或个人出资比例(%):" + (StrUtil.isEmpty(info.getPersonalRatio())?"":info.getPersonalRatio()+"%")
-                            + ("是".equals(sysDictBizService.getDictValue(info.getSeniorPosition(),dictList)) ? "；担任高级职务名称:" + (StrUtil.isEmpty(info.getSeniorPositionName())?"":info.getSeniorPositionName()) : "");
+                    String engageInfo = (StrUtil.isEmpty(info.getPersonalCapital())?"": "个人认缴出资额或个人出资额(人民币万元):" +info.getPersonalCapital()+"万元；") + (StrUtil.isEmpty(info.getPersonalRatio())?"":"个人认缴出资比例或个人出资比例(%):" +info.getPersonalRatio()+"%；")
+                            + ("是".equals(sysDictBizService.getDictValue(info.getSeniorPosition(),dictList)) ? "担任高级职务名称:" + (StrUtil.isEmpty(info.getSeniorPositionName())?"":info.getSeniorPositionName()) : "");
 
                     bandealInfo.setEngageInfo(engageInfo);
                     bandealInfo.setOperatScope(info.getOperatScope());
@@ -332,7 +332,7 @@ public class BanDealInfoServiceImpl extends ServiceImpl<BanDealInfoMapper, BanDe
                     bandealInfo.setCardId(gbCardId);
                     bandealInfo.setName(gbOrgInfo.getName());
                     bandealInfo.setCompany(gbOrgInfo.getUnit());
-                    String tempPost = StrUtil.isEmpty(gbOrgInfo.getPost())?"":gbOrgInfo.getPost();
+                    String tempPost = StrUtil.isEmpty(gbOrgInfo.getPost())||"null".equals(gbOrgInfo.getPost())?"":gbOrgInfo.getPost();
                     //去除重复的职务
                     if(StrUtil.isNotEmpty(tempPost)){
                         List<String> str = Splitter.on(",").trimResults().splitToList(tempPost);
@@ -348,9 +348,9 @@ public class BanDealInfoServiceImpl extends ServiceImpl<BanDealInfoMapper, BanDe
                     bandealInfo.setEngageType(sysDictBizService.getDictId("投资私募股权投资基金或者担任高级职务",dictList));
                     //13-3表中的，显示M（投资的私募股权投资基金产品名称），O（基金总实缴金额（人民币万元）），P（个人实缴金额（人民币万元））,Q（基金投向），X（认缴金额（人民币万元）），Y（认缴比例（%）），AA（是否担任该基金管理人高级职务），AB（所担任的高级职务名称）列内容
                     //------如果AA值为是，则拼接AB列，否则不拼接
-                    String engageInfo = "投资的私募股权投资基金产品名称:" + (StrUtil.isEmpty(info.getPrivateequityName())?"":info.getPrivateequityName()) + "；基金总实缴金额（人民币万元）:" + (StrUtil.isEmpty(info.getMoney())?"":info.getMoney()+"万元")
-                            + "；个人实缴金额（人民币万元）:" +(StrUtil.isEmpty(info.getPersonalMoney())?"":info.getPersonalMoney()+"万元")  + "；基金投向:" + (StrUtil.isEmpty(info.getInvestDirection())?"":info.getInvestDirection())
-                            + "；认缴金额（人民币万元）:" +(StrUtil.isEmpty(info.getSubscriptionMoney())?"": info.getSubscriptionMoney()+"万元") + "；认缴比例（%）:" + (StrUtil.isEmpty(info.getSubscriptionRatio())?"":info.getSubscriptionRatio()+"%")
+                    String engageInfo = (StrUtil.isEmpty(info.getPrivateequityName())?"":"投资的私募股权投资基金产品名称:" + info.getPrivateequityName()+"；") +(StrUtil.isEmpty(info.getMoney())?"":"基金总实缴金额（人民币万元）:" + info.getMoney()+"万元；")
+                            + (StrUtil.isEmpty(info.getPersonalMoney())?"":"个人实缴金额（人民币万元）:" +info.getPersonalMoney()+"万元；")  + (StrUtil.isEmpty(info.getInvestDirection())?"":"基金投向:" +info.getInvestDirection()+"；")
+                            + (StrUtil.isEmpty(info.getSubscriptionMoney())?"":"认缴金额（人民币万元）:" + info.getSubscriptionMoney()+"万元；") + (StrUtil.isEmpty(info.getSubscriptionRatio())?"":"认缴比例（%）:" + info.getSubscriptionRatio()+"%；")
                             + ("是".equals(sysDictBizService.getDictValue(info.getPractice(),dictList)) ? "；所担任的高级职务名称:" + (StrUtil.isEmpty(info.getPostName())?"":info.getPostName()) : "");
 
                     bandealInfo.setEngageInfo(engageInfo);
@@ -445,7 +445,7 @@ public class BanDealInfoServiceImpl extends ServiceImpl<BanDealInfoMapper, BanDe
                     bandealInfo.setCardId(gbCardId);
                     bandealInfo.setName(gbOrgInfo.getName());
                     bandealInfo.setCompany(gbOrgInfo.getUnit());
-                    String tempPost = StrUtil.isEmpty(gbOrgInfo.getPost())?"":gbOrgInfo.getPost();
+                    String tempPost = StrUtil.isEmpty(gbOrgInfo.getPost())||"null".equals(gbOrgInfo.getPost())?"":gbOrgInfo.getPost();
                     //去除重复的职务
                     if(StrUtil.isNotEmpty(tempPost)){
                         List<String> str = Splitter.on(",").trimResults().splitToList(tempPost);
@@ -630,6 +630,7 @@ public class BanDealInfoServiceImpl extends ServiceImpl<BanDealInfoMapper, BanDe
     @Override
     public BanDealInfo validCompanyCode(BanDealInfo banDealInfo) {
         try {
+            System.out.println("验证企业画像");
             JSONObject jbParam = new JSONObject();
             String company = banDealInfo.getSupplier();
             jbParam.put("name", company);
@@ -637,6 +638,7 @@ public class BanDealInfoServiceImpl extends ServiceImpl<BanDealInfoMapper, BanDe
             JSONObject resultOb = this.getCompanyInfoByName(jbParam);
             boolean status = resultOb.getBoolean("status");
             boolean b = resultOb.containsKey("data");
+            System.out.println("验证企业画像,company="+company+"----b="+b);
             Map<String, String> map = new HashMap<>();
             if (status && b) {
                 JSONArray data = resultOb.getJSONArray("data");
@@ -654,6 +656,7 @@ public class BanDealInfoServiceImpl extends ServiceImpl<BanDealInfoMapper, BanDe
                 if (ck) {
                     String code = banDealInfo.getCode();
                     String creditNo = map.get(companyName).toString();
+                    System.out.println("验证企业画像,companyName="+companyName+"-code="+code+",creditNo="+creditNo);
                     if (!creditNo.equals(code)) {//查询出来的信用代码和填写的不一致
                         String tips = banDealInfo.getCheckTips();
                         if (StrUtil.isNotBlank(tips) && !tips.contains("企业名称和统一社会信用代码/注册号不匹配")) {
