@@ -456,6 +456,29 @@ public class CadreFamiliesController {
         List<RegionDropDownBoxVO>  list=globalCityInfoService.getProvinceDropDownBox(countryId);
         return ResultMsgUtil.success(moveChinaToFirst(list));
     }
+
+    @ApiOperation("获取13-1表创建人信息")
+    @GetMapping("/getCreateInfoForInvest")
+    public ResultMsgUtil<Object> getCreateInfoForInvest(@ApiParam(value = "登录orgCode",required = false) @RequestParam String orgCode) {
+
+        List<KVVO> list = investInfoService.getCreateInfoForInvest(orgCode);
+        return ResultMsgUtil.success((list));
+    }
+    @ApiOperation("获取13-2表创建人信息")
+    @GetMapping("/getCreateInfoForMechanism")
+    public ResultMsgUtil<Object> getCreateInfoForMechanism(@ApiParam(value = "登录orgCode",required = false) @RequestParam String orgCode) {
+
+        List<KVVO> list = mechanismInfoService.getCreateInfoForMechanism(orgCode);
+        return ResultMsgUtil.success((list));
+    }
+    @ApiOperation("获取13-3表创建人信息")
+    @GetMapping("/getCreateInfoForPrivateEquity")
+    public ResultMsgUtil<Object> getCreateInfoForPrivateEquity(@ApiParam(value = "登录orgCode",required = false) @RequestParam String orgCode) {
+
+        List<KVVO> list = privateEquityService.getCreateInfoForPrivateEquity(orgCode);
+        return ResultMsgUtil.success((list));
+    }
+
     private void packaging(HttpServletRequest request, HttpServletResponse response, String fileName) throws UnsupportedEncodingException {
         String userAgent = request.getHeader("User-Agent");
         if (userAgent.contains("MSIE") || userAgent.contains("Trident")) {

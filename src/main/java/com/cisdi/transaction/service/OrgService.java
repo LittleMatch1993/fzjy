@@ -85,4 +85,6 @@ public interface OrgService  extends IService<Org> {
      * @return
      */
     List<OrgTree> selectOrgTree(String orgCode);
+
+    List<Org> selectByAsgpathnamecode(String asgpathnamecode);
 }

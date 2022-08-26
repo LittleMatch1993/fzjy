@@ -92,4 +92,6 @@ public interface PrivateEquityService extends IService<PrivateEquity> {
      * @return
      */
     List<EquityFundsDTO> exportEquityFundsExcel(CadreFamilyExportDto exportDto);
+
+    List<KVVO> getCreateInfoForPrivateEquity(String orgCode);
 }

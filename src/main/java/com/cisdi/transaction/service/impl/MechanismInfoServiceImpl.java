@@ -4,6 +4,7 @@ import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.StrUtil;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.cisdi.transaction.config.base.ResultCode;
@@ -63,6 +64,8 @@ public class MechanismInfoServiceImpl extends ServiceImpl<MechanismInfoMapper, M
     @Autowired
     private SysDictBizService sysDictBizService;
 
+    @Autowired
+    private OrgService orgService;
     @Override
     public boolean updateState(List<String> ids, String state) {
         UpdateWrapper<MechanismInfo> updateWrapper = new UpdateWrapper<>();
@@ -315,7 +318,7 @@ public class MechanismInfoServiceImpl extends ServiceImpl<MechanismInfoMapper, M
         info.setTenantId(dto.getServiceLesseeId());
         info.setCreatorId(dto.getServiceUserId());
         info.setCreateAccount(dto.getServiceUserAccount());
-        info.setCreateName(dto.getServiceUserName());
+        info.setCreateName(dto.getServicePersonName());
         info.setOrgCode(dto.getOrgCode());
         info.setOrgName(dto.getOrgName());
         info = this.valid(info);
@@ -625,7 +628,7 @@ public class MechanismInfoServiceImpl extends ServiceImpl<MechanismInfoMapper, M
                                     exportReturnVO.getFailMessage().add(new ExportReturnMessageVO(t.getColumnNumber(),"数据重复:干部身份证号"+t.getCardId()+"家人姓名"+t.getName()+"称谓"+title));
                                 }else {
                                     uniqueSet.add(uniqueCode);
-                                    investInfo.setCreateName(baseDTO.getServiceUserName());
+                                    investInfo.setCreateName(baseDTO.getServicePersonName());
                                     investInfo.setCreateAccount(baseDTO.getServiceUserAccount());
                                     investInfo.setOrgCode(baseDTO.getOrgCode());
                                     investInfo.setOrgName(baseDTO.getOrgName());
@@ -654,7 +657,7 @@ public class MechanismInfoServiceImpl extends ServiceImpl<MechanismInfoMapper, M
                             exportReturnVO.getFailMessage().add(new ExportReturnMessageVO(t.getColumnNumber(),"数据重复:干部身份证号"+t.getCardId()+"家人姓名"+t.getName()+"称谓"+title));
                         }else {
                             uniqueSet.add(uniqueCode);
-                            investInfo.setCreateName(baseDTO.getServiceUserName());
+                            investInfo.setCreateName(baseDTO.getServicePersonName());
                             investInfo.setCreateAccount(baseDTO.getServiceUserAccount());
                             investInfo.setOrgCode(baseDTO.getOrgCode());
                             investInfo.setOrgName(baseDTO.getOrgName());
@@ -712,7 +715,7 @@ public class MechanismInfoServiceImpl extends ServiceImpl<MechanismInfoMapper, M
                                     if(nameIndex==0|titleIndex==0|codeIndex==0){ //一个都不重复
                                         //如果不相同，新增，否则就是覆盖
                                         info.setCreateTime(DateUtil.date());
-                                        info.setCreateName(baseDTO.getServiceUserName());
+                                        info.setCreateName(baseDTO.getServicePersonName());
                                         info.setCreateAccount(baseDTO.getServiceUserAccount());
                                         info.setOrgCode(baseDTO.getOrgCode());
                                         info.setOrgName(baseDTO.getOrgName());
@@ -731,7 +734,7 @@ public class MechanismInfoServiceImpl extends ServiceImpl<MechanismInfoMapper, M
                                             uniqueSet.add(uniqueCode);
                                         }else if (mechanismInfoList.isEmpty()||mechanismInfoList.stream().filter(privateEquity1 -> t.getName().equals(privateEquity1.getName())&&t.getCode().equals(privateEquity1.getCode())&&title.equals(privateEquity1.getTitle())).count()==0){
                                             info.setCreateTime(DateUtil.date());
-                                            info.setCreateName(baseDTO.getServiceUserName());
+                                            info.setCreateName(baseDTO.getServicePersonName());
                                             info.setCreateAccount(baseDTO.getServiceUserAccount());
                                             exportReturnVO.setSuccessNumber(exportReturnVO.getSuccessNumber()+1);
                                             mechanismInfoList.add(info);
@@ -802,7 +805,7 @@ public class MechanismInfoServiceImpl extends ServiceImpl<MechanismInfoMapper, M
                                     exportReturnVO.getFailMessage().add(new ExportReturnMessageVO(t.getColumnNumber(),"数据重复:干部身份证号"+t.getCardId()+"家人姓名"+t.getName()+"称谓"+title));
                                 }else {
                                     uniqueSet.add(uniqueCode);
-                                    info.setCreateName(baseDTO.getServiceUserName());
+                                    info.setCreateName(baseDTO.getServicePersonName());
                                     info.setCreateAccount(baseDTO.getServiceUserAccount());
                                     info.setOrgCode(baseDTO.getOrgCode());
                                     info.setOrgName(baseDTO.getOrgName());
@@ -831,7 +834,7 @@ public class MechanismInfoServiceImpl extends ServiceImpl<MechanismInfoMapper, M
                     //数据库中如果不存在数据
                     if (CollectionUtil.isEmpty(infos)) {
                         info.setCreateTime(new Date());
-                        info.setCreateName(baseDTO.getServiceUserName());
+                        info.setCreateName(baseDTO.getServicePersonName());
                         info.setCreateAccount(baseDTO.getServiceUserAccount());
                         info.setOrgCode(baseDTO.getOrgCode());
                         info.setOrgName(baseDTO.getOrgName());
@@ -875,6 +878,48 @@ public class MechanismInfoServiceImpl extends ServiceImpl<MechanismInfoMapper, M
         }).collect(Collectors.toList());
         list = this.replaceDictValue(list,dictList);
         return list;
+    }
+
+    @Override
+    public List<KVVO> getCreateInfoForMechanism(String orgCode) {
+        if(StrUtil.isEmpty(orgCode)){
+            return new ArrayList<>();
+        }
+        Org org = orgService.selectByOrgancode(orgCode);
+        List<MechanismInfo> list = null;
+        String asglevel = org.getAsglevel();
+        if(StrUtil.isNotEmpty(asglevel)&&asglevel.equals("0")) { //看所有
+            QueryWrapper<MechanismInfo> queryWrapper = new QueryWrapper<>();
+            queryWrapper.select("DISTINCT  create_account","org_name","create_name");
+            list = this.baseMapper.selectList(queryWrapper);
+        }else{
+            String asgpathnamecode = org.getAsgpathnamecode();
+            List<Org> orgs = orgService.selectByAsgpathnamecode(asgpathnamecode);
+            List<String> nameList = orgs.stream().map(Org::getAsgorganname).distinct().collect(Collectors.toList());
+            QueryWrapper<MechanismInfo> queryWrapper = new QueryWrapper<>();
+            queryWrapper.select("DISTINCT  create_account","org_name","create_name").in( "org_name",nameList);
+            list = this.baseMapper.selectList(queryWrapper);
+        }
+        List<KVVO> resultList = new ArrayList<>();
+        if(CollectionUtil.isNotEmpty(list)){
+            for (MechanismInfo info : list) {
+                if(Objects.isNull(info)){
+                    continue;
+                }
+                String account = info.getCreateAccount();
+                String userName= info.getCreateName();
+                String orgName = info.getOrgName();
+                if(StrUtil.isEmpty(account)||StrUtil.isEmpty(orgName)||StrUtil.isEmpty(userName)){
+                    continue;
+                }
+                KVVO kvvo = new KVVO();
+                kvvo.setId(account);
+                kvvo.setName(userName+"-"+orgName);
+                resultList.add(kvvo);
+            }
+        }
+
+        return resultList;
     }
 
     private List<CommunityServiceDTO> checkParams(List<CommunityServiceDTO> list, ExportReturnVO exportReturnVO,String orgCode) {

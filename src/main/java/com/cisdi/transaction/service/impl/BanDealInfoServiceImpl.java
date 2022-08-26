@@ -92,17 +92,20 @@ public class BanDealInfoServiceImpl extends ServiceImpl<BanDealInfoMapper, BanDe
         info.setUpdateTime(DateUtil.date());
 
         info.setTenantId(infoDto.getServiceLesseeId());
-        info.setCreator(infoDto.getServiceUserName());
+        info.setCreator(infoDto.getServicePersonName());
         info.setCreatorAccount(infoDto.getServiceUserAccount());
         info.setCreatorId(infoDto.getServiceUserId());
         if(StrUtil.isEmpty(infoDto.getManageCompany())){
-            info.setManageCompany(infoDto.getServiceLesseeName());
+            info.setManageCompany(infoDto.getOrgName());
         }
         if(StrUtil.isEmpty(infoDto.getManageCompanyCode())){
-            info.setManageCompanyCode(infoDto.getServiceLesseeId());
+            info.setManageCompanyCode(infoDto.getOrgCode());
         }
-        //验证企业社会信用代码
-        info = validCompanyCode(info);
+        String engageType = info.getEngageType();
+        if(!engageType.equals("投资私募股权投资基金或者担任高级职务")){
+            //验证企业社会信用代码
+            info = validCompanyCode(info);
+        }
         //验证
         info = validSupplierAndCodeAndBanPurchaseCode(info, SystemConstant.SAVE_STATE);
         this.save(info);
@@ -121,8 +124,11 @@ public class BanDealInfoServiceImpl extends ServiceImpl<BanDealInfoMapper, BanDe
         BeanUtil.copyProperties(infoDto, info);
         info.setUpdateTime(DateUtil.date());
         info.setUpdaterId(infoDto.getServiceUserId());
-        //验证企业社会信用代码
-        info = validCompanyCode(info);
+        String engageType = info.getEngageType();
+        if(!engageType.equals("投资私募股权投资基金或者担任高级职务")){
+            //验证企业社会信用代码
+            info = validCompanyCode(info);
+        }
         //验证
         info = validSupplierAndCodeAndBanPurchaseCode(info, SystemConstant.SAVE_STATE); //修改的数据状态都改为新建
         //删除推送到采购平台的数据
@@ -406,12 +412,12 @@ public class BanDealInfoServiceImpl extends ServiceImpl<BanDealInfoMapper, BanDe
                 submitFailId.add(vo);
             }
         }
-        //社会企业信用代码验证
-        List<BanDealInfo> newBanDealInfoList = this.validBatchCompanyCode(banDealInfoList);
+        //社会企业信用代码验证 当前类型不校验社会信用代码
+       // List<BanDealInfo> newBanDealInfoList = this.validBatchCompanyCode(banDealInfoList);
         //在禁止企业交易信息表中添加数据
-        boolean b = this.saveBatch(newBanDealInfoList);
+        boolean b = this.saveBatch(banDealInfoList);
         //新增操作记录
-        boolean deal = banDealInfoRecordService.insertBanDealInfoRecord(newBanDealInfoList, SystemConstant.OPERATION_TYPE_ADD); //新增
+        boolean deal = banDealInfoRecordService.insertBanDealInfoRecord(banDealInfoList, SystemConstant.OPERATION_TYPE_ADD); //新增
 
         Map<String,Object> map = new HashMap();
         map.put("submitIds",submitId); //记录能提交的数据

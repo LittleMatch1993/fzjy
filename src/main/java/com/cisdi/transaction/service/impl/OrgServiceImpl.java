@@ -448,6 +448,14 @@ public class OrgServiceImpl extends ServiceImpl<OrgMapper, Org> implements OrgSe
         return orgTreeList;
     }
 
+    @Override
+    public List<Org> selectByAsgpathnamecode(String asgpathnamecode) {
+        QueryWrapper<Org> queryWrapper = new QueryWrapper();
+        queryWrapper.lambda().likeRight(Org::getAsgpathnamecode,asgpathnamecode);
+        List<Org> list = this.baseMapper.selectList(queryWrapper);
+        return list;
+    }
+
     private List<OrgTree> getOrgTree(List<Org> orgList,List<OrgTree> orgTreeList,String asgpathnamecode,int level){
 
          List<Org> tempList = orgList.stream().filter(e -> e.getAsgpathnamecode().startsWith(asgpathnamecode) && Integer.parseInt(e.getAsglevel()) == level + 1).collect(Collectors.toList());

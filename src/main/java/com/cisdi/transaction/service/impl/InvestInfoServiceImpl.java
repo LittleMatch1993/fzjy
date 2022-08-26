@@ -4,6 +4,7 @@ import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.StrUtil;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.cisdi.transaction.config.base.ResultCode;
@@ -60,6 +61,9 @@ public class InvestInfoServiceImpl extends ServiceImpl<InvestInfoMapper, InvestI
 
     @Autowired
     private SysDictBizService sysDictBizService;
+
+    @Autowired
+    private OrgService orgService;
 
     @Transactional
     @Override
@@ -210,7 +214,7 @@ public class InvestInfoServiceImpl extends ServiceImpl<InvestInfoMapper, InvestI
         info.setTenantId(dto.getServiceLesseeId());
         info.setCreatorId(dto.getServiceUserId());
         info.setCreateAccount(dto.getServiceUserAccount());
-        info.setCreateName(dto.getServiceUserName());
+        info.setCreateName(dto.getServicePersonName());
         info.setOrgCode(dto.getOrgCode());
         info.setOrgName(dto.getOrgName());
         info = this.valid(info);
@@ -270,7 +274,7 @@ public class InvestInfoServiceImpl extends ServiceImpl<InvestInfoMapper, InvestI
         info.setCreatorId(dto.getServiceUserId());
 
         info.setCreateAccount(dto.getServiceUserAccount());
-        info.setCreateName(dto.getServiceUserName());
+        info.setCreateName(dto.getServicePersonName());
         info.setOrgCode(dto.getOrgCode());
         info.setOrgName(dto.getOrgName());
         info = this.valid(info);
@@ -682,7 +686,7 @@ public class InvestInfoServiceImpl extends ServiceImpl<InvestInfoMapper, InvestI
                                     exportReturnVO.getFailMessage().add(new ExportReturnMessageVO(t.getColumnNumber(),"数据重复:干部身份证号"+t.getCardId()+"家人姓名"+t.getName()+"称谓"+title));
                                 }else {
                                     uniqueSet.add(uniqueCode);
-                                    investInfo.setCreateName(baseDTO.getServiceUserName());
+                                    investInfo.setCreateName(baseDTO.getServicePersonName());
                                     investInfo.setCreateAccount(baseDTO.getServiceUserAccount());
                                     investInfo.setOrgCode(baseDTO.getOrgCode());
                                     investInfo.setOrgName(baseDTO.getOrgName());
@@ -715,7 +719,7 @@ public class InvestInfoServiceImpl extends ServiceImpl<InvestInfoMapper, InvestI
                             exportReturnVO.getFailMessage().add(new ExportReturnMessageVO(t.getColumnNumber(),"数据重复:干部身份证号"+t.getCardId()+"家人姓名"+t.getName()+"称谓"+title));
                         }else {
                             uniqueSet.add(uniqueCode);
-                            investInfo.setCreateName(baseDTO.getServiceUserName());
+                            investInfo.setCreateName(baseDTO.getServicePersonName());
                             investInfo.setCreateAccount(baseDTO.getServiceUserAccount());
                             investInfo.setOrgCode(baseDTO.getOrgCode());
                             investInfo.setOrgName(baseDTO.getOrgName());
@@ -772,7 +776,7 @@ public class InvestInfoServiceImpl extends ServiceImpl<InvestInfoMapper, InvestI
                                         //如果不相同，新增，否则就是覆盖
                                         uniqueSet.add(uniqueCode);
                                         info.setCreateTime(DateUtil.date());
-                                        info.setCreateName(baseDTO.getServiceUserName());
+                                        info.setCreateName(baseDTO.getServicePersonName());
                                         info.setCreateAccount(baseDTO.getServiceUserAccount());
                                         info.setOrgCode(baseDTO.getOrgCode());
                                         info.setOrgName(baseDTO.getOrgName());
@@ -803,7 +807,7 @@ public class InvestInfoServiceImpl extends ServiceImpl<InvestInfoMapper, InvestI
                                         }else {
                                             uniqueSet.add(uniqueCode);
                                             info.setCreateTime(DateUtil.date());
-                                            info.setCreateName(baseDTO.getServiceUserName());
+                                            info.setCreateName(baseDTO.getServicePersonName());
                                             info.setCreateAccount(baseDTO.getServiceUserAccount());
                                             info.setOrgCode(baseDTO.getOrgCode());
                                             info.setOrgName(baseDTO.getOrgName());
@@ -878,7 +882,7 @@ public class InvestInfoServiceImpl extends ServiceImpl<InvestInfoMapper, InvestI
                                     info.setState(SystemConstant.SAVE_STATE)//默认类型新建
                                             .setCreateTime(DateUtil.date())
                                             .setUpdateTime(DateUtil.date());
-                                    info.setCreateName(baseDTO.getServiceUserName());
+                                    info.setCreateName(baseDTO.getServicePersonName());
                                     info.setCreateAccount(baseDTO.getServiceUserAccount());
                                     info.setOrgCode(baseDTO.getOrgCode());
                                     info.setOrgName(baseDTO.getOrgName());
@@ -904,7 +908,7 @@ public class InvestInfoServiceImpl extends ServiceImpl<InvestInfoMapper, InvestI
                     //数据库中如果不存在数据
                     if (CollectionUtil.isEmpty(infos)) {
                         info.setCreateTime(DateUtil.date());
-                        info.setCreateName(baseDTO.getServiceUserName());
+                        info.setCreateName(baseDTO.getServicePersonName());
                         info.setCreateAccount(baseDTO.getServiceUserAccount());
                         info.setOrgCode(baseDTO.getOrgCode());
                         info.setOrgName(baseDTO.getOrgName());
@@ -958,6 +962,48 @@ public class InvestInfoServiceImpl extends ServiceImpl<InvestInfoMapper, InvestI
         }).collect(Collectors.toList());
         list = this.repalceDictValue(list,dictList);
         return list;
+    }
+
+    @Override
+    public List<KVVO> getCreateInfoForInvest(String orgCode) {
+        if(StrUtil.isEmpty(orgCode)){
+            return new ArrayList<>();
+        }
+        Org org = orgService.selectByOrgancode(orgCode);
+        List<InvestInfo> list = null;
+        String asglevel = org.getAsglevel();
+        if(StrUtil.isNotEmpty(asglevel)&&asglevel.equals("0")) { //看所有
+            QueryWrapper<InvestInfo> queryWrapper = new QueryWrapper<>();
+            queryWrapper.select("DISTINCT  create_account","org_name","create_name");
+            list = this.baseMapper.selectList(queryWrapper);
+        }else{
+            String asgpathnamecode = org.getAsgpathnamecode();
+            List<Org> orgs = orgService.selectByAsgpathnamecode(asgpathnamecode);
+            List<String> nameList = orgs.stream().map(Org::getAsgorganname).distinct().collect(Collectors.toList());
+            QueryWrapper<InvestInfo> queryWrapper = new QueryWrapper<>();
+            queryWrapper.select("DISTINCT  create_account","org_name","create_name").in( "org_name",nameList);
+            list = this.baseMapper.selectList(queryWrapper);
+        }
+        List<KVVO> resultList = new ArrayList<>();
+        if(CollectionUtil.isNotEmpty(list)){
+            for (InvestInfo info : list) {
+                if(Objects.isNull(info)){
+                    continue;
+                }
+                String account = info.getCreateAccount();
+                String userName= info.getCreateName();
+                String orgName = info.getOrgName();
+                if(StrUtil.isEmpty(account)||StrUtil.isEmpty(orgName)||StrUtil.isEmpty(userName)){
+                    continue;
+                }
+                KVVO kvvo = new KVVO();
+                kvvo.setId(account);
+                kvvo.setName(userName+"-"+orgName);
+                resultList.add(kvvo);
+            }
+        }
+
+        return resultList;
     }
 
     private List<InvestmentDTO> checkParams(List<InvestmentDTO> list, ExportReturnVO exportReturnVO,String orgCode) {

@@ -19,10 +19,16 @@ public class BaseDTO {
     private String serviceLesseeId;
 
     /**
-     * 登陆人姓名
+     * 登陆人姓名，接收到的是账号
      */
     @ApiModelProperty(value = "登陆人姓名")
     private String serviceUserName;
+
+    /**
+     * 登陆人姓名
+     */
+    @ApiModelProperty(value = "登陆人姓名")
+    private String servicePersonName;
 
     /**
      * 登陆人id
