@@ -328,15 +328,17 @@ public class GbBasicInfoServiceImpl extends ServiceImpl<GbBasicInfoMapper, GbBas
                      List<GbOrgInfo> temp = new ArrayList<>(); //保存那些不在最高等级组织链上的数据
                      //高等级单位的编组织code码链
                      List<String> pathCodeList = levelList.stream().map(GbOrgInfo::getAsgpathnamecode).collect(Collectors.toList());
-                     otherLevelList.stream().forEach(e->{
-                          String asgpathnamecode = e.getAsgpathnamecode();//低等级单位的组织code编码链
-                         //低等级单位的组织code编码链 比 高等级单位的编组织code码链长
-                         //boolean b = pathCodeList.contains(asgpathnamecode);
-                         boolean b = pathCodeList.stream().anyMatch(a->asgpathnamecode.startsWith(a));
-                         if (!b) {
-                             temp.add(e);
-                         }
-                     });
+                     if(CollectionUtil.isNotEmpty(pathCodeList)){
+                         otherLevelList.stream().forEach(e->{
+                             String asgpathnamecode = e.getAsgpathnamecode();//低等级单位的组织code编码链
+                             //低等级单位的组织code编码链 比 高等级单位的编组织code码链长
+                             //boolean b = pathCodeList.contains(asgpathnamecode);
+                             boolean b = pathCodeList.stream().anyMatch(a->asgpathnamecode.startsWith(a));
+                             if (!b) {
+                                 temp.add(e);
+                             }
+                         });
+                     }
                      if(CollectionUtil.isNotEmpty(temp)){
                          otherPost = temp.stream().map(e->e.getPost()).collect(Collectors.joining(","));
                          otherUnit = temp.stream().map(e->e.getUnit()).collect(Collectors.joining(","));
