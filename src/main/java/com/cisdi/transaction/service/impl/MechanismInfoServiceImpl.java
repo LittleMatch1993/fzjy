@@ -202,7 +202,7 @@ public class MechanismInfoServiceImpl extends ServiceImpl<MechanismInfoMapper, M
             if(!Boolean.valueOf(banDeal)){
                 sj.add("数据库新增数据失败");
                 resutStr = sj.toString();
-                return ResultMsgUtil.failure(resutStr);
+                return ResultMsgUtil.failure(resutStr,submitFailIdList);
             }else{
                 sj.add("提交数据成功");
                 if(CollectionUtil.isNotEmpty(submitFailId)){

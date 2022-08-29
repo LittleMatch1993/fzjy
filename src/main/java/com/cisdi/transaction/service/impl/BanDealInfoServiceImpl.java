@@ -78,6 +78,8 @@ public class BanDealInfoServiceImpl extends ServiceImpl<BanDealInfoMapper, BanDe
         System.out.println(jbParam.toString());
         HttpGlobalConfig.setTimeout(3500); //设置超时时间
         String result = HttpUtil.post(url, jbParam.toString());
+        System.out.println(result);
+        System.out.println("画像结果="+result);
         JSONObject jb = JSON.parseObject(result);
         return jb;
 
@@ -104,6 +106,7 @@ public class BanDealInfoServiceImpl extends ServiceImpl<BanDealInfoMapper, BanDe
         String engageType = info.getEngageType();
         if(!engageType.equals("1552934977441804288")){
             //验证企业社会信用代码
+            System.out.println("engageType="+engageType);
             info = validCompanyCode(info);
         }
         //验证
@@ -127,6 +130,7 @@ public class BanDealInfoServiceImpl extends ServiceImpl<BanDealInfoMapper, BanDe
         String engageType = info.getEngageType();
         if(!engageType.equals("1552934977441804288")){
             //验证企业社会信用代码
+            System.out.println("engageType="+engageType);
             info = validCompanyCode(info);
         }
         //验证
@@ -293,7 +297,6 @@ public class BanDealInfoServiceImpl extends ServiceImpl<BanDealInfoMapper, BanDe
                     bandealInfo = validSupplierAndCodeAndBanPurchaseCode(bandealInfo, SystemConstant.SAVE_STATE); //新建
                     banDealInfoList.add(bandealInfo);
                 }
-                submitId.add(info.getId());
             }else{
                 KVVO vo = new KVVO();
                 vo.setId(info.getId());
@@ -305,6 +308,9 @@ public class BanDealInfoServiceImpl extends ServiceImpl<BanDealInfoMapper, BanDe
         List<BanDealInfo> newBanDealInfoList = this.validBatchCompanyCode(banDealInfoList);
         //在禁止企业交易信息表中添加数据
         boolean b = this.saveBatch(newBanDealInfoList);
+        if(CollectionUtil.isNotEmpty(newBanDealInfoList)){
+            submitId = newBanDealInfoList.stream().map(BanDealInfo::getId).collect(Collectors.toList());
+        }
         //新增操作记录
         boolean deal = banDealInfoRecordService.insertBanDealInfoRecord(newBanDealInfoList, SystemConstant.OPERATION_TYPE_ADD); //新增
         Map<String,Object> map = new HashMap();
@@ -404,7 +410,6 @@ public class BanDealInfoServiceImpl extends ServiceImpl<BanDealInfoMapper, BanDe
                     bandealInfo = validSupplierAndCodeAndBanPurchaseCode(bandealInfo, SystemConstant.SAVE_STATE); //新建
                     banDealInfoList.add(bandealInfo);
                 }
-                submitId.add(info.getId());
             }else{
                 KVVO vo = new KVVO();
                 vo.setId(info.getId());
@@ -416,6 +421,9 @@ public class BanDealInfoServiceImpl extends ServiceImpl<BanDealInfoMapper, BanDe
        // List<BanDealInfo> newBanDealInfoList = this.validBatchCompanyCode(banDealInfoList);
         //在禁止企业交易信息表中添加数据
         boolean b = this.saveBatch(banDealInfoList);
+        if(CollectionUtil.isNotEmpty(banDealInfoList)){
+            submitId = banDealInfoList.stream().map(BanDealInfo::getId).collect(Collectors.toList());
+        }
         //新增操作记录
         boolean deal = banDealInfoRecordService.insertBanDealInfoRecord(banDealInfoList, SystemConstant.OPERATION_TYPE_ADD); //新增
 
@@ -460,7 +468,7 @@ public class BanDealInfoServiceImpl extends ServiceImpl<BanDealInfoMapper, BanDe
 
                     bandealInfo.setFamilyName(info.getName());
                     bandealInfo.setRelation(info.getTitle());
-                    bandealInfo.setEngageType(sysDictBizService.getDictId("开办有偿社会中介和法律服务结构或从业",dictList));
+                    bandealInfo.setEngageType(sysDictBizService.getDictId("开办有偿社会中介和法律服务机构或者从业",dictList));
                     //13-2表中的，显示Z（个人认缴出资额或个人出资额（人民币万元）），AA（个人认缴出资比例或个人出资比例（%）），AC（是否在该机构中从业），AD（所担任的职务名称）列内容
                     //------如果AC值为是，则拼接AD列，否则不拼接
                     String engageInfo = "个人认缴出资额或个人出资额（人民币万元）:" +(StrUtil.isEmpty( info.getPersonalCapital())?"": info.getPersonalCapital()+"万元") + "；个人认缴出资比例或个人出资比例（%）:" + (StrUtil.isEmpty(info.getPersonalRatio())?"":info.getPersonalRatio()+"%")
@@ -518,7 +526,6 @@ public class BanDealInfoServiceImpl extends ServiceImpl<BanDealInfoMapper, BanDe
                     bandealInfo = validSupplierAndCodeAndBanPurchaseCode(bandealInfo, SystemConstant.SAVE_STATE); //新建
                     banDealInfoList.add(bandealInfo);
                 }
-                submitId.add(info.getId());
             }else{
                 KVVO vo = new KVVO();
                 vo.setId(info.getId());
@@ -532,6 +539,9 @@ public class BanDealInfoServiceImpl extends ServiceImpl<BanDealInfoMapper, BanDe
 
         //在禁止企业交易信息表中添加数据
         boolean b = this.saveBatch(newBanDealInfoList);
+        if(CollectionUtil.isNotEmpty(newBanDealInfoList)){
+            submitId = newBanDealInfoList.stream().map(BanDealInfo::getId).collect(Collectors.toList());
+        }
         //新增操作记录
         boolean deal = banDealInfoRecordService.insertBanDealInfoRecord(newBanDealInfoList, SystemConstant.OPERATION_TYPE_ADD); //新增
         Map<String,Object> map = new HashMap();
@@ -633,11 +643,14 @@ public class BanDealInfoServiceImpl extends ServiceImpl<BanDealInfoMapper, BanDe
             System.out.println("验证企业画像");
             JSONObject jbParam = new JSONObject();
             String company = banDealInfo.getSupplier();
-            jbParam.put("name", company);
+            List<String> companyList = new ArrayList<>();
+            companyList.add(company);
+            jbParam.put("name", companyList);
             //调用企业画像接口
             JSONObject resultOb = this.getCompanyInfoByName(jbParam);
             boolean status = resultOb.getBoolean("status");
             boolean b = resultOb.containsKey("data");
+            System.out.println("验证企业画像,status="+status+"----b="+b);
             System.out.println("验证企业画像,company="+company+"----b="+b);
             Map<String, String> map = new HashMap<>();
             if (status && b) {
@@ -716,12 +729,14 @@ public class BanDealInfoServiceImpl extends ServiceImpl<BanDealInfoMapper, BanDe
         return banDealInfo;
     }
 
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public boolean deleteBanDealInfo(List<String> ids) {
+        //新增日志记录
+        List<BanDealInfo> infoList = this.lambdaQuery().in(BanDealInfo::getId, ids).list();
         boolean b = this.removeByIds(ids);
+        System.out.println("删除禁止交易信息="+b);
         if(b){
-            //新增日志记录
-            List<BanDealInfo> infoList = this.lambdaQuery().in(BanDealInfo::getId, ids).list();
             banDealInfoRecordService.insertBanDealInfoRecord(infoList, SystemConstant.OPERATION_TYPE_REMOVE);
             //删除采购系统那边的对应数据
             purchaseBanDealInfoSevice.deletePushDataForPurchase(ids);
@@ -856,21 +871,21 @@ public class BanDealInfoServiceImpl extends ServiceImpl<BanDealInfoMapper, BanDe
             return false;
         }
         String engageType = bandealInfo.getEngageType(); //经商类型
-        if(StrUtil.isEmpty(engageType)){
+        /*if(StrUtil.isEmpty(engageType)){
             KVVO vo = new KVVO();
             vo.setId(infoId);
             vo.setName("经商类型为空");
             submitFailId.add(vo);
             return false;
-        }
+        }*/
         String engageInfo = bandealInfo.getEngageInfo(); //经商类型详细描述
-        if(StrUtil.isEmpty(engageInfo)){
+        /*if(StrUtil.isEmpty(engageInfo)){
             KVVO vo = new KVVO();
             vo.setId(infoId);
             vo.setName("经商类型详细描述为空");
             submitFailId.add(vo);
             return false;
-        }
+        }*/
         String supplier = bandealInfo.getSupplier(); //供应商名称
         if(StrUtil.isEmpty(supplier)){
             KVVO vo = new KVVO();

@@ -100,6 +100,7 @@ public class ProhibitTransactionController{
         if(StrUtil.isEmpty(infoDto.getId())){
             return ResultMsgUtil.failure("数据不存在");
         }
+        System.out.println("开始禁止交易编辑数据");
         banDealInfoService.editBanDealInfo(infoDto);
         return ResultMsgUtil.success();
     }

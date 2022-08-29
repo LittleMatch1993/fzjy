@@ -165,6 +165,7 @@ public class CadreFamiliesController {
             //向禁止交易表中提交数据
             result = privateEquityService.submitPrivateEquity(ids);
         }catch (Exception e){
+            e.printStackTrace();
             return ResultMsgUtil.failure("提交失败,程序处理数据异常");
         }
 
@@ -230,6 +231,7 @@ public class CadreFamiliesController {
         try {
             result = mechanismInfoService.submitMechanismInfo(ids);
         }catch (Exception e){
+            e.printStackTrace();
             return ResultMsgUtil.failure("提交失败,程序处理数据异常");
         }
 
