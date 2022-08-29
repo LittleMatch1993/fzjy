@@ -87,4 +87,6 @@ public interface MechanismInfoService extends IService<MechanismInfo> {
      * @return
      */
     List<CommunityServiceDTO> exportCommunityServiceExcel(CadreFamilyExportDto exportDto);
+
+    List<KVVO> getCreateInfoForMechanism(String orgCode);
 }

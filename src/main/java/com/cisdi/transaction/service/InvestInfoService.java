@@ -102,4 +102,6 @@ public interface InvestInfoService extends IService<InvestInfo> {
      * @return
      */
     List<InvestmentDTO> exportInvestmentExcel(CadreFamilyExportDto exportDto);
+
+    List<KVVO> getCreateInfoForInvest(String orgCode);
 }

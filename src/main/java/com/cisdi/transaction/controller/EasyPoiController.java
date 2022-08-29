@@ -5,13 +5,11 @@ import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.date.DateUtil;
 import com.cisdi.transaction.config.base.ResultCode;
 import com.cisdi.transaction.config.base.ResultMsgUtil;
+import com.cisdi.transaction.domain.OrgTree;
 import com.cisdi.transaction.domain.dto.CityDTO;
 import com.cisdi.transaction.domain.dto.TestDTO;
 import com.cisdi.transaction.domain.model.*;
-import com.cisdi.transaction.service.GbBasicInfoService;
-import com.cisdi.transaction.service.GbBasicInfoThreeService;
-import com.cisdi.transaction.service.GlobalCityInfoService;
-import com.cisdi.transaction.service.PurchaseBanDealInfoSevice;
+import com.cisdi.transaction.service.*;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -47,6 +45,9 @@ public class EasyPoiController {
 
     @Autowired
     private GbBasicInfoThreeService threeService;
+
+    @Autowired
+    private OrgService orgService;
 
     @ApiOperation("从Excel导入会员列表")
     @RequestMapping(value = "/importMemberList", method = RequestMethod.POST)
@@ -175,5 +176,14 @@ public class EasyPoiController {
             return ResultMsgUtil.failure(e.getMessage());
         }
         return ResultMsgUtil.success(b);
+    }
+    @GetMapping("/test4")
+    @ResponseBody
+    public ResultMsgUtil<Object> test4(String orgCode){
+         List<OrgTree> treeList = orgService.selectOrgTree(orgCode);
+         if(CollectionUtil.isNotEmpty(treeList)){
+             treeList = treeList.get(0).getChildSelect();
+         }
+         return ResultMsgUtil.success(treeList);
     }
 }

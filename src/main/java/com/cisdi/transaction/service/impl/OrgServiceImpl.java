@@ -13,6 +13,7 @@ import com.cisdi.transaction.config.utils.AuthSqlUtil;
 import com.cisdi.transaction.config.utils.HttpUtils;
 import com.cisdi.transaction.constant.ModelConstant;
 import com.cisdi.transaction.constant.SqlConstant;
+import com.cisdi.transaction.domain.OrgTree;
 import com.cisdi.transaction.domain.dto.CadreFamilyExportDto;
 import com.cisdi.transaction.domain.dto.InstitutionalFrameworkDTO;
 import com.cisdi.transaction.domain.dto.InvestmentDTO;
@@ -70,7 +71,7 @@ public class OrgServiceImpl extends ServiceImpl<OrgMapper, Org> implements OrgSe
     @Override
     public boolean removeByAsgDate(String asgDate) {
         QueryWrapper<Org> queryWrapper = new QueryWrapper<>();
-        queryWrapper.lambda().eq(Org::getAsgDate, asgDate);
+        queryWrapper.lambda().eq(Org::getAsgdate, asgDate);
         return this.remove(queryWrapper);
     }
 
@@ -412,6 +413,75 @@ public class OrgServiceImpl extends ServiceImpl<OrgMapper, Org> implements OrgSe
             return currentOrg.getAsgpathnamecode();
         }
         return null;
+    }
+
+    @Override
+    public List<OrgTree> selectOrgTree(String orgCode) {
+        if(StrUtil.isEmpty(orgCode)){
+            return new ArrayList<>();
+        }
+         Org org = this.selectByOrgancode(orgCode);
+         if(Objects.isNull(org)){
+            return new ArrayList<>();
+        }
+         String level = org.getAsglevel();
+         String asgpathnamecode = org.getAsgpathnamecode();
+         if(StrUtil.isEmpty(level)){
+             return new ArrayList<>();
+         }
+        List<Org> orgList = null;
+         if("0".equals(level)){//查看所有
+             orgList = this.baseMapper.selectList(null);
+         }else{
+             orgList = this.selectChildOrgByPathnamecode(asgpathnamecode);
+         }
+        List<OrgTree> orgTreeList = new ArrayList<>();
+        //获取第一层
+        OrgTree tree = new OrgTree();
+        String name = org.getAsgorganname();
+        tree.setId(orgCode);
+        tree.setName(name);
+        List<OrgTree> tempTreeList = new ArrayList<>();
+        tempTreeList= this.getOrgTree(orgList,tempTreeList,asgpathnamecode,Integer.parseInt(level));
+        tree.setChildSelect(tempTreeList);
+        orgTreeList.add(tree);
+        return orgTreeList;
+    }
+
+    @Override
+    public List<Org> selectByAsgpathnamecode(String asgpathnamecode) {
+        QueryWrapper<Org> queryWrapper = new QueryWrapper();
+        queryWrapper.lambda().likeRight(Org::getAsgpathnamecode,asgpathnamecode);
+        List<Org> list = this.baseMapper.selectList(queryWrapper);
+        return list;
+    }
+
+    private List<OrgTree> getOrgTree(List<Org> orgList,List<OrgTree> orgTreeList,String asgpathnamecode,int level){
+
+         List<Org> tempList = orgList.stream().filter(e -> e.getAsgpathnamecode().startsWith(asgpathnamecode) && Integer.parseInt(e.getAsglevel()) == level + 1).collect(Collectors.toList());
+         if(CollectionUtil.isEmpty(tempList)){
+             return new ArrayList<>();
+         }
+        for (Org org : tempList) {
+            OrgTree tree = new OrgTree();
+            String orgCode  = org.getAsgorgancode();
+            String name = org.getAsgorganname();
+            String pathcode = org.getAsgpathnamecode();
+            String asglevel = org.getAsglevel();
+            tree.setId(orgCode);
+            tree.setName(name);
+            List<OrgTree> tempTreeList = new ArrayList<>();
+            List<OrgTree> orgTree = this.getOrgTree(orgList, tempTreeList, pathcode, Integer.parseInt(asglevel));
+            if(CollectionUtil.isEmpty(orgTree)){
+                tree.setChildSelect(null);
+            }else{
+                tree.setChildSelect(orgTree);
+            }
+            orgTreeList.add(tree);
+        }
+
+
+        return orgTreeList;
     }
 
 

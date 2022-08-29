@@ -391,6 +391,11 @@ public class GbBasicInfoServiceImpl extends ServiceImpl<GbBasicInfoMapper, GbBas
         return this.baseMapper.selectList(new LambdaQueryWrapper<GbBasicInfo>().notIn(GbBasicInfo::getCardId,list)).stream().map(GbBasicInfo::getCardId).collect(Collectors.toList());
     }
 
+    @Override
+    public List<AuthUser> selectAuthUser() {
+        return this.baseMapper.selectAuthUser();
+    }
+
     private List<CadreExcelVO> replaceDictValue(List<CadreExcelVO> list, List<SysDictBiz> dictList){
         list.parallelStream().forEach(vo->{
             String postType =sysDictBizService.getDictValue(vo.getPostType(),dictList);

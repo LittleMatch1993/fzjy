@@ -1,8 +1,6 @@
 package com.cisdi.transaction.domain.model;
 
-import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableId;
-import com.baomidou.mybatisplus.annotation.TableName;
+import com.baomidou.mybatisplus.annotation.*;
 import io.swagger.annotations.ApiModel;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -80,6 +78,7 @@ public class BanDealInfo {
     /**
      * 数据校验提示
      */
+    @TableField(updateStrategy = FieldStrategy.IGNORED )
     private String checkTips;
     /**
      * 供应商名称

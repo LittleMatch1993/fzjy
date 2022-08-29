@@ -1,6 +1,7 @@
 package com.cisdi.transaction.mapper.master;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.cisdi.transaction.domain.model.AuthUser;
 import com.cisdi.transaction.domain.model.GbBasicInfo;
 import com.cisdi.transaction.domain.model.GbOrgInfo;
 import org.apache.ibatis.annotations.Mapper;
@@ -222,4 +223,10 @@ public interface GbBasicInfoMapper extends BaseMapper<GbBasicInfo> {
             "                        INNER JOIN ( SELECT DISTINCT asgorganname FROM 69654103_org WHERE asgpathnamecode LIKE concat(#{pathNameCode},'%')) t5 ON t5.asgorganname = t3.unit limit 200" +
             " </script>")
     public  List<GbOrgInfo>  selectByOrgCodeAndGbNamePage(String name,String pathNameCode);
+
+
+    @Select("<script> select username 'user_name',person_name,c.name 'unit' from auth_user a \n" +
+            "left join auth_user_organization b on a.id = b.user_id\n" +
+            "left join auth_organization c on b.organization_id = c.id </script>")
+    public List<AuthUser> selectAuthUser();
 }
