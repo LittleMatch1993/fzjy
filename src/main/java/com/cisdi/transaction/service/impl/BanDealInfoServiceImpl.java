@@ -230,7 +230,7 @@ public class BanDealInfoServiceImpl extends ServiceImpl<BanDealInfoMapper, BanDe
                     bandealInfo.setPost(tempPost);
                     bandealInfo.setPostType(gbOrgInfo.getPostType());
                     bandealInfo.setBanPostType(gbOrgInfo.getPostType());//禁止职务类型
-                    DateTime date = DateUtil.date(dateLong + i);
+                    DateTime date = DateUtil.date(dateLong + (i*1000));
                     bandealInfo.setCreateTime(date);
                     bandealInfo.setUpdateTime(date);
                     bandealInfo.setFamilyName(info.getName());
@@ -353,7 +353,7 @@ public class BanDealInfoServiceImpl extends ServiceImpl<BanDealInfoMapper, BanDe
                     bandealInfo.setPost(tempPost);
                     bandealInfo.setPostType(gbOrgInfo.getPostType());
                     bandealInfo.setBanPostType(gbOrgInfo.getPostType());//禁止职务类型
-                    DateTime date = DateUtil.date(dateLong + i);
+                    DateTime date = DateUtil.date(dateLong + (i*1000));
                     bandealInfo.setCreateTime(date);
                     bandealInfo.setUpdateTime(date);
                     bandealInfo.setFamilyName(info.getName());
@@ -472,7 +472,7 @@ public class BanDealInfoServiceImpl extends ServiceImpl<BanDealInfoMapper, BanDe
                     bandealInfo.setPost(tempPost);
                     bandealInfo.setPostType(gbOrgInfo.getPostType());
                     bandealInfo.setBanPostType(gbOrgInfo.getPostType());//禁止职务类型
-                    DateTime date = DateUtil.date(dateLong + i);
+                    DateTime date = DateUtil.date(dateLong + (i*1000));
                     bandealInfo.setCreateTime(date);
                     bandealInfo.setUpdateTime(date);
 

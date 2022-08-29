@@ -170,7 +170,7 @@ public class GbBasicInfoServiceImpl extends ServiceImpl<GbBasicInfoMapper, GbBas
                 gbBasicInfoThree.setName(name);
                 GbBasicInfo info = new GbBasicInfo();
                 BeanUtil.copyProperties(gbBasicInfoThree, info);
-                DateTime date = DateUtil.date(dateLong + i);
+                DateTime date = DateUtil.date(dateLong + (i*1000));
                 info.setCreateTime(date);
                 info.setUpdateTime(date);
                 dataList.add(info);
