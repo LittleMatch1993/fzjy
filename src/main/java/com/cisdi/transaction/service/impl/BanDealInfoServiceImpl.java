@@ -309,7 +309,7 @@ public class BanDealInfoServiceImpl extends ServiceImpl<BanDealInfoMapper, BanDe
         //在禁止企业交易信息表中添加数据
         boolean b = this.saveBatch(newBanDealInfoList);
         if(CollectionUtil.isNotEmpty(newBanDealInfoList)){
-            submitId = newBanDealInfoList.stream().map(BanDealInfo::getId).collect(Collectors.toList());
+            submitId = newBanDealInfoList.stream().map(BanDealInfo::getRefId).distinct().collect(Collectors.toList());
         }
         //新增操作记录
         boolean deal = banDealInfoRecordService.insertBanDealInfoRecord(newBanDealInfoList, SystemConstant.OPERATION_TYPE_ADD); //新增
@@ -422,7 +422,7 @@ public class BanDealInfoServiceImpl extends ServiceImpl<BanDealInfoMapper, BanDe
         //在禁止企业交易信息表中添加数据
         boolean b = this.saveBatch(banDealInfoList);
         if(CollectionUtil.isNotEmpty(banDealInfoList)){
-            submitId = banDealInfoList.stream().map(BanDealInfo::getId).collect(Collectors.toList());
+            submitId = banDealInfoList.stream().map(BanDealInfo::getRefId).distinct().collect(Collectors.toList());
         }
         //新增操作记录
         boolean deal = banDealInfoRecordService.insertBanDealInfoRecord(banDealInfoList, SystemConstant.OPERATION_TYPE_ADD); //新增
@@ -471,7 +471,7 @@ public class BanDealInfoServiceImpl extends ServiceImpl<BanDealInfoMapper, BanDe
                     bandealInfo.setEngageType(sysDictBizService.getDictId("开办有偿社会中介和法律服务机构或者从业",dictList));
                     //13-2表中的，显示Z（个人认缴出资额或个人出资额（人民币万元）），AA（个人认缴出资比例或个人出资比例（%）），AC（是否在该机构中从业），AD（所担任的职务名称）列内容
                     //------如果AC值为是，则拼接AD列，否则不拼接
-                    String engageInfo = "个人认缴出资额或个人出资额（人民币万元）:" +(StrUtil.isEmpty( info.getPersonalCapital())?"": info.getPersonalCapital()+"万元") + "；个人认缴出资比例或个人出资比例（%）:" + (StrUtil.isEmpty(info.getPersonalRatio())?"":info.getPersonalRatio()+"%")
+                    String engageInfo = (StrUtil.isEmpty( info.getPersonalCapital())?"":"个人认缴出资额或个人出资额（人民币万元）:" + info.getPersonalCapital()+"万元；") + (StrUtil.isEmpty(info.getPersonalRatio())?"":"个人认缴出资比例或个人出资比例（%）:" +info.getPersonalRatio()+"%；")
                             + ("是".equals(sysDictBizService.getDictValue(info.getPractice(),dictList)) ? "；所担任的职务名称:" + (StrUtil.isEmpty(info.getPostName())?"":info.getPostName()) : "");
 
                     bandealInfo.setEngageInfo(engageInfo);
@@ -540,7 +540,7 @@ public class BanDealInfoServiceImpl extends ServiceImpl<BanDealInfoMapper, BanDe
         //在禁止企业交易信息表中添加数据
         boolean b = this.saveBatch(newBanDealInfoList);
         if(CollectionUtil.isNotEmpty(newBanDealInfoList)){
-            submitId = newBanDealInfoList.stream().map(BanDealInfo::getId).collect(Collectors.toList());
+            submitId = newBanDealInfoList.stream().map(BanDealInfo::getRefId).distinct().collect(Collectors.toList());
         }
         //新增操作记录
         boolean deal = banDealInfoRecordService.insertBanDealInfoRecord(newBanDealInfoList, SystemConstant.OPERATION_TYPE_ADD); //新增
