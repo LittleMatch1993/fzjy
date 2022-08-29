@@ -8,6 +8,7 @@ import lombok.Data;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.Size;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * @Author: cxh
@@ -60,6 +61,10 @@ public class CadreFamilyExportDto extends BaseDTO{
 
     @ApiModelProperty(value = "是否升序")
     private Boolean isAsc;
+
+    public Boolean getIsAsc(){
+        return Objects.isNull(this.isAsc)?false:this.isAsc;
+    }
 
 
 
