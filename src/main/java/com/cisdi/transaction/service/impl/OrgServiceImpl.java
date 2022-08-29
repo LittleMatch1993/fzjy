@@ -102,7 +102,7 @@ public class OrgServiceImpl extends ServiceImpl<OrgMapper, Org> implements OrgSe
         if(StrUtil.isEmpty(stringDate)){
             stringDate = "18000101";
         }
-        obj.put("stringDate", "18000101");
+        obj.put("stringDate", stringDate);
         obj.put("condition", "1=1");
         obj.put("secretKey", "50857140b5b84ddeeef5f62709b32fac");
         String result = HttpUtils.sendPostOfAuth(url, obj);
@@ -122,7 +122,7 @@ public class OrgServiceImpl extends ServiceImpl<OrgMapper, Org> implements OrgSe
                     Org org = JSONObject.parseObject(josnObj.toString(), Org.class);
                     String asgId = josnObj.getString("asgId");
                     org.setId(asgId);
-                    DateTime date = DateUtil.date(dateLong + i);
+                    DateTime date = DateUtil.date(dateLong + (i*1000));
                     org.setCreateTime(date);
                     org.setUpdateTime(date);
                     orgs.add(org);
@@ -132,18 +132,19 @@ public class OrgServiceImpl extends ServiceImpl<OrgMapper, Org> implements OrgSe
             if (CollectionUtil.isNotEmpty(orgs)) {
                 List<SysDictBiz> dictList = sysDictBizService.selectList();
                 orgs = this.repalceDictId(orgs,dictList);
-                this.remove(null);
-                this.saveBatch(orgs);
-                System.out.println("service执行组织同步定时任务成功完成");
-                /*boolean removeB = false;
+                //this.remove(null);
+                //this.saveBatch(orgs);
+                boolean removeB = false;
                 if("18000101".equals(stringDate)){//全部更新
                     removeB = this.remove(null);
+                    this.saveBatch(orgs);
                 }else{//增量更新
                     removeB = this.removeByAsgDate(stringDate);
+                    this.saveBatch(orgs);
                 }
-                if(removeB){
 
-                }*/
+                System.out.println("service执行组织同步定时任务成功完成");
+
             }
             System.out.println("service执行组织同步定时任务完成");
         }else{
