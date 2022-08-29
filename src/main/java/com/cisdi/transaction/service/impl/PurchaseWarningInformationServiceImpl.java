@@ -67,6 +67,7 @@ public class PurchaseWarningInformationServiceImpl extends ServiceImpl<PurchaseW
         if (!purchaseWarningInformationInfos.isEmpty()){
             this.saveBatch(purchaseWarningInformationInfos);
         }
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
         List<BusinessTransactionDTO> dtos = yjxxDTOList.stream().map(e -> {
             String outputField = e.getOutputField();
             JSONObject yjxxObject = JSONObject.parseObject(outputField);
@@ -82,15 +83,18 @@ public class PurchaseWarningInformationServiceImpl extends ServiceImpl<PurchaseW
             switch (WarnTypeEnum.valueOf(yjlxid)){
                 case JYJY01:
                     dto.setInfoType(WarnTypeEnum.JYJY01.getName());
+                    dto.setInfoTips(dto.getPurchaseName()+"开展的采购业务（业务编码"+dto.getBusinessCode()+"，业务名称"+dto.getBusinessName()+"）存在禁止交易范围内供应商（"+dto.getSupplier()+"）参与采购业务现象，系统已经实施予以禁止操作处理");
                     break;
                 case JYJY06:
                     dto.setInfoType(WarnTypeEnum.JYJY06.getName());
+                    dto.setInfoTips(dto.getPurchaseName()+"开展的采购业务（业务编码"+dto.getBusinessCode()+"，业务名称"+dto.getBusinessName()+"）存在禁止交易范围以外的供应商（"+dto.getSupplier()+"）参与采购业务现象");
                     break;
                 case JYJY07:
                     dto.setStraightPipeName(yjxxObject.getString("直管单位名称"));
                     dto.setSupplierPrice(yjxxObject.getString("供应商报价"));
                     dto.setBidder(yjxxObject.getString("是否为中标供应商"));
                     dto.setInfoType(WarnTypeEnum.JYJY07.getName());
+                    dto.setInfoTips(dto.getPurchaseName()+"开展的采购业务（业务编码"+dto.getBusinessCode()+"，业务名称"+dto.getBusinessName()+"）存在禁止交易范围以外供应商（"+dto.getSupplier()+"）参与采购业务现象，报价为"+dto.getSupplierPrice()+"元，"+("是".equals(dto.getBidder())?"是中标供应商":"不是中标供应商"));
                     break;
                 case JYJY08:
                     dto.setInfoType(WarnTypeEnum.JYJY08.getName());
@@ -99,10 +103,11 @@ public class PurchaseWarningInformationServiceImpl extends ServiceImpl<PurchaseW
                     dto.setContractCode(yjxxObject.getString("采购合同编码"));
                     dto.setContractName(yjxxObject.getString("采购合同名称"));
                     try {
-                        dto.setContractTime(StringUtils.isBlank(yjxxObject.getString("签订日期")) ? null : new SimpleDateFormat("yyyy-MM-dd").parse(yjxxObject.getString("签订日期")));
+                        dto.setContractTime(StringUtils.isBlank(yjxxObject.getString("签订日期")) ? null : simpleDateFormat.parse(yjxxObject.getString("签订日期")));
                     } catch (ParseException e1) {
                         log.error("日期格式错误",yjxxObject.getString("签订日期"));
                     }
+                    dto.setInfoTips(dto.getPurchaseName()+"开展的采购业务（业务编码"+dto.getBusinessCode()+"，业务名称"+dto.getBusinessName()+"）禁止交易范围以外供应商（"+dto.getSupplier()+"）参与采购业务现象，合同名称"+dto.getContractName()+",签订合同金额为"+dto.getContractPrice()+"元，签订日期"+ (Objects.isNull(dto.getContractTime())?"":simpleDateFormat.format(dto.getContractTime())));
                     break;
             }
             return dto;
