@@ -2,6 +2,7 @@ package com.cisdi.transaction.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollectionUtil;
+import cn.hutool.core.date.DateTime;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -161,15 +162,19 @@ public class GbBasicInfoServiceImpl extends ServiceImpl<GbBasicInfoMapper, GbBas
         List<GbBasicInfo> dataList = new ArrayList<>();
         List<GbBasicInfoThree> gbBasicInfoThrees = gbBasicInfoThreeService.selectGbBasicInfo();
         if(CollectionUtil.isNotEmpty(gbBasicInfoThrees)){
+            long dateLong = DateUtil.date().getTime();
+            int i = 0;
             for (GbBasicInfoThree gbBasicInfoThree : gbBasicInfoThrees) {
                 String name = gbBasicInfoThree.getName();
                 name  = name.replaceAll("[　*| *| *|//s*]*", "");
                 gbBasicInfoThree.setName(name);
                 GbBasicInfo info = new GbBasicInfo();
                 BeanUtil.copyProperties(gbBasicInfoThree, info);
-                info.setCreateTime(DateUtil.date());
-                info.setUpdateTime(DateUtil.date());
+                DateTime date = DateUtil.date(dateLong + i);
+                info.setCreateTime(date);
+                info.setUpdateTime(date);
                 dataList.add(info);
+                i++;
             }
             List<SysDictBiz> dictList = sysDictBizService.selectList();
             this.baseMapper.delete(null);

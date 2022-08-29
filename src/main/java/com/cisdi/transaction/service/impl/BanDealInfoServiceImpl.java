@@ -2,6 +2,7 @@ package com.cisdi.transaction.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollectionUtil;
+import cn.hutool.core.date.DateTime;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.http.HttpGlobalConfig;
@@ -212,6 +213,8 @@ public class BanDealInfoServiceImpl extends ServiceImpl<BanDealInfoMapper, BanDe
             List<GbOrgInfo> gbOrgInfoList = !gbOrgMap.containsKey(gbCardId) ? null : ((List<GbOrgInfo>) gbOrgMap.get(gbCardId));//是否在干部表中查询到干部数据
             if(CollectionUtil.isNotEmpty(gbOrgInfoList)){
                 //禁止交易表中干部有几条数据 取决干部所在几个组织
+                long dateLong = DateUtil.date().getTime();
+                int i = 0;
                 for (GbOrgInfo gbOrgInfo:gbOrgInfoList){
 
                     BanDealInfo bandealInfo = new BanDealInfo();
@@ -227,9 +230,9 @@ public class BanDealInfoServiceImpl extends ServiceImpl<BanDealInfoMapper, BanDe
                     bandealInfo.setPost(tempPost);
                     bandealInfo.setPostType(gbOrgInfo.getPostType());
                     bandealInfo.setBanPostType(gbOrgInfo.getPostType());//禁止职务类型
-
-                    bandealInfo.setCreateTime(DateUtil.date());
-                    bandealInfo.setUpdateTime(DateUtil.date());
+                    DateTime date = DateUtil.date(dateLong + i);
+                    bandealInfo.setCreateTime(date);
+                    bandealInfo.setUpdateTime(date);
                     bandealInfo.setFamilyName(info.getName());
                     bandealInfo.setRelation(info.getTitle());
                     bandealInfo.setEngageType(sysDictBizService.getDictId("投资企业或者担任高级职务",dictList));
@@ -296,6 +299,7 @@ public class BanDealInfoServiceImpl extends ServiceImpl<BanDealInfoMapper, BanDe
                     //验证供应商名称 信用代码  禁止交易采购单位代码是否都有。没有则置为无效
                     bandealInfo = validSupplierAndCodeAndBanPurchaseCode(bandealInfo, SystemConstant.SAVE_STATE); //新建
                     banDealInfoList.add(bandealInfo);
+                    i++;
                 }
             }else{
                 KVVO vo = new KVVO();
@@ -333,6 +337,8 @@ public class BanDealInfoServiceImpl extends ServiceImpl<BanDealInfoMapper, BanDe
             List<GbOrgInfo> gbOrgInfoList = !gbOrgMap.containsKey(gbCardId) ? null : ((List<GbOrgInfo>) gbOrgMap.get(gbCardId));//是否在干部表中查询到干部数据
             if(CollectionUtil.isNotEmpty(gbOrgInfoList)){
                 //禁止交易表中干部有几条数据 取决干部所在几个组织
+                long dateLong = DateUtil.date().getTime();
+                int i = 0;
                 for (GbOrgInfo gbOrgInfo:gbOrgInfoList){
                     BanDealInfo bandealInfo = new BanDealInfo();
                     bandealInfo.setCardId(gbCardId);
@@ -347,8 +353,9 @@ public class BanDealInfoServiceImpl extends ServiceImpl<BanDealInfoMapper, BanDe
                     bandealInfo.setPost(tempPost);
                     bandealInfo.setPostType(gbOrgInfo.getPostType());
                     bandealInfo.setBanPostType(gbOrgInfo.getPostType());//禁止职务类型
-                    bandealInfo.setCreateTime(DateUtil.date());
-                    bandealInfo.setUpdateTime(DateUtil.date());
+                    DateTime date = DateUtil.date(dateLong + i);
+                    bandealInfo.setCreateTime(date);
+                    bandealInfo.setUpdateTime(date);
                     bandealInfo.setFamilyName(info.getName());
                     bandealInfo.setRelation(info.getTitle());
                     bandealInfo.setEngageType(sysDictBizService.getDictId("投资私募股权投资基金或者担任高级职务",dictList));
@@ -357,7 +364,7 @@ public class BanDealInfoServiceImpl extends ServiceImpl<BanDealInfoMapper, BanDe
                     String engageInfo = (StrUtil.isEmpty(info.getPrivateequityName())?"":"投资的私募股权投资基金产品名称:" + info.getPrivateequityName()+"；") +(StrUtil.isEmpty(info.getMoney())?"":"基金总实缴金额（人民币万元）:" + info.getMoney()+"万元；")
                             + (StrUtil.isEmpty(info.getPersonalMoney())?"":"个人实缴金额（人民币万元）:" +info.getPersonalMoney()+"万元；")  + (StrUtil.isEmpty(info.getInvestDirection())?"":"基金投向:" +info.getInvestDirection()+"；")
                             + (StrUtil.isEmpty(info.getSubscriptionMoney())?"":"认缴金额（人民币万元）:" + info.getSubscriptionMoney()+"万元；") + (StrUtil.isEmpty(info.getSubscriptionRatio())?"":"认缴比例（%）:" + info.getSubscriptionRatio()+"%；")
-                            + ("是".equals(sysDictBizService.getDictValue(info.getPractice(),dictList)) ? "；所担任的高级职务名称:" + (StrUtil.isEmpty(info.getPostName())?"":info.getPostName()) : "");
+                            + ("是".equals(sysDictBizService.getDictValue(info.getPractice(),dictList)) ? "所担任的高级职务名称:" + (StrUtil.isEmpty(info.getPostName())?"":info.getPostName()) : "");
 
                     bandealInfo.setEngageInfo(engageInfo);
                     bandealInfo.setOperatScope(info.getManagerOperatScope());
@@ -409,6 +416,7 @@ public class BanDealInfoServiceImpl extends ServiceImpl<BanDealInfoMapper, BanDe
                     //验证供应商名称 信用代码  禁止交易采购单位代码是否都有。没有则置为无效
                     bandealInfo = validSupplierAndCodeAndBanPurchaseCode(bandealInfo, SystemConstant.SAVE_STATE); //新建
                     banDealInfoList.add(bandealInfo);
+                    i++;
                 }
             }else{
                 KVVO vo = new KVVO();
@@ -448,6 +456,8 @@ public class BanDealInfoServiceImpl extends ServiceImpl<BanDealInfoMapper, BanDe
             List<GbOrgInfo> gbOrgInfoList = !gbOrgMap.containsKey(gbCardId) ? null : ((List<GbOrgInfo>) gbOrgMap.get(gbCardId));//是否在干部表中查询到干部数据
             if(CollectionUtil.isNotEmpty(gbOrgInfoList)){
                 //禁止交易表中干部有几条数据 取决干部所在几个组织
+                long dateLong = DateUtil.date().getTime();
+                int i = 0;
                 for (GbOrgInfo gbOrgInfo:gbOrgInfoList){
                     BanDealInfo bandealInfo = new BanDealInfo();
                     bandealInfo.setCardId(gbCardId);
@@ -462,9 +472,9 @@ public class BanDealInfoServiceImpl extends ServiceImpl<BanDealInfoMapper, BanDe
                     bandealInfo.setPost(tempPost);
                     bandealInfo.setPostType(gbOrgInfo.getPostType());
                     bandealInfo.setBanPostType(gbOrgInfo.getPostType());//禁止职务类型
-
-                    bandealInfo.setCreateTime(DateUtil.date());
-                    bandealInfo.setUpdateTime(DateUtil.date());
+                    DateTime date = DateUtil.date(dateLong + i);
+                    bandealInfo.setCreateTime(date);
+                    bandealInfo.setUpdateTime(date);
 
                     bandealInfo.setFamilyName(info.getName());
                     bandealInfo.setRelation(info.getTitle());
@@ -472,7 +482,7 @@ public class BanDealInfoServiceImpl extends ServiceImpl<BanDealInfoMapper, BanDe
                     //13-2表中的，显示Z（个人认缴出资额或个人出资额（人民币万元）），AA（个人认缴出资比例或个人出资比例（%）），AC（是否在该机构中从业），AD（所担任的职务名称）列内容
                     //------如果AC值为是，则拼接AD列，否则不拼接
                     String engageInfo = (StrUtil.isEmpty( info.getPersonalCapital())?"":"个人认缴出资额或个人出资额（人民币万元）:" + info.getPersonalCapital()+"万元；") + (StrUtil.isEmpty(info.getPersonalRatio())?"":"个人认缴出资比例或个人出资比例（%）:" +info.getPersonalRatio()+"%；")
-                            + ("是".equals(sysDictBizService.getDictValue(info.getPractice(),dictList)) ? "；所担任的职务名称:" + (StrUtil.isEmpty(info.getPostName())?"":info.getPostName()) : "");
+                            + ("是".equals(sysDictBizService.getDictValue(info.getPractice(),dictList)) ? "所担任的职务名称:" + (StrUtil.isEmpty(info.getPostName())?"":info.getPostName()) : "");
 
                     bandealInfo.setEngageInfo(engageInfo);
                     bandealInfo.setOperatScope(info.getOperatScope());
@@ -525,6 +535,7 @@ public class BanDealInfoServiceImpl extends ServiceImpl<BanDealInfoMapper, BanDe
                     //验证供应商名称 信用代码  禁止交易采购单位代码是否都有。没有则置为无效
                     bandealInfo = validSupplierAndCodeAndBanPurchaseCode(bandealInfo, SystemConstant.SAVE_STATE); //新建
                     banDealInfoList.add(bandealInfo);
+                    i++;
                 }
             }else{
                 KVVO vo = new KVVO();
