@@ -105,7 +105,7 @@ public class PurchaseWarningInformationServiceImpl extends ServiceImpl<PurchaseW
                     try {
                         dto.setContractTime(StringUtils.isBlank(yjxxObject.getString("签订日期")) ? null : simpleDateFormat.parse(yjxxObject.getString("签订日期")));
                     } catch (ParseException e1) {
-                        log.error("日期格式错误",yjxxObject.getString("签订日期"));
+                        log.error("日期格式错误{}",yjxxObject.getString("签订日期"));
                     }
                     dto.setInfoTips(dto.getPurchaseName()+"开展的采购业务（业务编码"+dto.getBusinessCode()+"，业务名称"+dto.getBusinessName()+"）禁止交易范围以外供应商（"+dto.getSupplier()+"）参与采购业务现象，合同名称"+dto.getContractName()+",签订合同金额为"+dto.getContractPrice()+"元，签订日期"+ (Objects.isNull(dto.getContractTime())?"":simpleDateFormat.format(dto.getContractTime())));
                     break;

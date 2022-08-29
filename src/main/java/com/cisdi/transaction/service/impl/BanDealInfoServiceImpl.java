@@ -779,13 +779,16 @@ public class BanDealInfoServiceImpl extends ServiceImpl<BanDealInfoMapper, BanDe
     @Override
     public List<ProhibitTransactionExcelVO> export(CadreFamilyExportDto dto) {
         List<SysDictBiz> dictList = sysDictBizService.selectList();
-        List<ProhibitTransactionExcelVO> list =  this.lambdaQuery().eq(StringUtils.isNotBlank(dto.getState()),BanDealInfo::getState, dto.getState())
+        List<ProhibitTransactionExcelVO> list =  this.list(new QueryWrapper<BanDealInfo>()
+                .orderBy(StringUtils.isNotBlank(dto.getColumnName())&&Objects.nonNull(dto.getIsAsc()),dto.getIsAsc(),dto.getColumnName())
+                .orderByDesc(StringUtils.isBlank(dto.getColumnName())||Objects.isNull(dto.getIsAsc()),"create_time")
+                .lambda()
+                .eq(StringUtils.isNotBlank(dto.getState()),BanDealInfo::getState, dto.getState())
                 .like(StringUtils.isNotBlank(dto.getCompany()),BanDealInfo::getCompany,dto.getCompany())
                 .like(StringUtils.isNotBlank(dto.getName()),BanDealInfo::getName,dto.getName())
                 .like(StringUtils.isNotBlank(dto.getPost_type()),BanDealInfo::getPostType,dto.getPost_type())
                 .apply(AuthSqlUtil.getAuthSqlByTableNameAndOrgCode(ModelConstant.BAN_DEAL_INFO,dto.getOrgCode()))
-                .orderByDesc(BanDealInfo::getUpdateTime)
-                .list().stream().map(t -> {
+        ).stream().map(t -> {
             ProhibitTransactionExcelVO vo = new ProhibitTransactionExcelVO();
             BeanUtils.copyProperties(t, vo);
             return vo;

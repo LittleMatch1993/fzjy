@@ -951,12 +951,15 @@ public class InvestInfoServiceImpl extends ServiceImpl<InvestInfoMapper, InvestI
     public List<InvestmentDTO> exportInvestmentExcel(CadreFamilyExportDto exportDto) {
 
         List<SysDictBiz> dictList = sysDictBizService.selectList();
-        List<InvestmentDTO> list = this.lambdaQuery().eq(StringUtils.isNotBlank(exportDto.getState()),InvestInfo::getState, exportDto.getState())
+        List<InvestmentDTO> list = this.list(new QueryWrapper<InvestInfo>()
+                .orderBy(StringUtils.isNotBlank(exportDto.getColumnName())&&Objects.nonNull(exportDto.getIsAsc()),exportDto.getIsAsc(),exportDto.getColumnName())
+                .orderByDesc(StringUtils.isBlank(exportDto.getColumnName())||Objects.isNull(exportDto.getIsAsc()),"create_time")
+                .lambda()
+                .eq(StringUtils.isNotBlank(exportDto.getState()),InvestInfo::getState, exportDto.getState())
                 .like(StringUtils.isNotBlank(exportDto.getCompany()),InvestInfo::getCompany,exportDto.getCompany())
                 .like(StringUtils.isNotBlank(exportDto.getGb_name()),InvestInfo::getGbName,exportDto.getGb_name())
                 .apply(AuthSqlUtil.getAuthSqlByTableNameAndOrgCode(ModelConstant.INVEST_INFO,exportDto.getOrgCode()))
-                .orderByDesc(InvestInfo::getUpdateTime)
-                .list().stream().map(t -> {
+        ).stream().map(t -> {
             InvestmentDTO dto = new InvestmentDTO();
             BeanUtils.copyProperties(t, dto);
             return dto;

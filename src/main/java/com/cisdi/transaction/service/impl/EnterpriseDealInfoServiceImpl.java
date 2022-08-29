@@ -1,6 +1,7 @@
 package com.cisdi.transaction.service.impl;
 
 import cn.hutool.core.date.DateUtil;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.cisdi.transaction.config.utils.AuthSqlUtil;
 import com.cisdi.transaction.constant.ModelConstant;
@@ -141,12 +142,16 @@ public class EnterpriseDealInfoServiceImpl extends ServiceImpl<EnterpriseDealInf
     @Override
     public List<BusinessTransactionExcelVO> export(CadreFamilyExportDto dto){
         List<SysDictBiz> dictList = sysDictBizService.selectList();
-        List<BusinessTransactionExcelVO> list = this.lambdaQuery().eq(StringUtils.isNotBlank(dto.getPost_type()), EnterpriseDealInfo::getPostType, dto.getPost_type())
+        QueryWrapper<EnterpriseDealInfo> queryWrapper=new QueryWrapper();
+        queryWrapper.orderBy(StringUtils.isNotBlank(dto.getColumnName())&&Objects.nonNull(dto.getIsAsc()),dto.getIsAsc(),dto.getColumnName());
+        queryWrapper.orderByDesc(StringUtils.isBlank(dto.getColumnName())||Objects.isNull(dto.getIsAsc()),"create_time");
+        queryWrapper.lambda().eq(StringUtils.isNotBlank(dto.getPost_type()), EnterpriseDealInfo::getPostType, dto.getPost_type())
                 .like(StringUtils.isNotBlank(dto.getCompany()),EnterpriseDealInfo::getCompany,dto.getCompany())
                 .like(StringUtils.isNotBlank(dto.getName()),EnterpriseDealInfo::getName,dto.getName())
-                .apply(AuthSqlUtil.getAuthSqlByTableNameAndOrgCode(ModelConstant.ENTERPRISE_DEAL_INFO,dto.getOrgCode()))
-                .orderByDesc(EnterpriseDealInfo::getUpdateTime)
-                .list().stream().map(t -> {
+                .apply(AuthSqlUtil.getAuthSqlByTableNameAndOrgCode(ModelConstant.ENTERPRISE_DEAL_INFO,dto.getOrgCode()));
+
+        List<BusinessTransactionExcelVO> list = this.list(queryWrapper)
+                .stream().map(t -> {
             BusinessTransactionExcelVO vo = new BusinessTransactionExcelVO();
             BeanUtils.copyProperties(t, vo);
             return vo;
@@ -154,4 +159,6 @@ public class EnterpriseDealInfoServiceImpl extends ServiceImpl<EnterpriseDealInf
         list = this.replaceDictValue(list,dictList);
         return list;
     }
+
+
 }

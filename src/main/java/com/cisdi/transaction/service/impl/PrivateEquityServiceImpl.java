@@ -846,12 +846,17 @@ public class PrivateEquityServiceImpl extends ServiceImpl<PrivateEquityMapper, P
 
     @Override
     public List<EquityFundsDTO> exportEquityFundsExcel(CadreFamilyExportDto exportDto) {
+
         List<SysDictBiz> dictList = sysDictBizService.selectList();
-        List<EquityFundsDTO> list =  this.lambdaQuery().eq(StringUtils.isNotBlank(exportDto.getState()),PrivateEquity::getState, exportDto.getState())
+        List<EquityFundsDTO> list =  this.list(new QueryWrapper<PrivateEquity>()
+                .orderBy(StringUtils.isNotBlank(exportDto.getColumnName())&&Objects.nonNull(exportDto.getIsAsc()),exportDto.getIsAsc(),exportDto.getColumnName())
+                .orderByDesc(StringUtils.isBlank(exportDto.getColumnName())||Objects.isNull(exportDto.getIsAsc()),"create_time")
+                .lambda()
+                .eq(StringUtils.isNotBlank(exportDto.getState()),PrivateEquity::getState, exportDto.getState())
                 .like(StringUtils.isNotBlank(exportDto.getCompany()),PrivateEquity::getCompany,exportDto.getCompany())
                 .like(StringUtils.isNotBlank(exportDto.getGb_name()),PrivateEquity::getGbName,exportDto.getGb_name())
                 .apply(AuthSqlUtil.getAuthSqlByTableNameAndOrgCode(ModelConstant.PRIVATE_EQUITY,exportDto.getOrgCode()))
-                .orderByDesc(PrivateEquity::getUpdateTime).list().stream().map(t -> {
+        ).stream().map(t -> {
             EquityFundsDTO dto = new EquityFundsDTO();
             BeanUtils.copyProperties(t, dto);
             return dto;

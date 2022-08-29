@@ -196,7 +196,10 @@ public class GbBasicInfoServiceImpl extends ServiceImpl<GbBasicInfoMapper, GbBas
          *         return list;
          */
         //字典转换
-        List<CadreExcelVO> list =  this.baseMapper.selectList(new LambdaQueryWrapper<GbBasicInfo>().like(StringUtils.isNotBlank(dto.getName()),GbBasicInfo::getName,dto.getName())
+        List<CadreExcelVO> list =  this.baseMapper.selectList(new QueryWrapper<GbBasicInfo>()
+                        .orderBy(StringUtils.isNotBlank(dto.getColumnName())&&Objects.nonNull(dto.getIsAsc()),dto.getIsAsc(),dto.getColumnName())
+                        .orderByDesc(StringUtils.isBlank(dto.getColumnName())||Objects.isNull(dto.getIsAsc()),"create_time")
+                        .lambda().like(StringUtils.isNotBlank(dto.getName()),GbBasicInfo::getName,dto.getName())
         .like(StringUtils.isNotBlank(dto.getUnit()),GbBasicInfo::getUnit,dto.getUnit()).eq(StringUtils.isNotBlank(dto.getPost_type()),GbBasicInfo::getPostType,dto.getPost_type()).apply(AuthSqlUtil.getAuthSqlByTableNameAndOrgCode(ModelConstant.GB_BASIC_INFO,dto.getOrgCode()))
         ).stream().map(t -> {
             CadreExcelVO vo = new CadreExcelVO();

@@ -307,13 +307,17 @@ public class OrgServiceImpl extends ServiceImpl<OrgMapper, Org> implements OrgSe
 
     @Override
     public List<InstitutionalFrameworkExcelVO> export(CadreFamilyExportDto dto){
-        return this.lambdaQuery().like(StringUtils.isNotBlank(dto.getAsgorganname()),Org::getAsgorganname,dto.getAsgorganname())
+
+        return this.list(new QueryWrapper<Org>()
+                .orderBy(StringUtils.isNotBlank(dto.getColumnName())&&Objects.nonNull(dto.getIsAsc()),dto.getIsAsc(),dto.getColumnName())
+                .orderByDesc(StringUtils.isBlank(dto.getColumnName())||Objects.isNull(dto.getIsAsc()),"create_time")
+                .lambda()
+                .like(StringUtils.isNotBlank(dto.getAsgorganname()),Org::getAsgorganname,dto.getAsgorganname())
                 .like(StringUtils.isNotBlank(dto.getAsgorgancode()),Org::getAsgorgancode,dto.getAsgorgancode())
                 .eq(StringUtils.isNotBlank(dto.getAsglead()),Org::getAsglead,dto.getAsglead())
                 .eq(StringUtils.isNotBlank(dto.getAsgleadfg()),Org::getAsgleadfg,dto.getAsgleadfg())
                 .apply(AuthSqlUtil.getAuthSqlByTableNameAndOrgCode(ModelConstant.ORG,dto.getOrgCode()))
-                .orderByDesc(Org::getUpdateTime)
-                .list().stream().map(t -> {
+        ).stream().map(t -> {
             InstitutionalFrameworkExcelVO vo = new InstitutionalFrameworkExcelVO();
             BeanUtils.copyProperties(t, vo);
             return vo;

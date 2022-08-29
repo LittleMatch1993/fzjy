@@ -867,12 +867,17 @@ public class MechanismInfoServiceImpl extends ServiceImpl<MechanismInfoMapper, M
 
     @Override
     public List<CommunityServiceDTO> exportCommunityServiceExcel(CadreFamilyExportDto exportDto) {
+
         List<SysDictBiz> dictList = sysDictBizService.selectList();
-        List<CommunityServiceDTO> list = this.lambdaQuery().eq(StringUtils.isNotBlank(exportDto.getState()),MechanismInfo::getState, exportDto.getState())
+        List<CommunityServiceDTO> list = this.list(new QueryWrapper<MechanismInfo>()
+                .orderBy(StringUtils.isNotBlank(exportDto.getColumnName())&&Objects.nonNull(exportDto.getIsAsc()),exportDto.getIsAsc(),exportDto.getColumnName())
+                .orderByDesc(StringUtils.isBlank(exportDto.getColumnName())||Objects.isNull(exportDto.getIsAsc()),"create_time")
+                .lambda()
+                .eq(StringUtils.isNotBlank(exportDto.getState()),MechanismInfo::getState, exportDto.getState())
                 .like(StringUtils.isNotBlank(exportDto.getCompany()),MechanismInfo::getCompany,exportDto.getCompany())
                 .like(StringUtils.isNotBlank(exportDto.getGb_name()),MechanismInfo::getGbName,exportDto.getGb_name())
                 .apply(AuthSqlUtil.getAuthSqlByTableNameAndOrgCode(ModelConstant.MECHANISM_INFO,exportDto.getOrgCode()))
-                .orderByDesc(MechanismInfo::getUpdateTime).list().stream().map(t -> {
+        ).stream().map(t -> {
             CommunityServiceDTO dto = new CommunityServiceDTO();
             BeanUtils.copyProperties(t, dto);
             return dto;

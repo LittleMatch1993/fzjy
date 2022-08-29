@@ -129,8 +129,12 @@ public class SpouseBasicInfoServiceImpl extends ServiceImpl<SpouseBasicInfoMappe
     @Override
     public List<CadreFamiliesExcelVO> export(CadreFamilyExportDto dto) {
         List<SysDictBiz> dictList = sysDictBizService.selectList();
-
-        return this.lambdaQuery().like(StringUtils.isNotBlank(dto.getCadre_name()),SpouseBasicInfo::getCadreName,dto.getCadre_name()).apply(AuthSqlUtil.getAuthSqlByTableNameAndOrgCode(ModelConstant.SPOUSE_BASIC_INFO,dto.getOrgCode()),dto.getOrgCode()).orderByDesc(SpouseBasicInfo::getUpdateTime).list().stream().map(t->{
+        return this.list(new QueryWrapper<SpouseBasicInfo>()
+                .orderBy(StringUtils.isNotBlank(dto.getColumnName())&&Objects.nonNull(dto.getIsAsc()),dto.getIsAsc(),dto.getColumnName())
+                .orderByDesc(StringUtils.isBlank(dto.getColumnName())||Objects.isNull(dto.getIsAsc()),"create_time")
+                .lambda()
+                .like(StringUtils.isNotBlank(dto.getCadre_name()),SpouseBasicInfo::getCadreName,dto.getCadre_name()).apply(AuthSqlUtil.getAuthSqlByTableNameAndOrgCode(ModelConstant.SPOUSE_BASIC_INFO,dto.getOrgCode()),dto.getOrgCode())
+        ).stream().map(t->{
             CadreFamiliesExcelVO vo = new CadreFamiliesExcelVO();
             BeanUtils.copyProperties(t,vo);
             String title = sysDictBizService.getDictValue(t.getTitle(), dictList);

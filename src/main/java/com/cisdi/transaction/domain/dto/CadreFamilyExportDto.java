@@ -55,6 +55,12 @@ public class CadreFamilyExportDto extends BaseDTO{
     @ApiModelProperty(value = "是否领导班子")
     private String asglead;
 
+    @ApiModelProperty(value = "排序列")
+    private String columnName;
+
+    @ApiModelProperty(value = "是否升序")
+    private Boolean isAsc;
+
 
 
 
