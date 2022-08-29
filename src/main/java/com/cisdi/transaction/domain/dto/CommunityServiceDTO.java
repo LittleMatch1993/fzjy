@@ -5,6 +5,7 @@ package com.cisdi.transaction.domain.dto;
 import com.alibaba.excel.annotation.ExcelProperty;
 import com.cisdi.transaction.config.excel.DateStringValid;
 import com.cisdi.transaction.config.excel.ExcelValid;
+import com.cisdi.transaction.config.excel.IdCardValid;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
@@ -24,6 +25,7 @@ public class CommunityServiceDTO {
 
     @ExcelProperty(value = "身份证号")
     @ExcelValid(message = "身份证号为空")
+    @IdCardValid
     private String cardId;
 
     @ExcelProperty(value = "干部类型")

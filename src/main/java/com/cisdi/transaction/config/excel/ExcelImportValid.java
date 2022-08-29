@@ -1,5 +1,7 @@
 package com.cisdi.transaction.config.excel;
 
+import cn.hutool.core.util.IdcardUtil;
+import com.cisdi.transaction.config.utils.IdCardUtil;
 import com.cisdi.transaction.constant.SystemConstant;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.validator.GenericValidator;
@@ -52,6 +54,15 @@ public class ExcelImportValid {
             if (timeStringValid &&Objects.nonNull(fieldValue)&&fieldValue instanceof String&& StringUtils.isNotBlank((String)fieldValue)) {
                 if (!GenericValidator.isDate((String)fieldValue, "yyyy-MM-dd HH:mm:ss", true)){
                     throw new ExceptionCustom("IMPORT_PARAM_CHECK_FAIL", field.getAnnotation(TimeStringValid.class).message());
+                }
+            }
+
+            //身份证校验
+            boolean idCardValid = field.isAnnotationPresent(IdCardValid.class);
+            //时间字符串校验
+            if (idCardValid &&Objects.nonNull(fieldValue)) {
+                if (!IdCardUtil.isIdcard(""+fieldValue)){
+                    throw new ExceptionCustom("IMPORT_PARAM_CHECK_FAIL", field.getAnnotation(IdCardValid.class).message());
                 }
             }
 //            //如果两个注解都有，则不能为"无"

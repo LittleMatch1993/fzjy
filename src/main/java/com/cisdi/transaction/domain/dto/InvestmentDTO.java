@@ -4,6 +4,7 @@ import com.alibaba.excel.annotation.ExcelProperty;
 import com.alibaba.excel.annotation.write.style.ColumnWidth;
 import com.cisdi.transaction.config.excel.DateStringValid;
 import com.cisdi.transaction.config.excel.ExcelValid;
+import com.cisdi.transaction.config.excel.IdCardValid;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
@@ -26,6 +27,7 @@ public class InvestmentDTO {
     @ExcelProperty(value = "身份证号")
     @ColumnWidth(8)
     @ExcelValid(message = "身份证号为空")
+    @IdCardValid
     private String cardId;
 
     @ExcelProperty(value = "干部类型")
