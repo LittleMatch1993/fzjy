@@ -665,6 +665,7 @@ public class InvestInfoServiceImpl extends ServiceImpl<InvestInfoMapper, InvestI
         List<InvestInfo> infoList = this.lambdaQuery().in(InvestInfo::getCardId, cardIds).list();
 
         Set<String> uniqueSet=new HashSet<>();
+        Date date=new Date();
         if (infoList.isEmpty()) {
             list.stream().forEach(t -> {
                 String uniqueCode = t.getCardId() + "," + t.getName() + "," + t.getTitle();
@@ -691,6 +692,10 @@ public class InvestInfoServiceImpl extends ServiceImpl<InvestInfoMapper, InvestI
                                     investInfo.setCreateAccount(baseDTO.getServiceUserAccount());
                                     investInfo.setOrgCode(baseDTO.getOrgCode());
                                     investInfo.setOrgName(baseDTO.getOrgName());
+                                    long time = date.getTime() + 1000;
+                                    investInfo.setCreateTime(DateUtil.date(time));
+                                    investInfo.setUpdateTime(DateUtil.date(time));
+                                    date.setTime(time);
                                     investInfoList.add(investInfo);
                                     exportReturnVO.setSuccessNumber(exportReturnVO.getSuccessNumber()+1);
                                 }
@@ -724,6 +729,10 @@ public class InvestInfoServiceImpl extends ServiceImpl<InvestInfoMapper, InvestI
                             investInfo.setCreateAccount(baseDTO.getServiceUserAccount());
                             investInfo.setOrgCode(baseDTO.getOrgCode());
                             investInfo.setOrgName(baseDTO.getOrgName());
+                            long time = date.getTime() + 1000;
+                            investInfo.setCreateTime(DateUtil.date(time));
+                            investInfo.setUpdateTime(DateUtil.date(time));
+                            date.setTime(time);
                             investInfoList.add(investInfo);
                             exportReturnVO.setSuccessNumber(exportReturnVO.getSuccessNumber()+1);
                         }
@@ -776,7 +785,10 @@ public class InvestInfoServiceImpl extends ServiceImpl<InvestInfoMapper, InvestI
                                     }else {
                                         //如果不相同，新增，否则就是覆盖
                                         uniqueSet.add(uniqueCode);
-                                        info.setCreateTime(DateUtil.date());
+                                        long time = date.getTime() + 1000;
+                                        info.setCreateTime(DateUtil.date(time));
+                                        info.setUpdateTime(DateUtil.date(time));
+                                        date.setTime(time);
                                         info.setCreateName(baseDTO.getServicePersonName());
                                         info.setCreateAccount(baseDTO.getServiceUserAccount());
                                         info.setOrgCode(baseDTO.getOrgCode());
@@ -797,6 +809,10 @@ public class InvestInfoServiceImpl extends ServiceImpl<InvestInfoMapper, InvestI
                                         }else {
                                             uniqueSet.add(uniqueCode);
                                             info.setId(existInfo.getId());
+                                            long time = date.getTime() + 1000;
+                                            info.setCreateTime(DateUtil.date(time));
+                                            info.setUpdateTime(DateUtil.date(time));
+                                            date.setTime(time);
                                             updateList.add(info);
                                             exportReturnVO.setSuccessNumber(exportReturnVO.getSuccessNumber()+1);
                                         }
@@ -807,7 +823,10 @@ public class InvestInfoServiceImpl extends ServiceImpl<InvestInfoMapper, InvestI
                                             exportReturnVO.getFailMessage().add(new ExportReturnMessageVO(t.getColumnNumber(),"数据重复:干部身份证号"+t.getCardId()+"家人姓名"+t.getName()+"称谓"+title1));
                                         }else {
                                             uniqueSet.add(uniqueCode);
-                                            info.setCreateTime(DateUtil.date());
+                                            long time = date.getTime() + 1000;
+                                            info.setCreateTime(DateUtil.date(time));
+                                            info.setUpdateTime(DateUtil.date(time));
+                                            date.setTime(time);
                                             info.setCreateName(baseDTO.getServicePersonName());
                                             info.setCreateAccount(baseDTO.getServiceUserAccount());
                                             info.setOrgCode(baseDTO.getOrgCode());
@@ -881,8 +900,11 @@ public class InvestInfoServiceImpl extends ServiceImpl<InvestInfoMapper, InvestI
                                 }else {
                                     uniqueSet.add(uniqueCode);
                                     info.setState(SystemConstant.SAVE_STATE)//默认类型新建
-                                            .setCreateTime(DateUtil.date())
-                                            .setUpdateTime(DateUtil.date());
+                                            ;
+                                    long time = date.getTime() + 1000;
+                                    info.setCreateTime(DateUtil.date(time));
+                                    info.setUpdateTime(DateUtil.date(time));
+                                    date.setTime(time);
                                     info.setCreateName(baseDTO.getServicePersonName());
                                     info.setCreateAccount(baseDTO.getServiceUserAccount());
                                     info.setOrgCode(baseDTO.getOrgCode());
@@ -908,7 +930,10 @@ public class InvestInfoServiceImpl extends ServiceImpl<InvestInfoMapper, InvestI
                 if (StringUtils.isBlank(checkDict)){
                     //数据库中如果不存在数据
                     if (CollectionUtil.isEmpty(infos)) {
-                        info.setCreateTime(DateUtil.date());
+                        long time = date.getTime() + 1000;
+                        info.setCreateTime(DateUtil.date(time));
+                        info.setUpdateTime(DateUtil.date(time));
+                        date.setTime(time);
                         info.setCreateName(baseDTO.getServicePersonName());
                         info.setCreateAccount(baseDTO.getServiceUserAccount());
                         info.setOrgCode(baseDTO.getOrgCode());
@@ -919,6 +944,10 @@ public class InvestInfoServiceImpl extends ServiceImpl<InvestInfoMapper, InvestI
                         //覆盖
                         info.setId(infos.get(0).getId());
                         exportReturnVO.setSuccessNumber(exportReturnVO.getSuccessNumber()+1);
+                        long time = date.getTime() + 1000;
+                        info.setCreateTime(DateUtil.date(time));
+                        info.setUpdateTime(DateUtil.date(time));
+                        date.setTime(time);
                         updateList.add(info);
                     }
                 }else {
@@ -932,16 +961,16 @@ public class InvestInfoServiceImpl extends ServiceImpl<InvestInfoMapper, InvestI
         if (!investInfoList.isEmpty()) {
             this.saveBatch(investInfoList);
             spouseBasicInfoService.addBatchSpouse(investInfoList.stream().map(investInfo ->
-                    new SpouseBasicInfo().setRefId(investInfo.getId()).setCreateTime(DateUtil.date()).setTenantId(baseDTO.getServiceLesseeId())
-                            .setCreatorId(baseDTO.getServiceUserId()).setUpdaterId(baseDTO.getServiceUserId()).setUpdateTime(DateUtil.date())
+                    new SpouseBasicInfo().setRefId(investInfo.getId()).setCreateTime(investInfo.getCreateTime()).setTenantId(baseDTO.getServiceLesseeId())
+                            .setCreatorId(baseDTO.getServiceUserId()).setUpdaterId(baseDTO.getServiceUserId()).setUpdateTime(investInfo.getUpdateTime())
                             .setCadreCardId(investInfo.getCardId()).setName(investInfo.getName()).setTitle(investInfo.getTitle()).setCadreName(investInfo.getGbName())
             ).collect(Collectors.toList()));
         }
         if (!updateList.isEmpty()) {
             this.updateBatchById(updateList);
             spouseBasicInfoService.addBatchSpouse(updateList.stream().map(investInfo ->
-                    new SpouseBasicInfo().setRefId(investInfo.getId()).setCreateTime(DateUtil.date()).setTenantId(baseDTO.getServiceLesseeId())
-                            .setCreatorId(baseDTO.getServiceUserId()).setUpdaterId(baseDTO.getServiceUserId()).setUpdateTime(DateUtil.date())
+                    new SpouseBasicInfo().setRefId(investInfo.getId()).setCreateTime(investInfo.getCreateTime()).setTenantId(baseDTO.getServiceLesseeId())
+                            .setCreatorId(baseDTO.getServiceUserId()).setUpdaterId(baseDTO.getServiceUserId()).setUpdateTime(investInfo.getUpdateTime())
                             .setCadreCardId(investInfo.getCardId()).setName(investInfo.getName()).setTitle(investInfo.getTitle()).setCadreName(investInfo.getGbName())
             ).collect(Collectors.toList()));
         }

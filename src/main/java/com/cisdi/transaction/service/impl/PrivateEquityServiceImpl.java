@@ -601,6 +601,7 @@ public class PrivateEquityServiceImpl extends ServiceImpl<PrivateEquityMapper, P
         List<String> cardIds = list.stream().distinct().map(t -> t.getCardId()).collect(Collectors.toList());
         List<PrivateEquity> infoList = this.lambdaQuery().in(PrivateEquity::getCardId, cardIds).list();
         Set<String> uniqueSet=new HashSet<>();
+        Date date=new Date();
         if (infoList.isEmpty()) {
             list.stream().forEach(t -> {
                 String uniqueCode = t.getCardId() + "," + t.getName() + "," + t.getTitle();
@@ -624,6 +625,10 @@ public class PrivateEquityServiceImpl extends ServiceImpl<PrivateEquityMapper, P
                                 investInfo.setCreateAccount(baseDTO.getServiceUserAccount());
                                 investInfo.setOrgCode(baseDTO.getOrgCode());
                                 investInfo.setOrgName(baseDTO.getOrgName());
+                                long time = date.getTime() + 1000;
+                                investInfo.setCreateTime(DateUtil.date(time));
+                                investInfo.setUpdateTime(DateUtil.date(time));
+                                date.setTime(time);
                                 privateEquity.add(investInfo);
                                 exportReturnVO.setSuccessNumber(exportReturnVO.getSuccessNumber()+1);
                             }
@@ -653,6 +658,10 @@ public class PrivateEquityServiceImpl extends ServiceImpl<PrivateEquityMapper, P
                             investInfo.setCreateAccount(baseDTO.getServiceUserAccount());
                             investInfo.setOrgCode(baseDTO.getOrgCode());
                             investInfo.setOrgName(baseDTO.getOrgName());
+                            long time = date.getTime() + 1000;
+                            investInfo.setUpdateTime(DateUtil.date(time));
+                            investInfo.setCreateTime(DateUtil.date(time));
+                            date.setTime(time);
                             privateEquity.add(investInfo);
                             exportReturnVO.setSuccessNumber(exportReturnVO.getSuccessNumber()+1);
                         }
@@ -666,8 +675,8 @@ public class PrivateEquityServiceImpl extends ServiceImpl<PrivateEquityMapper, P
             if (!privateEquity.isEmpty()) {
                 this.saveBatch(privateEquity);
                 spouseBasicInfoService.addBatchSpouse(privateEquity.stream().map(investInfo ->
-                        new SpouseBasicInfo().setRefId(investInfo.getId()).setCreateTime(DateUtil.date()).setTenantId(baseDTO.getServiceLesseeId())
-                                .setCreatorId(baseDTO.getServiceUserId()).setUpdaterId(baseDTO.getServiceUserId()).setUpdateTime(DateUtil.date())
+                        new SpouseBasicInfo().setRefId(investInfo.getId()).setCreateTime(investInfo.getCreateTime()).setTenantId(baseDTO.getServiceLesseeId())
+                                .setCreatorId(baseDTO.getServiceUserId()).setUpdaterId(baseDTO.getServiceUserId()).setUpdateTime(investInfo.getUpdateTime())
                                 .setCadreCardId(investInfo.getCardId()).setName(investInfo.getName()).setTitle(investInfo.getTitle()).setCadreName(investInfo.getGbName())
                 ).collect(Collectors.toList()));
             }
@@ -702,8 +711,11 @@ public class PrivateEquityServiceImpl extends ServiceImpl<PrivateEquityMapper, P
                                 exportReturnVO.getFailMessage().add(new ExportReturnMessageVO(t.getColumnNumber(),"数据重复:干部身份证号"+t.getCardId()+"家人姓名"+t.getName()+"称谓"+title1));
                             }else {
                                 if(nameIndex==0|titleIndex==0|codeIndex==0){ //一个都不重复
+                                    long time = date.getTime() + 1000;
                                     //如果不相同，新增，否则就是覆盖
-                                    info.setCreateTime(DateUtil.date());
+                                    info.setCreateTime(DateUtil.date(time));
+                                    info.setUpdateTime(DateUtil.date(time));
+                                    date.setTime(time);
                                     info.setCreateName(baseDTO.getServicePersonName());
                                     info.setCreateAccount(baseDTO.getServiceUserAccount());
                                     info.setOrgCode(baseDTO.getOrgCode());
@@ -718,11 +730,18 @@ public class PrivateEquityServiceImpl extends ServiceImpl<PrivateEquityMapper, P
                                     String title = info.getTitle();
                                     if(Objects.nonNull(existInfo)){
                                         info.setId(existInfo.getId());
+                                        long time = date.getTime() + 1000;
+                                        info.setUpdateTime(DateUtil.date(time));
+                                        info.setCreateTime(DateUtil.date(time));
+                                        date.setTime(time);
                                         updateList.add(info);
                                         exportReturnVO.setSuccessNumber(exportReturnVO.getSuccessNumber()+1);
                                         uniqueSet.add(uniqueCode);
                                     }else if (privateEquity.isEmpty()||privateEquity.stream().filter(privateEquity1 -> t.getName().equals(privateEquity1.getName())&&t.getCode().equals(privateEquity1.getCode())&&title.equals(privateEquity1.getTitle())).count()==0){
-                                        info.setCreateTime(DateUtil.date());
+                                        long time = date.getTime() + 1000;
+                                        info.setCreateTime(DateUtil.date(time));
+                                        info.setUpdateTime(DateUtil.date(time));
+                                        date.setTime(time);
                                         info.setCreateName(baseDTO.getServicePersonName());
                                         info.setCreateAccount(baseDTO.getServiceUserAccount());
                                         info.setOrgCode(baseDTO.getOrgCode());
@@ -787,6 +806,10 @@ public class PrivateEquityServiceImpl extends ServiceImpl<PrivateEquityMapper, P
                                 uniqueSet.add(uniqueCode);
                                 info.setCreateName(baseDTO.getServicePersonName());
                                 info.setCreateAccount(baseDTO.getServiceUserAccount());
+                                long time = date.getTime() + 1000;
+                                info.setCreateTime(DateUtil.date(time));
+                                info.setUpdateTime(DateUtil.date(time));
+                                date.setTime(time);
                                 privateEquity.add(info);
                                 exportReturnVO.setSuccessNumber(exportReturnVO.getSuccessNumber()+1);
                             }
@@ -809,12 +832,19 @@ public class PrivateEquityServiceImpl extends ServiceImpl<PrivateEquityMapper, P
                 if (StringUtils.isBlank(checkDict)){
                     // 数据库中如果不存在数据
                     if (CollectionUtil.isEmpty(infos)) {
-                        info.setCreateTime(new Date());
+                        long time = date.getTime() + 1000;
+                        info.setCreateTime(DateUtil.date(time));
+                        info.setUpdateTime(DateUtil.date(time));
+                        date.setTime(time);
                         info.setCreateName(baseDTO.getServicePersonName());
                         info.setCreateAccount(baseDTO.getServiceUserAccount());
                         privateEquity.add(info);//可添加到数据库中
                     } else {
                         info.setId(infos.get(0).getId());
+                        long time = date.getTime() + 1000;
+                        info.setCreateTime(DateUtil.date(time));
+                        info.setUpdateTime(DateUtil.date(time));
+                        date.setTime(time);
                         updateList.add(info);
                     }
                     exportReturnVO.setSuccessNumber(exportReturnVO.getSuccessNumber()+1);
@@ -829,16 +859,16 @@ public class PrivateEquityServiceImpl extends ServiceImpl<PrivateEquityMapper, P
         if (!privateEquity.isEmpty()) {
             this.saveBatch(privateEquity);
             spouseBasicInfoService.addBatchSpouse(privateEquity.stream().map(investInfo ->
-                    new SpouseBasicInfo().setRefId(investInfo.getId()).setCreateTime(DateUtil.date()).setTenantId(baseDTO.getServiceLesseeId())
-                            .setCreatorId(baseDTO.getServiceUserId()).setUpdaterId(baseDTO.getServiceUserId()).setUpdateTime(DateUtil.date())
+                    new SpouseBasicInfo().setRefId(investInfo.getId()).setCreateTime(investInfo.getCreateTime()).setTenantId(baseDTO.getServiceLesseeId())
+                            .setCreatorId(baseDTO.getServiceUserId()).setUpdaterId(baseDTO.getServiceUserId()).setUpdateTime(investInfo.getUpdateTime())
                             .setCadreCardId(investInfo.getCardId()).setName(investInfo.getName()).setTitle(investInfo.getTitle()).setCadreName(investInfo.getGbName())
             ).collect(Collectors.toList()));
         }
         if (!updateList.isEmpty()) {
             this.updateBatchById(updateList);
             spouseBasicInfoService.addBatchSpouse(updateList.stream().map(investInfo ->
-                    new SpouseBasicInfo().setRefId(investInfo.getId()).setCreateTime(DateUtil.date()).setTenantId(baseDTO.getServiceLesseeId())
-                            .setCreatorId(baseDTO.getServiceUserId()).setUpdaterId(baseDTO.getServiceUserId()).setUpdateTime(DateUtil.date())
+                    new SpouseBasicInfo().setRefId(investInfo.getId()).setCreateTime(investInfo.getCreateTime()).setTenantId(baseDTO.getServiceLesseeId())
+                            .setCreatorId(baseDTO.getServiceUserId()).setUpdaterId(baseDTO.getServiceUserId()).setUpdateTime(investInfo.getUpdateTime())
                             .setCadreCardId(investInfo.getCardId()).setName(investInfo.getName()).setTitle(investInfo.getTitle()).setCadreName(investInfo.getGbName())
             ).collect(Collectors.toList()));
         }

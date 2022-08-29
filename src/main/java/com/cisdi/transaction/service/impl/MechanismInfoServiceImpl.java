@@ -601,6 +601,7 @@ public class MechanismInfoServiceImpl extends ServiceImpl<MechanismInfoMapper, M
         List<String> cardIds = list.stream().distinct().map(t -> t.getCardId()).collect(Collectors.toList());
         List<MechanismInfo> infoList = this.lambdaQuery().in(MechanismInfo::getCardId, cardIds).list();
         Set<String> uniqueSet=new HashSet<>();
+        Date date=new Date();
         if (infoList.isEmpty()) {
             list.stream().forEach(t -> {
                 String uniqueCode = t.getCardId() + "," + t.getName() + "," + t.getTitle();
@@ -614,9 +615,8 @@ public class MechanismInfoServiceImpl extends ServiceImpl<MechanismInfoMapper, M
                         }else {
                             MechanismInfo investInfo = new MechanismInfo();
                             BeanUtils.copyProperties(t, investInfo);
-                            investInfo.setState(SystemConstant.SAVE_STATE)//默认类型新建
-                                    .setCreateTime(new Date())
-                                    .setUpdateTime(new Date());
+                            investInfo.setState(SystemConstant.SAVE_STATE);//默认类型新建
+
                             String title = investInfo.getTitle();
                             //字典替换
                             String checkDict = this.replaceDictId(investInfo, dictList);
@@ -633,6 +633,10 @@ public class MechanismInfoServiceImpl extends ServiceImpl<MechanismInfoMapper, M
                                     investInfo.setCreateAccount(baseDTO.getServiceUserAccount());
                                     investInfo.setOrgCode(baseDTO.getOrgCode());
                                     investInfo.setOrgName(baseDTO.getOrgName());
+                                    long time = date.getTime();
+                                    investInfo.setCreateTime(DateUtil.date(time +1000));
+                                    investInfo.setCreateTime(DateUtil.date(time +1000));
+                                    date.setTime(time+1000);
                                     mechanismInfoList.add(investInfo);
                                     exportReturnVO.setSuccessNumber(exportReturnVO.getSuccessNumber()+1);
                                 }
@@ -643,9 +647,7 @@ public class MechanismInfoServiceImpl extends ServiceImpl<MechanismInfoMapper, M
                 } else {
                     MechanismInfo investInfo = new MechanismInfo();
                     BeanUtils.copyProperties(t, investInfo);
-                    investInfo.setState(SystemConstant.SAVE_STATE)//默认类型新建
-                            .setCreateTime(new Date())
-                            .setUpdateTime(new Date());
+                    investInfo.setState(SystemConstant.SAVE_STATE);
                     String title = investInfo.getTitle();
                     //字典替换
                     String checkDict = this.replaceDictId(investInfo, dictList);
@@ -662,6 +664,10 @@ public class MechanismInfoServiceImpl extends ServiceImpl<MechanismInfoMapper, M
                             investInfo.setCreateAccount(baseDTO.getServiceUserAccount());
                             investInfo.setOrgCode(baseDTO.getOrgCode());
                             investInfo.setOrgName(baseDTO.getOrgName());
+                            long time = date.getTime();
+                            investInfo.setCreateTime(DateUtil.date(time+1000));
+                            investInfo.setUpdateTime(DateUtil.date(time+1000));
+                            date.setTime(time+1000);
                             mechanismInfoList.add(investInfo);
                             exportReturnVO.setSuccessNumber(exportReturnVO.getSuccessNumber()+1);
                         }
@@ -672,8 +678,8 @@ public class MechanismInfoServiceImpl extends ServiceImpl<MechanismInfoMapper, M
             if (!mechanismInfoList.isEmpty()) {
                 this.saveBatch(mechanismInfoList);
                 spouseBasicInfoService.addBatchSpouse(mechanismInfoList.stream().map(investInfo ->
-                        new SpouseBasicInfo().setRefId(investInfo.getId()).setCreateTime(DateUtil.date()).setTenantId(baseDTO.getServiceLesseeId())
-                                .setCreatorId(baseDTO.getServiceUserId()).setUpdaterId(baseDTO.getServiceUserId()).setUpdateTime(DateUtil.date())
+                        new SpouseBasicInfo().setRefId(investInfo.getId()).setCreateTime(investInfo.getCreateTime()).setTenantId(baseDTO.getServiceLesseeId())
+                                .setCreatorId(baseDTO.getServiceUserId()).setUpdaterId(baseDTO.getServiceUserId()).setUpdateTime(investInfo.getUpdateTime())
                                 .setCadreCardId(investInfo.getCardId()).setName(investInfo.getName()).setTitle(investInfo.getTitle()).setCadreName(investInfo.getGbName())
                 ).collect(Collectors.toList()));
             }
@@ -714,8 +720,11 @@ public class MechanismInfoServiceImpl extends ServiceImpl<MechanismInfoMapper, M
                                     exportReturnVO.getFailMessage().add(new ExportReturnMessageVO(t.getColumnNumber(),"数据重复:干部身份证号"+t.getCardId()+"家人姓名"+t.getName()+"称谓"+title1));
                                 }else {
                                     if(nameIndex==0|titleIndex==0|codeIndex==0){ //一个都不重复
+                                        long time = date.getTime() + 1000;
                                         //如果不相同，新增，否则就是覆盖
-                                        info.setCreateTime(DateUtil.date());
+                                        info.setCreateTime(DateUtil.date(time));
+                                        info.setUpdateTime(DateUtil.date(time));
+                                        date.setTime(time);
                                         info.setCreateName(baseDTO.getServicePersonName());
                                         info.setCreateAccount(baseDTO.getServiceUserAccount());
                                         info.setOrgCode(baseDTO.getOrgCode());
@@ -731,10 +740,17 @@ public class MechanismInfoServiceImpl extends ServiceImpl<MechanismInfoMapper, M
                                         if(Objects.nonNull(existInfo)){
                                             info.setId(existInfo.getId());
                                             exportReturnVO.setSuccessNumber(exportReturnVO.getSuccessNumber()+1);
+                                            long time = date.getTime() + 1000;
+                                            info.setCreateTime(DateUtil.date(time));
+                                            info.setUpdateTime(DateUtil.date(time));
+                                            date.setTime(time);
                                             updateList.add(info);
                                             uniqueSet.add(uniqueCode);
                                         }else if (mechanismInfoList.isEmpty()||mechanismInfoList.stream().filter(privateEquity1 -> t.getName().equals(privateEquity1.getName())&&t.getCode().equals(privateEquity1.getCode())&&title.equals(privateEquity1.getTitle())).count()==0){
-                                            info.setCreateTime(DateUtil.date());
+                                            long time = date.getTime()+1000;
+                                            info.setCreateTime(DateUtil.date(time));
+                                            info.setUpdateTime(DateUtil.date(time));
+                                            date.setTime(time);
                                             info.setCreateName(baseDTO.getServicePersonName());
                                             info.setCreateAccount(baseDTO.getServiceUserAccount());
                                             exportReturnVO.setSuccessNumber(exportReturnVO.getSuccessNumber()+1);
@@ -808,6 +824,10 @@ public class MechanismInfoServiceImpl extends ServiceImpl<MechanismInfoMapper, M
                                     uniqueSet.add(uniqueCode);
                                     info.setCreateName(baseDTO.getServicePersonName());
                                     info.setCreateAccount(baseDTO.getServiceUserAccount());
+                                    long time = date.getTime() + 1000;
+                                    info.setUpdateTime(DateUtil.date(time));
+                                    info.setCreateTime(DateUtil.date(time));
+                                    date.setTime(time);
                                     info.setOrgCode(baseDTO.getOrgCode());
                                     info.setOrgName(baseDTO.getOrgName());
                                     mechanismInfoList.add(info);
@@ -834,7 +854,10 @@ public class MechanismInfoServiceImpl extends ServiceImpl<MechanismInfoMapper, M
                 }else {
                     //数据库中如果不存在数据
                     if (CollectionUtil.isEmpty(infos)) {
-                        info.setCreateTime(new Date());
+                        long time = date.getTime() + 1000;
+                        info.setCreateTime(DateUtil.date(time));
+                        info.setUpdateTime(DateUtil.date(time));
+                        date.setTime(time);
                         info.setCreateName(baseDTO.getServicePersonName());
                         info.setCreateAccount(baseDTO.getServiceUserAccount());
                         info.setOrgCode(baseDTO.getOrgCode());
@@ -842,6 +865,10 @@ public class MechanismInfoServiceImpl extends ServiceImpl<MechanismInfoMapper, M
                         mechanismInfoList.add(info);//可添加到数据库中
                     } else {
                         info.setId(infos.get(0).getId());
+                        long time = date.getTime() + 1000;
+                        info.setUpdateTime(DateUtil.date(time));
+                        info.setCreateTime(DateUtil.date(time));
+                        date.setTime(time);
                         updateList.add(info);
                     }
                 }
@@ -850,16 +877,16 @@ public class MechanismInfoServiceImpl extends ServiceImpl<MechanismInfoMapper, M
         if (!mechanismInfoList.isEmpty()) {
             this.saveBatch(mechanismInfoList);
             spouseBasicInfoService.addBatchSpouse(mechanismInfoList.stream().map(investInfo ->
-                    new SpouseBasicInfo().setRefId(investInfo.getId()).setCreateTime(DateUtil.date()).setTenantId(baseDTO.getServiceLesseeId())
-                            .setCreatorId(baseDTO.getServiceUserId()).setUpdaterId(baseDTO.getServiceUserId()).setUpdateTime(DateUtil.date())
+                    new SpouseBasicInfo().setRefId(investInfo.getId()).setCreateTime(investInfo.getCreateTime()).setTenantId(baseDTO.getServiceLesseeId())
+                            .setCreatorId(baseDTO.getServiceUserId()).setUpdaterId(baseDTO.getServiceUserId()).setUpdateTime(investInfo.getUpdateTime())
                             .setCadreCardId(investInfo.getCardId()).setName(investInfo.getName()).setTitle(investInfo.getTitle()).setCadreName(investInfo.getGbName())
             ).collect(Collectors.toList()));
         }
         if (!updateList.isEmpty()) {
             this.updateBatchById(updateList);
             spouseBasicInfoService.addBatchSpouse(updateList.stream().map(investInfo ->
-                    new SpouseBasicInfo().setRefId(investInfo.getId()).setCreateTime(DateUtil.date()).setTenantId(baseDTO.getServiceLesseeId())
-                            .setCreatorId(baseDTO.getServiceUserId()).setUpdaterId(baseDTO.getServiceUserId()).setUpdateTime(DateUtil.date())
+                    new SpouseBasicInfo().setRefId(investInfo.getId()).setCreateTime(investInfo.getCreateTime()).setTenantId(baseDTO.getServiceLesseeId())
+                            .setCreatorId(baseDTO.getServiceUserId()).setUpdaterId(baseDTO.getServiceUserId()).setUpdateTime(investInfo.getUpdateTime())
                             .setCadreCardId(investInfo.getCardId()).setName(investInfo.getName()).setTitle(investInfo.getTitle()).setCadreName(investInfo.getGbName())
             ).collect(Collectors.toList()));
         }
