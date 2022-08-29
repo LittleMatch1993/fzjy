@@ -2,6 +2,7 @@ package com.cisdi.transaction.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollectionUtil;
+import cn.hutool.core.date.DateTime;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.StrUtil;
 import com.alibaba.fastjson.JSONArray;
@@ -114,13 +115,16 @@ public class OrgServiceImpl extends ServiceImpl<OrgMapper, Org> implements OrgSe
             if ("1".equals(code) && b) {
 
                 JSONArray data = jb.getJSONArray("data");
+                long dateLong = DateUtil.date().getTime();
+                 //date.getTime()
                 for (int i = 0; i < data.size(); i++) {
                     JSONObject josnObj = data.getJSONObject(i);
                     Org org = JSONObject.parseObject(josnObj.toString(), Org.class);
                     String asgId = josnObj.getString("asgId");
                     org.setId(asgId);
-                    org.setCreateTime(DateUtil.date());
-                    org.setUpdateTime(DateUtil.date());
+                    DateTime date = DateUtil.date(dateLong + i);
+                    org.setCreateTime(date);
+                    org.setUpdateTime(date);
                     orgs.add(org);
                 }
 
