@@ -68,33 +68,38 @@ public class EquityFundsDTO {
     @ExcelValid(message = "称谓为空")
     private String title;
 
+    @ExcelProperty(value = "是否投资私募股权投资基金")
+    @ExcelValid(message = "是否投资私募股权投资基金为空")
+    private String isInvest;
+
+
     @ExcelProperty(value = "投资的私募股权投资基金产品名称")
-    @ExcelValid(message = "投资的私募股权投资基金产品名称为空")
+//    @ExcelValid(message = "投资的私募股权投资基金产品名称为空")
     private String privateequityName;
 
     @ExcelProperty(value = "编码")
-    @ExcelValid(message = "编码为空")
+//    @ExcelValid(message = "编码为空")
     private String code;
 
     @ExcelProperty(value = "基金总实缴金额（人民币万元）")
-    @ExcelValid(message = "基金总实缴金额为空")
+//    @ExcelValid(message = "基金总实缴金额为空")
     private String money;
 
     @ExcelProperty(value = "个人实缴金额（人民币万元）")
-    @ExcelValid(message = "个人实缴金额为空")
+//    @ExcelValid(message = "个人实缴金额为空")
     private String personalMoney;
 
     @ExcelProperty(value = "基金投向")
-    @ExcelValid(message = "基金投向为空")
+//    @ExcelValid(message = "基金投向为空")
     private String investDirection;
 
     @ExcelProperty(value = "基金合同签署日")
-    @ExcelValid(message = "基金合同签署日为空")
+//    @ExcelValid(message = "基金合同签署日为空")
     @DateStringValid
     private String contractTime;
 
     @ExcelProperty(value = "基金合同约定的到期日")
-    @ExcelValid(message = "基金合同约定的到期日为空")
+//    @ExcelValid(message = "基金合同约定的到期日为空")
     @DateStringValid
     private String contractExpireTime;
 

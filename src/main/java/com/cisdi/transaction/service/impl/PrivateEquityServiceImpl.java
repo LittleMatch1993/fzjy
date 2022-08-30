@@ -513,9 +513,9 @@ public class PrivateEquityServiceImpl extends ServiceImpl<PrivateEquityMapper, P
 //                    exportReturnVO.getFailMessage().add(new ExportReturnMessageVO(e.getColumnNumber(),"有此类情况时以下内容不能为空：姓名,称谓,投资私募股权投资基金的情况,投资的私募股权投资基金产品名称,投资的私募股权投资基金产品编码,基金总实缴金额,个人实缴金额,基金合同签署日,基金合同约定的到期日,基金投向,投资私募股权投资基金管理人或者在其担任高级职务的情况,私募股权投资基金管理人名称,私募股权投资基金登记编号,是否为该基金管理人的股东（合伙人）,是否为该基金管理人的实际控制人,是否担任该基金管理人高级职务,是否与报告人所在单位（系统）直接发生过经济关系。"));
 //                    return false;
 //                }
-                if (!isOrNotList.contains(e.getShareholder())||!isOrNotList.contains(e.getController())||!isOrNotList.contains(e.getPractice())||!isOrNotList.contains(e.getIsRelation())){
+                if (!isOrNotList.contains(e.getIsInvest())||!isOrNotList.contains(e.getShareholder())||!isOrNotList.contains(e.getController())||!isOrNotList.contains(e.getPractice())||!isOrNotList.contains(e.getIsRelation())){
                     exportReturnVO.setFailNumber(exportReturnVO.getFailNumber()+1);
-                    exportReturnVO.getFailMessage().add(new ExportReturnMessageVO(e.getColumnNumber(),"有此类情况时以下内容只能填是否：是否为该基金管理人的实际控制人,是否为机构股东（合伙人、所有人等）,是否在该机构中从业,该企业或其他市场主体是否与报告人所在单位（系统）直接发生过商品、劳务、服务等经济关系。"));
+                    exportReturnVO.getFailMessage().add(new ExportReturnMessageVO(e.getColumnNumber(),"有此类情况时以下内容只能填是否：是否投资私募股权投资基金,是否为该基金管理人的实际控制人,是否为机构股东（合伙人、所有人等）,是否在该机构中从业,该企业或其他市场主体是否与报告人所在单位（系统）直接发生过商品、劳务、服务等经济关系。"));
                     return false;
                 }
 //                if (SystemConstant.WHETHER_YES.equals(e.getShareholder())&&(StringUtils.isBlank(e.getSubscriptionMoney()))||StringUtils.isBlank(e.getSubscriptionRatio())||StringUtils.isBlank(e.getSubscriptionTime())){
@@ -533,6 +533,15 @@ public class PrivateEquityServiceImpl extends ServiceImpl<PrivateEquityMapper, P
 //                    exportReturnVO.getFailMessage().add(new ExportReturnMessageVO(e.getColumnNumber(),"与报告人所在单位（系统）直接发生过经济关系时以下内容不能为空：备注。"));
 //                    return false;
 //                }
+                if (SystemConstant.WHETHER_YES.equals(e.getIsInvest())&&(StringUtils.isBlank(e.getPrivateequityName())||StringUtils.isBlank(e.getCode())
+                    ||StringUtils.isBlank(e.getMoney())||StringUtils.isBlank(e.getPersonalMoney())||StringUtils.isBlank(e.getInvestDirection())
+                        ||StringUtils.isBlank(e.getContractTime())||StringUtils.isBlank(e.getContractExpireTime())
+                )){
+                    exportReturnVO.setFailNumber(exportReturnVO.getFailNumber()+1);
+                    exportReturnVO.getFailMessage().add(new ExportReturnMessageVO(e.getColumnNumber(),"投资私募股权投资基金为是时以下内容不能为空：投资的私募股权投资基金产品名称,编码,基金总实缴金额,个人实缴金额,基金投向,基金合同签署日,基金合同约定的到期日。"));
+                    return false;
+                }
+
                 List<String> numbers = Stream.of(e.getMoney(), e.getPersonalMoney(), e.getSubscriptionMoney(),e.getSubscriptionRatio(), e.getYear()).filter(StringUtils::isNotBlank).collect(Collectors.toList());
                 if (!NumberUtils.isAllNumeric(numbers)){
                     exportReturnVO.setFailNumber(exportReturnVO.getFailNumber()+1);
@@ -970,8 +979,8 @@ public class PrivateEquityServiceImpl extends ServiceImpl<PrivateEquityMapper, P
     }
     private String replaceDictId(PrivateEquity t,List<SysDictBiz> dictList){
 
-        System.out.println("123--"+t.getTitle());
 
+        String isInvest=null;
         String isSituation=null;
         String title=null;
         String controller=null;
@@ -979,6 +988,14 @@ public class PrivateEquityServiceImpl extends ServiceImpl<PrivateEquityMapper, P
         String practice=null;
         String isRelation=null;
         //String postType=null;
+
+
+        if (StringUtils.isNotBlank(t.getIsInvest())){
+            isInvest =sysDictBizService.getDictId(t.getIsInvest(),dictList);
+            if (StringUtils.isBlank(isInvest)){
+                return "是否投资私募股权投资基金字典项不存在";
+            }
+        }
         if (StringUtils.isNotBlank(t.getIsSituation())){
             isSituation =sysDictBizService.getDictId(t.getIsSituation(),dictList);
             if (StringUtils.isBlank(isSituation)){
@@ -1027,7 +1044,8 @@ public class PrivateEquityServiceImpl extends ServiceImpl<PrivateEquityMapper, P
 //                return "干部类型字典项不存在";
 //            }
 //        }
-        System.out.println("--"+title);
+
+        t.setIsInvest(isInvest);
         t.setIsSituation(isSituation);
         t.setTitle(title);
         t.setController(controller);

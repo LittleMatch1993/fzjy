@@ -1,6 +1,8 @@
 package com.cisdi.transaction.domain.model;
 
+import com.alibaba.excel.annotation.ExcelProperty;
 import com.baomidou.mybatisplus.annotation.*;
+import com.cisdi.transaction.config.excel.ExcelValid;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -109,6 +111,9 @@ public class PrivateEquity {
      */
     @TableField(updateStrategy =FieldStrategy.IGNORED )
     private String  title;
+
+    @TableField(updateStrategy =FieldStrategy.IGNORED )
+    private String isInvest;
 
     /**
      * 投资的私募股权投资基金产品名称
