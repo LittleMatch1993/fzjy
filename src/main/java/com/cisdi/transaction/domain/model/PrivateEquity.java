@@ -1,6 +1,7 @@
 package com.cisdi.transaction.domain.model;
 
 import com.baomidou.mybatisplus.annotation.*;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -303,6 +304,11 @@ public class PrivateEquity {
      * 家属证件号
      */
     private String familyCardId;
+
+    /**
+     * 是否投资私募股权投资基金
+     */
+    private String isInvest;
 
 
 }

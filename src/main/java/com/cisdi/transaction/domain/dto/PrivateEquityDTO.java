@@ -287,4 +287,7 @@ public class PrivateEquityDTO extends BaseDTO{
     @ApiModelProperty(value = "家属证件号")
     private String familyCardId;
 
+    @ApiModelProperty(value = "是否投资私募股权投资基金")
+    private String isInvest;
+
 }
