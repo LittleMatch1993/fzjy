@@ -45,7 +45,7 @@ public interface OrgMapper extends BaseMapper<Org> {
             "                        GROUP BY \n" +
             "                                gbi.card_id \n" +
             "                        HAVING \n" +
-            "                                sort in (4,5,6) \n" +
+            "                                sort in (5,6,7) \n" +
             "                        ) t4 ON t3.card_id = t4.card_id \n" +
             "                        AND t3.sort = t4.sort \n" +
             "                        INNER JOIN ( SELECT DISTINCT asgorganname FROM 69654103_org WHERE asgpathnamecode LIKE concat(#{codePath},'%') ) t5 ON t5.asgorganname = t3.unit </script>")
