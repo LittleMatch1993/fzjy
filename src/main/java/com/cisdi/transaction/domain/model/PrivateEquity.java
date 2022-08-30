@@ -1,8 +1,7 @@
 package com.cisdi.transaction.domain.model;
 
-import com.alibaba.excel.annotation.ExcelProperty;
 import com.baomidou.mybatisplus.annotation.*;
-import com.cisdi.transaction.config.excel.ExcelValid;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -111,9 +110,6 @@ public class PrivateEquity {
      */
     @TableField(updateStrategy =FieldStrategy.IGNORED )
     private String  title;
-
-    @TableField(updateStrategy =FieldStrategy.IGNORED )
-    private String isInvest;
 
     /**
      * 投资的私募股权投资基金产品名称
@@ -308,6 +304,11 @@ public class PrivateEquity {
      * 家属证件号
      */
     private String familyCardId;
+
+    /**
+     * 是否投资私募股权投资基金
+     */
+    private String isInvest;
 
 
 }
