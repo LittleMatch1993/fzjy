@@ -304,7 +304,7 @@ public class BanDealInfoServiceImpl extends ServiceImpl<BanDealInfoMapper, BanDe
             }else{
                 KVVO vo = new KVVO();
                 vo.setId(info.getId());
-                vo.setName("未找到干部信息");
+                vo.setName("未找到干部组织信息");
                 submitFailId.add(vo);
             }
         }
@@ -421,7 +421,7 @@ public class BanDealInfoServiceImpl extends ServiceImpl<BanDealInfoMapper, BanDe
             }else{
                 KVVO vo = new KVVO();
                 vo.setId(info.getId());
-                vo.setName("未找到干部信息");
+                vo.setName("未找到干部组织信息");
                 submitFailId.add(vo);
             }
         }
@@ -540,7 +540,7 @@ public class BanDealInfoServiceImpl extends ServiceImpl<BanDealInfoMapper, BanDe
             }else{
                 KVVO vo = new KVVO();
                 vo.setId(info.getId());
-                vo.setName("未找到干部信息");
+                vo.setName("未找到干部组织信息");
                 submitFailId.add(vo);
             }
 
@@ -587,7 +587,7 @@ public class BanDealInfoServiceImpl extends ServiceImpl<BanDealInfoMapper, BanDe
         }
         if (b) {
             //推送有效数据给采购平台
-           purchaseBanDealInfoSevice.pushDatchDataForPurchase(infoList);
+           //purchaseBanDealInfoSevice.pushDatchDataForPurchase(infoList);
         }
         return ResultMsgUtil.success("提交成功");
     }
@@ -750,7 +750,7 @@ public class BanDealInfoServiceImpl extends ServiceImpl<BanDealInfoMapper, BanDe
         if(b){
             banDealInfoRecordService.insertBanDealInfoRecord(infoList, SystemConstant.OPERATION_TYPE_REMOVE);
             //删除采购系统那边的对应数据
-            purchaseBanDealInfoSevice.deletePushDataForPurchase(ids);
+            //purchaseBanDealInfoSevice.deletePushDataForPurchase(ids);
         }
 
         return b;
@@ -764,7 +764,7 @@ public class BanDealInfoServiceImpl extends ServiceImpl<BanDealInfoMapper, BanDe
         int delete = this.baseMapper.delete(queryWrapper);
         boolean b = delete > 0 ? true : false;
         if (b) {
-            purchaseBanDealInfoSevice.deletePushDataForPurchase(ids);
+            //purchaseBanDealInfoSevice.deletePushDataForPurchase(ids);
         }
         return b;
     }

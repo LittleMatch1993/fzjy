@@ -305,7 +305,7 @@ public class GbBasicInfoServiceImpl extends ServiceImpl<GbBasicInfoMapper, GbBas
                  List<GbOrgInfo> unitList = unitGroupMap.get(unit);
                  if(unitList.size()>1){
                      //多个职务逗号链接
-                     String tempPost = unitList.stream().map(GbOrgInfo::getPost).collect(Collectors.joining(","));
+                     String tempPost = unitList.stream().filter(e->StrUtil.isNotEmpty(e.getPost())).map(GbOrgInfo::getPost).collect(Collectors.joining(","));
                      gbOrgInfo.setPost(tempPost);
                  }
                 gbOrgInfoList.add(gbOrgInfo);
@@ -328,7 +328,7 @@ public class GbBasicInfoServiceImpl extends ServiceImpl<GbBasicInfoMapper, GbBas
                  if(CollectionUtil.isNotEmpty(otherLevelList)){
                      List<GbOrgInfo> temp = new ArrayList<>(); //保存那些不在最高等级组织链上的数据
                      //高等级单位的编组织code码链
-                     List<String> pathCodeList = levelList.stream().map(GbOrgInfo::getAsgpathnamecode).collect(Collectors.toList());
+                     List<String> pathCodeList = levelList.stream().filter(e->StrUtil.isNotEmpty(e.getAsgpathnamecode())).map(GbOrgInfo::getAsgpathnamecode).collect(Collectors.toList());
                      if(CollectionUtil.isEmpty(pathCodeList)){
                          throw new BusinessException(gbName + "的最高等级单位无组织code编码链");
                      }
@@ -342,9 +342,9 @@ public class GbBasicInfoServiceImpl extends ServiceImpl<GbBasicInfoMapper, GbBas
                          }
                      });
                      if(CollectionUtil.isNotEmpty(temp)){
-                         otherPost = temp.stream().map(e->e.getPost()).collect(Collectors.joining(","));
-                         otherUnit = temp.stream().map(e->e.getUnit()).collect(Collectors.joining(","));
-                         otherUnitCode = temp.stream().map(e->e.getUnitCode()).collect(Collectors.joining(","));
+                         otherPost = temp.stream().filter(e->StrUtil.isNotEmpty(e.getPost())).map(e->e.getPost()).collect(Collectors.joining(","));
+                         otherUnit = temp.stream().filter(e->StrUtil.isNotEmpty(e.getUnit())).map(e->e.getUnit()).collect(Collectors.joining(","));
+                         otherUnitCode = temp.stream().filter(e->StrUtil.isNotEmpty(e.getUnitCode())).map(e->e.getUnitCode()).collect(Collectors.joining(","));
                      }
                  }
 
@@ -358,16 +358,29 @@ public class GbBasicInfoServiceImpl extends ServiceImpl<GbBasicInfoMapper, GbBas
                       String tempUnit = valueList.stream().map(GbOrgInfo::getUnit).collect(Collectors.joining(","));
                       String tempUnitCode = valueList.stream().map(GbOrgInfo::getUnitCode).collect(Collectors.joining(","));
                       if(index==1&&StrUtil.isNotEmpty(otherPost)){
-                          tempPost +=","+otherPost;
+                          if(StrUtil.isNotEmpty(tempPost)){
+                              tempPost +=","+otherPost;
+                          }else{
+                              tempPost =otherPost;
+
+                          }
                       }
                       levlGbOrg.setPost(tempPost);
                       if(index==1&&StrUtil.isNotEmpty(otherUnit)){
-                         tempUnit +=","+otherUnit;
+                          if(StrUtil.isNotEmpty(tempUnit)){
+                              tempUnit +=","+otherUnit;
+                          }else{
+                              tempUnit =otherUnit;
+                          }
 
                      }
                      levlGbOrg.setUnit(tempUnit);
                      if(index==1&&StrUtil.isNotEmpty(otherUnitCode)){
-                         tempUnitCode +=","+otherUnitCode;
+                         if(StrUtil.isNotEmpty(tempUnitCode)){
+                             tempUnitCode +=","+otherUnitCode;
+                         }else{
+                             tempUnitCode =otherUnitCode;
+                         }
                      }
                      levlGbOrg.setUnitCode(tempUnitCode);
                      gbOrgInfoList.add(levlGbOrg);

@@ -26,14 +26,16 @@ public class BanDealInfoRecordServiceImpl extends ServiceImpl<BanDealInfoRecordM
     @Override
     public boolean insertBanDealInfoRecord(List<BanDealInfo> infoList, String operateType) {
         List<BanDealInfoRecord> records = new ArrayList<>();
-        infoList.stream().forEach(e->{
-                BanDealInfoRecord record = new BanDealInfoRecord();
-                record.setOperationType(operateType);
-                BeanUtil.copyProperties(e,record,new String[]{"id"});
-                record.setCreateTime(DateUtil.date());
-                record.setUpdateTime(DateUtil.date());
-                records.add(record);
-        });
+        long dateLong = DateUtil.date().getTime();
+        for (int i = 0; i < infoList.size(); i++) {
+            BanDealInfo e = infoList.get(i);
+            BanDealInfoRecord record = new BanDealInfoRecord();
+            record.setOperationType(operateType);
+            BeanUtil.copyProperties(e,record,new String[]{"id"});
+            record.setCreateTime(DateUtil.date(dateLong+(i*1000)));
+            record.setUpdateTime(DateUtil.date());
+            records.add(record);
+        }
         boolean b = this.saveBatch(records);
         return b;
     }

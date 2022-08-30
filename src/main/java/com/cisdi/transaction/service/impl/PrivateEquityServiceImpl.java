@@ -216,7 +216,7 @@ public class PrivateEquityServiceImpl extends ServiceImpl<PrivateEquityMapper, P
             }
             if(CollectionUtil.isEmpty(gbOrgList)){
                 //this.updateState(ids, SystemConstant.SAVE_STATE);
-                return ResultMsgUtil.failure("没有找到干部组织信息");
+                return ResultMsgUtil.failure("没有找到干部组织信息",ids);
             }
             /*if(CollectionUtil.isNotEmpty(tempList)){
                 infoList = infoList.stream().filter(e->tempList.contains(e.getId())).collect(Collectors.toList());
