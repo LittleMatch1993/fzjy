@@ -286,6 +286,16 @@ public class PrivateEquityServiceImpl extends ServiceImpl<PrivateEquityMapper, P
             info.setTbType(null);
             info.setYear(null);
         }else{
+            //是否投资私募股权投资基金
+            if("否".equals(sysDictBizService.getDictValue(info.getIsInvest(),dictList))){
+                info.setPrivateequityName(null);
+                info.setCode(null);
+                info.setMoney(null);
+                info.setPersonalMoney(null);
+                info.setContractTime(null);
+                info.setContractExpireTime(null);
+                info.setInvestDirection(null);
+            }
             //是否为股东（合伙人、所有人）
             if("否".equals(sysDictBizService.getDictValue(info.getShareholder(),dictList))){
                 info.setSubscriptionMoney(null);
