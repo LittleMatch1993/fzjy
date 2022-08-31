@@ -97,7 +97,7 @@ public class CadreFamiliesController {
         try {
             result = investInfoService.submitInvestInfo(ids);
         }catch (Exception e){
-            e.printStackTrace();
+            log.error("提交投资企业或担任高级职务异常",e);
             return ResultMsgUtil.failure("提交失败,程序处理数据异常");
         }
         return result;
@@ -165,7 +165,7 @@ public class CadreFamiliesController {
             //向禁止交易表中提交数据
             result = privateEquityService.submitPrivateEquity(ids);
         }catch (Exception e){
-            e.printStackTrace();
+            log.error("提交投资私募股权投异常",e);
             return ResultMsgUtil.failure("提交失败,程序处理数据异常");
         }
 
@@ -231,7 +231,7 @@ public class CadreFamiliesController {
         try {
             result = mechanismInfoService.submitMechanismInfo(ids);
         }catch (Exception e){
-            e.printStackTrace();
+            log.error("提交开办有偿社会中介数据异常",e);
             return ResultMsgUtil.failure("提交失败,程序处理数据异常");
         }
 
@@ -331,7 +331,8 @@ public class CadreFamiliesController {
             url = minIoUtil.downloadByMinio(multipartFile, bucketName, null);
             return ResultMsgUtil.success(url);
         } catch (Exception e) {
-            e.printStackTrace();
+            //e.printStackTrace();
+            log.error("家属投资企业导入异常",e);
             return ResultMsgUtil.failure(ResultCode.RC999.getCode(), "导入失败"+e.getMessage());
         }
     }
@@ -348,9 +349,9 @@ public class CadreFamiliesController {
             MultipartFile multipartFile = ExportExcelUtils.exportExcel(response, fileName, InvestmentDTO.class, list);
             url = minIoUtil.downloadByMinio(multipartFile, bucketName, null);
         } catch (UnsupportedEncodingException e) {
-            log.error("导出Excel编码异常", e);
+            log.error("家属投资企业导出Excel编码异常", e);
         } catch (Exception e) {
-            log.error("文件处理异常", e);
+            log.error("家属投资企业文件处理异常", e);
         }
         return ResultMsgUtil.success(url);
     }
@@ -371,7 +372,8 @@ public class CadreFamiliesController {
             url = minIoUtil.downloadByMinio(multipartFile, bucketName, null);
             return ResultMsgUtil.success(url);
         } catch (Exception e) {
-            e.printStackTrace();
+            //e.printStackTrace();
+            log.error("开办有偿社会中介导入异常", e);
             return ResultMsgUtil.failure(ResultCode.RC999.getCode(), "导入失败"+e.getMessage());
         }
     }
@@ -389,9 +391,9 @@ public class CadreFamiliesController {
             MultipartFile multipartFile = ExportExcelUtils.exportExcel(response, fileName, CommunityServiceDTO.class, list);
             url = minIoUtil.downloadByMinio(multipartFile, bucketName, null);
         } catch (UnsupportedEncodingException e) {
-            log.error("导出Excel编码异常", e);
+            log.error("开办有偿社会中介导出Excel编码异常", e);
         } catch (Exception e) {
-            log.error("文件处理异常", e);
+            log.error("开办有偿社会中介文件处理异常", e);
         }
         return ResultMsgUtil.success(url);
     }
@@ -412,7 +414,7 @@ public class CadreFamiliesController {
             url = minIoUtil.downloadByMinio(multipartFile, bucketName, null);
             return ResultMsgUtil.success(url);
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error("资私募股权导入异常", e);
             return ResultMsgUtil.failure(ResultCode.RC999.getCode(), "导入失败"+e.getMessage());
         }
     }
@@ -430,10 +432,10 @@ public class CadreFamiliesController {
             url = minIoUtil.downloadByMinio(multipartFile, bucketName, null);
             //EasyExcel.write(response.getOutputStream(), EquityFundsDTO.class).sheet("家属投资私募股权投资基金或者担任高级职务的情况").doWrite(list);
         } catch (UnsupportedEncodingException e) {
-            log.error("导出Excel编码异常", e);
+            log.error("资私募股权导出Excel编码异常", e);
         } catch (Exception e) {
             e.printStackTrace();
-            log.error("文件处理异常", e);
+            log.error("资私募股权文件处理异常", e);
         }
         return ResultMsgUtil.success(url);
     }

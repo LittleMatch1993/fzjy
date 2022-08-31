@@ -7,18 +7,18 @@ import com.cisdi.transaction.config.base.ResultCode;
 import com.cisdi.transaction.config.base.ResultMsgUtil;
 import com.cisdi.transaction.domain.OrgTree;
 import com.cisdi.transaction.domain.dto.CityDTO;
-import com.cisdi.transaction.domain.dto.TestDTO;
 import com.cisdi.transaction.domain.model.*;
 import com.cisdi.transaction.service.*;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
-import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.lang.reflect.Member;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -30,6 +30,7 @@ import java.util.stream.Collectors;
  * @version 1.0
  * @date 2022/8/4 15:32
  */
+@Slf4j
 @Controller
 @Api(tags = "EasyPoi导入导出测试")
 @RequestMapping("/easyPoi/excel")
@@ -81,6 +82,9 @@ public class EasyPoiController {
                     .setName(t.getName_cn());
         }).collect(Collectors.toList());
         globalCityInfoService.saveBatch(collect);
+        log.info(collect.toString());
+        log.error("错误");
+        log.debug("debug");
         return ResultMsgUtil.success();
     }
 

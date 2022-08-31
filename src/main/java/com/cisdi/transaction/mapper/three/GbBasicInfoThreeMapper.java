@@ -34,7 +34,7 @@ public interface GbBasicInfoThreeMapper extends BaseMapper<GbBasicInfoThree> {
             " when locate('公司',a2.ZDYXB0101)>0 then left( a2.ZDYXB0101,locate('公司', a2.ZDYXB0101)+1)  end as 'unit'," +
             "  case " +
             " when locate('公司',a2.ZDYXB0101)>0 then substring( a2.ZDYXB0101,locate('公司', a2.ZDYXB0101)+2) else a2.ZDYXB0101 end as 'department'," +
-            " ( SELECT zb8.DMCPT FROM ZB08 zb8 WHERE zb8.DMCOD = a2.A0215B ) 'post', " +
+            " ( IFNULL(( SELECT zb8.DMCPT FROM ZB08 zb8 WHERE zb8.DMCOD = a2.A0215B ),A0217)) 'post', " +
             " CONCAT(( SELECT hr3.DMCPT FROM hr03 hr3 WHERE hr3.DMCOD = a1.ZDYXA0110 ),( SELECT HR973.DMCPT FROM HR973 WHERE HR973.INPFRQ  = a1.A0219 )) 'post_type' " +
             "FROM " +
             " ( SELECT A00, A0101, a0184, ZDYXA0110,A0219 FROM A01) a1 " +

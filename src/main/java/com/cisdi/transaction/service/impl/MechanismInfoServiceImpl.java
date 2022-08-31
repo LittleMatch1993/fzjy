@@ -172,6 +172,7 @@ public class MechanismInfoServiceImpl extends ServiceImpl<MechanismInfoMapper, M
                 return ResultMsgUtil.failure(e.getMsg());
             } catch (Exception e){
                 e.printStackTrace();
+                log.error("开办有偿社会中介查询干部组织信息异常",e);
                 return ResultMsgUtil.failure("干部组织信息查询失败");
             }
             if(CollectionUtil.isEmpty(gbOrgList)){
