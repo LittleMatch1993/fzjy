@@ -588,6 +588,9 @@ public class BanDealInfoServiceImpl extends ServiceImpl<BanDealInfoMapper, BanDe
         if (b) {
             //推送有效数据给采购平台
            purchaseBanDealInfoSevice.pushDatchDataForPurchase(infoList);
+        }else{
+            log.error(infoList.toString());
+            return ResultMsgUtil.failure("修改数据状态失败");
         }
         return ResultMsgUtil.success("提交成功");
     }
@@ -718,7 +721,9 @@ public class BanDealInfoServiceImpl extends ServiceImpl<BanDealInfoMapper, BanDe
             String supplier = e.getSupplier();//供应商名称
             String code = e.getCode();//信用代码
             String banPurchaseCode = e.getBanPurchaseCode();
-            if (StrUtil.isNotEmpty(supplier) && StrUtil.isNotEmpty(code) && StrUtil.isNotEmpty(banPurchaseCode)) {
+            if(StrUtil.isNotEmpty(code) &&code.length()<15){
+                e.setState(SystemConstant.INVALID_STATE); //无效
+            } else if (StrUtil.isNotEmpty(supplier) && StrUtil.isNotEmpty(code) && StrUtil.isNotEmpty(banPurchaseCode)) {
                 e.setState(state);
             } else {
                 e.setState(SystemConstant.INVALID_STATE); //无效
@@ -732,9 +737,11 @@ public class BanDealInfoServiceImpl extends ServiceImpl<BanDealInfoMapper, BanDe
         String supplier = banDealInfo.getSupplier();//供应商名称
         String code = banDealInfo.getCode();//信用代码
         String banPurchaseCode = banDealInfo.getBanPurchaseCode();
-        if (StrUtil.isNotEmpty(supplier) && StrUtil.isNotEmpty(code) && StrUtil.isNotEmpty(banPurchaseCode)) {
+        if( StrUtil.isNotEmpty(code)&&code.length()<15){ //社会信用代码小于15位也无效，防止社会信用代码为  无，否，没有等无效数据。
+            banDealInfo.setState(SystemConstant.INVALID_STATE); //无效
+        }else if (StrUtil.isNotEmpty(supplier) && StrUtil.isNotEmpty(code) && StrUtil.isNotEmpty(banPurchaseCode)) {
             banDealInfo.setState(state);
-        } else {
+        }else {
             banDealInfo.setState(SystemConstant.INVALID_STATE); //无效
         }
         return banDealInfo;
