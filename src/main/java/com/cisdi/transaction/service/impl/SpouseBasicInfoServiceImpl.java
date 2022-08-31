@@ -148,9 +148,20 @@ public class SpouseBasicInfoServiceImpl extends ServiceImpl<SpouseBasicInfoMappe
         if (CollectionUtils.isEmpty(spouseBasicInfos)){
             return;
         }
+        Set<String> uniqueCodeSet=new HashSet<>();
+        spouseBasicInfos=spouseBasicInfos.stream().filter(spouseBasicInfo->{
+            String uniqueCode = spouseBasicInfo.getCadreCardId()+","+spouseBasicInfo.getTitle()+","+spouseBasicInfo.getName();
+            if (uniqueCodeSet.contains(uniqueCode)){
+                return false;
+            }else {
+                uniqueCodeSet.add(uniqueCode);
+                return true;
+            }
+        }).collect(Collectors.toList());
         //所有干部身份证号
         List<String> cadreCardIds = spouseBasicInfos.stream().map(SpouseBasicInfo::getCadreCardId).distinct().collect(Collectors.toList());
         List<SpouseBasicInfo> spouseBasicInfoList = this.lambdaQuery().in(SpouseBasicInfo::getCadreCardId, cadreCardIds).list();
+
         if (!CollectionUtils.isEmpty(spouseBasicInfoList)){
             //筛选出不存在的
             List<SpouseBasicInfo> addSpouseBasicInfos = spouseBasicInfos.stream().filter(spouseBasicInfo -> {

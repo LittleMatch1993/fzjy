@@ -669,7 +669,7 @@ public class InvestInfoServiceImpl extends ServiceImpl<InvestInfoMapper, InvestI
         Date date=new Date();
         if (infoList.isEmpty()) {
             list.stream().forEach(t -> {
-                String uniqueCode = t.getCardId() + "," + t.getName() + "," + t.getTitle();
+                String uniqueCode = t.getCardId() + "," + t.getName() + "," + t.getTitle()+","+t.getCode();
                 if (t.getIsSituation().equals(SystemConstant.IS_SITUATION_YES)) {
                     if (StringUtils.isNotBlank(t.getName()) && StringUtils.isNotBlank(t.getCode())) {
                         //校验国家/省/市
@@ -686,7 +686,7 @@ public class InvestInfoServiceImpl extends ServiceImpl<InvestInfoMapper, InvestI
 
                                 if (uniqueSet.contains(uniqueCode)){
                                     exportReturnVO.setFailNumber(exportReturnVO.getFailNumber()+1);
-                                    exportReturnVO.getFailMessage().add(new ExportReturnMessageVO(t.getColumnNumber(),"数据重复:干部身份证号"+t.getCardId()+"家人姓名"+t.getName()+"称谓"+title));
+                                    exportReturnVO.getFailMessage().add(new ExportReturnMessageVO(t.getColumnNumber(),"数据重复:干部身份证号"+t.getCardId()+",家人姓名"+t.getName()+",称谓"+title+",统一社会信用代码/注册号"+t.getCode()));
                                 }else {
                                     uniqueSet.add(uniqueCode);
                                     investInfo.setCreateName(baseDTO.getServicePersonName());
@@ -723,7 +723,7 @@ public class InvestInfoServiceImpl extends ServiceImpl<InvestInfoMapper, InvestI
                     if (StringUtils.isBlank(checkDict)){
                         if (uniqueSet.contains(uniqueCode)){
                             exportReturnVO.setFailNumber(exportReturnVO.getFailNumber()+1);
-                            exportReturnVO.getFailMessage().add(new ExportReturnMessageVO(t.getColumnNumber(),"数据重复:干部身份证号"+t.getCardId()+"家人姓名"+t.getName()+"称谓"+title));
+                            exportReturnVO.getFailMessage().add(new ExportReturnMessageVO(t.getColumnNumber(),"数据重复:干部身份证号"+t.getCardId()+",家人姓名"+t.getName()+",称谓"+title+",统一社会信用代码/注册号"+t.getCode()));
                         }else {
                             uniqueSet.add(uniqueCode);
                             investInfo.setCreateName(baseDTO.getServicePersonName());
@@ -760,7 +760,7 @@ public class InvestInfoServiceImpl extends ServiceImpl<InvestInfoMapper, InvestI
         list.stream().forEach(t -> {
             //List<InvestInfo> infos = infoMap.get(t.getCardId());
             List<InvestInfo> infos = infoMap.containsKey(t.getCardId())?infoMap.get(t.getCardId()):null;
-            String uniqueCode = t.getCardId() + "," + t.getName() + "," + t.getTitle();
+            String uniqueCode = t.getCardId() + "," + t.getName() + "," + t.getTitle()+","+t.getCode();
             if (t.getIsSituation().equals(SystemConstant.IS_SITUATION_YES)) {//有此类情况
                 if (CollectionUtil.isNotEmpty(infos)) {//如果不为空，进行比较
                     //校验姓名和统一社会信用代码不能为空
@@ -782,7 +782,7 @@ public class InvestInfoServiceImpl extends ServiceImpl<InvestInfoMapper, InvestI
                                 if(nameIndex==0||titleIndex==0||codeIndex==0){ //一个都不重复
                                     if (uniqueSet.contains(uniqueCode)){
                                         exportReturnVO.setFailNumber(exportReturnVO.getFailNumber()+1);
-                                        exportReturnVO.getFailMessage().add(new ExportReturnMessageVO(t.getColumnNumber(),"数据重复:干部身份证号"+t.getCardId()+"家人姓名"+t.getName()+"称谓"+title1));
+                                        exportReturnVO.getFailMessage().add(new ExportReturnMessageVO(t.getColumnNumber(),"数据重复:干部身份证号"+t.getCardId()+",家人姓名"+t.getName()+",称谓"+title1+",统一社会信用代码/注册号"+t.getCode()));
                                     }else {
                                         //如果不相同，新增，否则就是覆盖
                                         uniqueSet.add(uniqueCode);
@@ -806,7 +806,7 @@ public class InvestInfoServiceImpl extends ServiceImpl<InvestInfoMapper, InvestI
                                     if(Objects.nonNull(existInfo)){
                                         if (uniqueSet.contains(uniqueCode)){
                                             exportReturnVO.setFailNumber(exportReturnVO.getFailNumber()+1);
-                                            exportReturnVO.getFailMessage().add(new ExportReturnMessageVO(t.getColumnNumber(),"数据重复:干部身份证号"+t.getCardId()+"家人姓名"+t.getName()+"称谓"+title1));
+                                            exportReturnVO.getFailMessage().add(new ExportReturnMessageVO(t.getColumnNumber(),"数据重复:干部身份证号"+t.getCardId()+",家人姓名"+t.getName()+",称谓"+title1+",统一社会信用代码/注册号"+t.getCode()));
                                         }else {
                                             uniqueSet.add(uniqueCode);
                                             info.setId(existInfo.getId());
@@ -821,7 +821,7 @@ public class InvestInfoServiceImpl extends ServiceImpl<InvestInfoMapper, InvestI
                                     }else if (investInfoList.isEmpty()||investInfoList.stream().filter(privateEquity1 -> t.getName().equals(privateEquity1.getName())&&t.getCode().equals(privateEquity1.getCode())&&title.equals(privateEquity1.getTitle())).count()==0){
                                         if (uniqueSet.contains(uniqueCode)){
                                             exportReturnVO.setFailNumber(exportReturnVO.getFailNumber()+1);
-                                            exportReturnVO.getFailMessage().add(new ExportReturnMessageVO(t.getColumnNumber(),"数据重复:干部身份证号"+t.getCardId()+"家人姓名"+t.getName()+"称谓"+title1));
+                                            exportReturnVO.getFailMessage().add(new ExportReturnMessageVO(t.getColumnNumber(),"数据重复:干部身份证号"+t.getCardId()+",家人姓名"+t.getName()+",称谓"+title1+",统一社会信用代码/注册号"+t.getCode()));
                                         }else {
                                             uniqueSet.add(uniqueCode);
                                             long time = date.getTime() + 1000;
@@ -897,7 +897,7 @@ public class InvestInfoServiceImpl extends ServiceImpl<InvestInfoMapper, InvestI
                             if (StringUtils.isBlank(checkDict)){
                                 if (uniqueSet.contains(uniqueCode)){
                                     exportReturnVO.setFailNumber(exportReturnVO.getFailNumber()+1);
-                                    exportReturnVO.getFailMessage().add(new ExportReturnMessageVO(t.getColumnNumber(),"数据重复:干部身份证号"+t.getCardId()+"家人姓名"+t.getName()+"称谓"+title));
+                                    exportReturnVO.getFailMessage().add(new ExportReturnMessageVO(t.getColumnNumber(),"数据重复:干部身份证号"+t.getCardId()+",家人姓名"+t.getName()+",称谓"+title+",统一社会信用代码/注册号"+t.getCode()));
                                 }else {
                                     uniqueSet.add(uniqueCode);
                                     info.setState(SystemConstant.SAVE_STATE)//默认类型新建

@@ -604,7 +604,7 @@ public class MechanismInfoServiceImpl extends ServiceImpl<MechanismInfoMapper, M
         Date date=new Date();
         if (infoList.isEmpty()) {
             list.stream().forEach(t -> {
-                String uniqueCode = t.getCardId() + "," + t.getName() + "," + t.getTitle();
+                String uniqueCode = t.getCardId() + "," + t.getName() + "," + t.getTitle()+","+t.getCode();
                 if (t.getIsSituation().equals(SystemConstant.IS_SITUATION_YES)) {
                     if (StringUtils.isNotBlank(t.getName()) && StringUtils.isNotBlank(t.getCode())) {
                         //校验国家/省/市
@@ -626,7 +626,7 @@ public class MechanismInfoServiceImpl extends ServiceImpl<MechanismInfoMapper, M
                             }else {
                                 if (uniqueSet.contains(uniqueCode)){
                                     exportReturnVO.setFailNumber(exportReturnVO.getFailNumber()+1);
-                                    exportReturnVO.getFailMessage().add(new ExportReturnMessageVO(t.getColumnNumber(),"数据重复:干部身份证号"+t.getCardId()+"家人姓名"+t.getName()+"称谓"+title));
+                                    exportReturnVO.getFailMessage().add(new ExportReturnMessageVO(t.getColumnNumber(),"数据重复:干部身份证号"+t.getCardId()+",家人姓名"+t.getName()+",称谓"+title+",统一社会信用代码/注册号"+t.getCode()));
                                 }else {
                                     uniqueSet.add(uniqueCode);
                                     investInfo.setCreateName(baseDTO.getServicePersonName());
@@ -657,7 +657,7 @@ public class MechanismInfoServiceImpl extends ServiceImpl<MechanismInfoMapper, M
                     }else {
                         if (uniqueSet.contains(uniqueCode)){
                             exportReturnVO.setFailNumber(exportReturnVO.getFailNumber()+1);
-                            exportReturnVO.getFailMessage().add(new ExportReturnMessageVO(t.getColumnNumber(),"数据重复:干部身份证号"+t.getCardId()+"家人姓名"+t.getName()+"称谓"+title));
+                            exportReturnVO.getFailMessage().add(new ExportReturnMessageVO(t.getColumnNumber(),"数据重复:干部身份证号"+t.getCardId()+",家人姓名"+t.getName()+",称谓"+title+",统一社会信用代码/注册号"+t.getCode()));
                         }else {
                             uniqueSet.add(uniqueCode);
                             investInfo.setCreateName(baseDTO.getServicePersonName());
@@ -690,7 +690,7 @@ public class MechanismInfoServiceImpl extends ServiceImpl<MechanismInfoMapper, M
         Map<String, List<MechanismInfo>> infoMap = infoList.stream().collect(Collectors.groupingBy(MechanismInfo::getCardId));
         list.stream().forEach(t -> {
             List<MechanismInfo> infos = infoMap.containsKey(t.getCardId())?infoMap.get(t.getCardId()):null;
-            String uniqueCode = t.getCardId() + "," + t.getName() + "," + t.getTitle();
+            String uniqueCode = t.getCardId() + "," + t.getName() + "," + t.getTitle()+","+t.getCode();
             if (t.getIsSituation().equals(SystemConstant.IS_SITUATION_YES)) {
                 if (CollectionUtil.isNotEmpty(infos)) {//如果不为空，进行比较
                     //校验姓名和统一社会信用代码不能为空
@@ -717,7 +717,7 @@ public class MechanismInfoServiceImpl extends ServiceImpl<MechanismInfoMapper, M
                             }else {
                                 if (uniqueSet.contains(uniqueCode)){
                                     exportReturnVO.setFailNumber(exportReturnVO.getFailNumber()+1);
-                                    exportReturnVO.getFailMessage().add(new ExportReturnMessageVO(t.getColumnNumber(),"数据重复:干部身份证号"+t.getCardId()+"家人姓名"+t.getName()+"称谓"+title1));
+                                    exportReturnVO.getFailMessage().add(new ExportReturnMessageVO(t.getColumnNumber(),"数据重复:干部身份证号"+t.getCardId()+",家人姓名"+t.getName()+",称谓"+title1+",统一社会信用代码/注册号"+t.getCode()));
                                 }else {
                                     if(nameIndex==0|titleIndex==0|codeIndex==0){ //一个都不重复
                                         long time = date.getTime() + 1000;
@@ -819,7 +819,7 @@ public class MechanismInfoServiceImpl extends ServiceImpl<MechanismInfoMapper, M
                             }else {
                                 if (uniqueSet.contains(uniqueCode)){
                                     exportReturnVO.setFailNumber(exportReturnVO.getFailNumber()+1);
-                                    exportReturnVO.getFailMessage().add(new ExportReturnMessageVO(t.getColumnNumber(),"数据重复:干部身份证号"+t.getCardId()+"家人姓名"+t.getName()+"称谓"+title));
+                                    exportReturnVO.getFailMessage().add(new ExportReturnMessageVO(t.getColumnNumber(),"数据重复:干部身份证号"+t.getCardId()+",家人姓名"+t.getName()+",称谓"+title+",统一社会信用代码/注册号"+t.getCode()));
                                 }else {
                                     uniqueSet.add(uniqueCode);
                                     info.setCreateName(baseDTO.getServicePersonName());
