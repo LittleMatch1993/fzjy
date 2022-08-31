@@ -121,6 +121,7 @@ public class ImportCommunityServiceExcelListener extends AnalysisEventListener<C
      */
     private void saveData() {
         log.info("{}条数据，开始存储数据库！", list.size());
+        log.info(list.toString());
         if (list.size() > 0) {
             mechanismInfoService.saveBatchInvestInfo(list,baseDTO,exportReturnVO);
         }

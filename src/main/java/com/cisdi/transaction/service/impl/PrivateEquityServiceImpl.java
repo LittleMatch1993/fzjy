@@ -211,6 +211,7 @@ public class PrivateEquityServiceImpl extends ServiceImpl<PrivateEquityMapper, P
                 return ResultMsgUtil.failure(e.getMsg());
             } catch (Exception e){
                 e.printStackTrace();
+                log.error("投资私募股权查询干部组织信息异常",e);
                 //this.updateState(ids, SystemConstant.SAVE_STATE);
                 return ResultMsgUtil.failure("干部组织信息查询失败");
             }

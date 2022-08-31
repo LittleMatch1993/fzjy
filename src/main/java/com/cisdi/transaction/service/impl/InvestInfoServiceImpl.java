@@ -147,6 +147,7 @@ public class InvestInfoServiceImpl extends ServiceImpl<InvestInfoMapper, InvestI
                 return ResultMsgUtil.failure(e.getMsg());
             } catch (Exception e){
                 e.printStackTrace();
+                log.error("家属投资企业查询干部组织信息异常",e);
                 return ResultMsgUtil.failure("干部组织信息查询失败");
             }
             if(CollectionUtil.isEmpty(gbOrgList)){

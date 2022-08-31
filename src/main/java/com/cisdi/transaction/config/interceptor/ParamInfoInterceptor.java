@@ -1,3 +1,4 @@
+/*
 package com.cisdi.transaction.config.interceptor;
 
 import com.cisdi.transaction.util.ThreadLocalUtils;
@@ -8,11 +9,13 @@ import org.springframework.web.servlet.HandlerInterceptor;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+*/
 /**
  * @Author: cxh
  * @Description:
  * @Date: 2022/8/13 16:37
- */
+ *//*
+
 @Component
 public class ParamInfoInterceptor implements HandlerInterceptor {
 
@@ -43,3 +46,4 @@ public class ParamInfoInterceptor implements HandlerInterceptor {
         ThreadLocalUtils.remove();
     }
 }
+*/

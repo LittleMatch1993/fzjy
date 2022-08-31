@@ -136,6 +136,7 @@ public class InstitutionalFrameworkController {
                 OrgDictVo vo = new OrgDictVo();
                 vo.setId(e.getAsgorganname());
                 vo.setName(e.getAsgorgancode()+"-"+e.getAsgorganname());
+                //vo.setAsgPathName(e.getAsgpathname());
                 voList.add(vo);
             });
         }
