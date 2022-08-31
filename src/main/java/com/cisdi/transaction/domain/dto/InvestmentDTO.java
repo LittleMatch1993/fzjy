@@ -5,6 +5,7 @@ import com.alibaba.excel.annotation.write.style.ColumnWidth;
 import com.cisdi.transaction.config.excel.DateStringValid;
 import com.cisdi.transaction.config.excel.ExcelValid;
 import com.cisdi.transaction.config.excel.IdCardValid;
+import com.cisdi.transaction.config.excel.UnifiedCreditCodeValid;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
@@ -76,6 +77,7 @@ public class InvestmentDTO {
 
     @ExcelProperty(value = "统一社会信用代码/注册号")
     @ExcelValid(message = "统一社会信用代码/注册号为空")
+    @UnifiedCreditCodeValid
     private String code;
 
     @ExcelProperty(value = "企业或其他市场主体名称")

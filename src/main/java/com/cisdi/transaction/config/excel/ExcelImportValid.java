@@ -1,6 +1,7 @@
 package com.cisdi.transaction.config.excel;
 
 import cn.hutool.core.util.IdcardUtil;
+import com.cisdi.transaction.config.utils.CreditCodeUtil;
 import com.cisdi.transaction.config.utils.IdCardUtil;
 import com.cisdi.transaction.constant.SystemConstant;
 import org.apache.commons.lang3.StringUtils;
@@ -39,6 +40,12 @@ public class ExcelImportValid {
             boolean isExcelValid = field.isAnnotationPresent(ExcelValid.class);
             if (isExcelValid && (Objects.isNull(fieldValue))) {
                 throw new ExceptionCustom("NULL", field.getAnnotation(ExcelValid.class).message());
+            }
+
+            //统一社会信用代码/注册号校验注解
+            boolean unifiedCreditCodeValid = field.isAnnotationPresent(UnifiedCreditCodeValid.class);
+            if (unifiedCreditCodeValid&&Objects.nonNull(fieldValue)&&fieldValue instanceof String&&StringUtils.isNotBlank((String)fieldValue)&& !CreditCodeUtil.validateUnifiedCreditCode((String)fieldValue)){
+                throw new ExceptionCustom("IMPORT_PARAM_CHECK_FAIL", field.getAnnotation(UnifiedCreditCodeValid.class).message());
             }
 
             boolean dateStringValid = field.isAnnotationPresent(DateStringValid.class);
