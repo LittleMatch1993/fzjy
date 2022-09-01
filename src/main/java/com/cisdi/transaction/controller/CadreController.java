@@ -12,6 +12,7 @@ import com.cisdi.transaction.domain.dto.InstitutionalFrameworkDTO;
 import com.cisdi.transaction.domain.dto.InvestmentDTO;
 import com.cisdi.transaction.domain.model.GbBasicInfo;
 import com.cisdi.transaction.domain.vo.CadreExcelVO;
+import com.cisdi.transaction.domain.vo.GbInfoByNameAndUnitAndPost;
 import com.cisdi.transaction.domain.vo.KVVO;
 import com.cisdi.transaction.service.GbBasicInfoService;
 import com.cisdi.transaction.service.SpouseBasicInfoService;
@@ -104,11 +105,12 @@ public class CadreController{
     }
 
     @ApiOperation("根据干部姓名，单位 职务 获取信息")
-    @GetMapping("/selectGbInfoByNameAndUnitAndPost")
-    public ResultMsgUtil<Object> selectGbInfoByNameAndUnitAndPost(@ApiParam(value = "干部姓名") @RequestParam(value = "name" ,required = false) String name,
-                                                  @RequestParam(value = "unit" ,required = false) String unit,
-                                                                @RequestParam(value = "post" ,required = false) String post,
-                                                                  @RequestParam(value = "cardId" ,required = false) String cardId) {
+    @PostMapping("/selectGbInfoByNameAndUnitAndPost")
+    public ResultMsgUtil<Object> selectGbInfoByNameAndUnitAndPost(@RequestBody GbInfoByNameAndUnitAndPost vo) {
+        String name = vo.getName();
+        String unit = vo.getUnit();
+        String post = vo.getPost();
+        String cardId = vo.getCardId();
         List<GbBasicInfo> gbBasicInfos = gbBasicInfoService.selectGbInfoByNameAndUnitAndPost(name, unit, post,cardId);
         if(CollectionUtil.isNotEmpty(gbBasicInfos)){
              GbBasicInfo gbBasicInfo = gbBasicInfos.get(0);
