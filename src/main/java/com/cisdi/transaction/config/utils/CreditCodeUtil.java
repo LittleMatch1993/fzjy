@@ -106,6 +106,6 @@ public class CreditCodeUtil {
      * @return 符合: true
      */
     public static boolean validateUnifiedCreditCode(String unifiedCreditCode) {
-        return Pattern.matches("^([0-9A-HJ-NPQRTUWXY]{2}\\d{6}[0-9A-HJ-NPQRTUWXY]{10}|[1-9]\\d{14})$",unifiedCreditCode);
+        return Pattern.matches("^([0-9A-HJ-NPQRTUWXY]{2}\\d{6}[0-9A-HJ-NPQRTUWXY]{10}|[1-9](\\d{12}|\\d{14}))$",unifiedCreditCode);
     }
 }
