@@ -67,7 +67,13 @@ public class ProhibitTransactionController{
     public ResultMsgUtil<Object> submitBanDealInfo(
             @ApiParam(value = "id集合", required = true)
             @RequestBody SubmitDto ids) {
-        ResultMsgUtil<Object> result = banDealInfoService.submitBanDealInfo(ids.getIds());
+        ResultMsgUtil<Object> result = null;
+        try {
+            result = banDealInfoService.submitBanDealInfo(ids.getIds());
+        }catch (Exception e){
+            log.error("提交禁止交易信息异常",e);
+            return ResultMsgUtil.failure("推送禁止交易信息");
+        }
         return result;
     }
 

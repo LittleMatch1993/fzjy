@@ -30,7 +30,7 @@ public class CadreFamilyExportDto extends BaseDTO{
     private String unit;
 
     @ApiModelProperty(value = "干部信息职务类型")
-    private String post_type;
+    private List<String> post_type;
 
     @ApiModelProperty(value = "家人信息干部姓名")
     private String cadre_name;
@@ -61,6 +61,9 @@ public class CadreFamilyExportDto extends BaseDTO{
 
     @ApiModelProperty(value = "是否升序")
     private Boolean isAsc;
+
+    @ApiModelProperty(value = "创建账户")
+    private List<String> create_account;
 
     public Boolean getIsAsc(){
         return Objects.isNull(this.isAsc)?false:this.isAsc;
