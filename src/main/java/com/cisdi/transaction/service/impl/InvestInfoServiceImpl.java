@@ -654,6 +654,15 @@ public class InvestInfoServiceImpl extends ServiceImpl<InvestInfoMapper, InvestI
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void saveBatchInvestmentInfo(List<InvestmentDTO> lists, BaseDTO baseDTO, ExportReturnVO exportReturnVO) {
+        final String orgCode;
+        final String orgName;
+        if (baseDTO.getOrgCode().contains(",")){
+            orgCode="70000003";
+            orgName="五矿有色金属股份有限公司";
+        }else {
+            orgCode=baseDTO.getOrgCode();
+            orgName=baseDTO.getOrgName();
+        }
         //过滤掉必填校验未通过的字段
         List<InvestmentDTO> list = lists.stream().filter(e -> StringUtils.isBlank(e.getMessage())).collect(Collectors.toList());
         list=checkParams(list,exportReturnVO,baseDTO.getOrgCode());
@@ -746,6 +755,10 @@ public class InvestInfoServiceImpl extends ServiceImpl<InvestInfoMapper, InvestI
                 }
             });
             if (!investInfoList.isEmpty()) {
+                investInfoList.forEach(mechanismInfo -> {
+                    mechanismInfo.setOrgCode(orgCode);
+                    mechanismInfo.setOrgName(orgName);
+                });
                 this.saveBatch(investInfoList);
                 spouseBasicInfoService.addBatchSpouse(investInfoList.stream().map(investInfo ->
                         new SpouseBasicInfo().setRefId(investInfo.getId()).setCreateTime(DateUtil.date()).setTenantId(baseDTO.getServiceLesseeId())
@@ -961,6 +974,10 @@ public class InvestInfoServiceImpl extends ServiceImpl<InvestInfoMapper, InvestI
 
         });
         if (!investInfoList.isEmpty()) {
+            investInfoList.forEach(mechanismInfo -> {
+                mechanismInfo.setOrgCode(orgCode);
+                mechanismInfo.setOrgName(orgName);
+            });
             this.saveBatch(investInfoList);
             spouseBasicInfoService.addBatchSpouse(investInfoList.stream().map(investInfo ->
                     new SpouseBasicInfo().setRefId(investInfo.getId()).setCreateTime(investInfo.getCreateTime()).setTenantId(baseDTO.getServiceLesseeId())
@@ -969,6 +986,10 @@ public class InvestInfoServiceImpl extends ServiceImpl<InvestInfoMapper, InvestI
             ).collect(Collectors.toList()),SystemConstant.INVESTMENT);
         }
         if (!updateList.isEmpty()) {
+            updateList.forEach(mechanismInfo -> {
+                mechanismInfo.setOrgCode(orgCode);
+                mechanismInfo.setOrgName(orgName);
+            });
             this.updateBatchById(updateList);
             spouseBasicInfoService.addBatchSpouse(updateList.stream().map(investInfo ->
                     new SpouseBasicInfo().setRefId(investInfo.getId()).setCreateTime(investInfo.getCreateTime()).setTenantId(baseDTO.getServiceLesseeId())

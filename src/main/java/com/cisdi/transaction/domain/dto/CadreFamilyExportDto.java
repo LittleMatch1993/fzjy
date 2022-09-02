@@ -65,6 +65,9 @@ public class CadreFamilyExportDto extends BaseDTO{
     @ApiModelProperty(value = "创建账户")
     private List<String> create_account;
 
+    @ApiModelProperty(value = "管理单位")
+    private List<String> manage_company_code;
+
     public Boolean getIsAsc(){
         return Objects.isNull(this.isAsc)?false:this.isAsc;
     }

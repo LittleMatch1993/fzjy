@@ -868,6 +868,7 @@ public class BanDealInfoServiceImpl extends ServiceImpl<BanDealInfoMapper, BanDe
                 .orderByDesc(StringUtils.isBlank(dto.getColumnName())||Objects.isNull(dto.getIsAsc()),"create_time")
                 .lambda()
                 .eq(StringUtils.isNotBlank(dto.getState()),BanDealInfo::getState, dto.getState())
+                .in(CollectionUtil.isNotEmpty(dto.getManage_company_code()),BanDealInfo::getManageCompanyCode,dto.getManage_company_code())
                 .like(StringUtils.isNotBlank(dto.getCompany()),BanDealInfo::getCompany,dto.getCompany())
                 .like(StringUtils.isNotBlank(dto.getName()),BanDealInfo::getName,dto.getName())
                 .in(CollectionUtil.isNotEmpty(dto.getPost_type()),BanDealInfo::getPostType,dto.getPost_type())
