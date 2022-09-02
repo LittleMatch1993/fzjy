@@ -151,7 +151,8 @@ public class InstitutionalFrameworkController {
     @ApiOperation("根据编码查询组织链路码")
     @PostMapping("/selectAsgpathnamecodeByOrgCode")
     public ResultMsgUtil<String> selectAsgpathnamecodeByOrgCode(@RequestBody OrgConditionVO searchVO) {
-        String asgpathnamecode= orgService.selectAsgpathnamecodeByOrgCode(searchVO);
+//        String asgpathnamecode= orgService.selectAsgpathnamecodeByOrgCode(searchVO);
+        String asgpathnamecode= orgService.selectAsgpathnamecodeByMoreOrgCode(searchVO);
         return ResultMsgUtil.success(asgpathnamecode);
     }
 }

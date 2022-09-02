@@ -469,6 +469,8 @@ public class OrgServiceImpl extends ServiceImpl<OrgMapper, Org> implements OrgSe
         return null;
     }
 
+
+
     @Override
     public List<OrgTree> selectOrgTree(String orgCode) {
         if(StrUtil.isEmpty(orgCode)){
@@ -515,6 +517,31 @@ public class OrgServiceImpl extends ServiceImpl<OrgMapper, Org> implements OrgSe
         QueryWrapper<Org> queryWrapper = new QueryWrapper<>();
         queryWrapper.lambda().in(Org::getAsgorgancode,orgCodeList);
         return this.list(queryWrapper);
+    }
+
+    @Override
+    public String selectAsgpathnamecodeByMoreOrgCode(OrgConditionVO searchVO) {
+        //当前操作员orgCode
+        List<String> orgCodeList = Arrays.stream(searchVO.getOrgCode().split(",")).distinct().filter(StringUtils::isNotBlank).collect(Collectors.toList());
+        //查询的orgCode
+        String searchOrgCode = searchVO.getSearchOrgCode();
+
+        if (StringUtils.isBlank(searchOrgCode)){
+            return null;
+        }
+        //当前操作员组织机构
+        List<Org> orgList = this.lambdaQuery().in(Org::getAsgorgancode, orgCodeList).list();
+        //当前查询的组织机构
+        Org currentOrg = this.lambdaQuery().eq(Org::getAsgorgancode, searchOrgCode).last(SqlConstant.ONE_SQL).one();
+        if (Objects.isNull(currentOrg)){
+            return null;
+        }
+        for (Org org : orgList) {
+            if (org.getAsgpathnamecode().startsWith(currentOrg.getAsgpathnamecode())||currentOrg.getAsgpathnamecode().startsWith(org.getAsgpathnamecode())){
+                return currentOrg.getAsgpathnamecode();
+            }
+        }
+        return null;
     }
 
     private List<OrgTree> getOrgTree(List<Org> orgList,List<OrgTree> orgTreeList,String asgpathnamecode,int level){
