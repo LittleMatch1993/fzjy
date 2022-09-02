@@ -128,15 +128,13 @@ public class InstitutionalFrameworkController {
     @PostMapping("/selectCodeAndNameByName")
     public ResultMsgUtil<List> selectCodeAndNameByName(@RequestBody SearchVO search) {
         List<OrgDictVo> voList = new ArrayList<>();
-        /*List<String> keywordList = search.getKeyword();
-        String orgCode = search.getOrgCode();*/
         List<Org> list = orgService.selectByName(search);
         if(CollectionUtil.isNotEmpty(list)){
             list.stream().forEach(e->{
                 OrgDictVo vo = new OrgDictVo();
                 vo.setId(e.getAsgorganname());
                 vo.setName(e.getAsgorgancode()+"-"+e.getAsgorganname());
-                //vo.setAsgPathName(e.getAsgpathname());
+                vo.setAsgpathname(e.getAsgpathname());
                 voList.add(vo);
             });
         }

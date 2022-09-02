@@ -11,5 +11,6 @@ import lombok.Data;
 public class OrgDictVo {
     String id;
     String name;
-    //String asgPathName;
+
+    String asgpathname;
 }

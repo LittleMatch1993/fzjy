@@ -23,6 +23,7 @@ import com.cisdi.transaction.domain.dto.SubmitDto;
 import com.cisdi.transaction.domain.model.*;
 import com.cisdi.transaction.domain.vo.KVVO;
 import com.cisdi.transaction.domain.vo.ProhibitTransactionExcelVO;
+import com.cisdi.transaction.domain.vo.SupplierInfoVo;
 import com.cisdi.transaction.mapper.master.BanDealInfoMapper;
 import com.cisdi.transaction.mapper.slave.PurchaseBanDealInfoMapper;
 import com.cisdi.transaction.service.*;
@@ -563,7 +564,7 @@ public class BanDealInfoServiceImpl extends ServiceImpl<BanDealInfoMapper, BanDe
         return ResultMsgUtil.success(map);
     }
 
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public ResultMsgUtil<Object>  submitBanDealInfo(List<String> ids) {
         boolean b = false;
@@ -596,6 +597,66 @@ public class BanDealInfoServiceImpl extends ServiceImpl<BanDealInfoMapper, BanDe
     }
 
     @Override
+    public List<BanDealInfo> validBatchCompanyCode(List<BanDealInfo> infoList) {
+        try {
+            List<String> companyList = infoList.stream().map(BanDealInfo::getSupplier).collect(Collectors.toList());
+            JSONObject jbParam = new JSONObject();
+            jbParam.put("name", companyList);
+            //调用企业画像接口
+            JSONObject resultOb = this.getCompanyInfoByName(jbParam);
+            boolean status = resultOb.getBoolean("status");
+            boolean b = resultOb.containsKey("data");
+            List<SupplierInfoVo> supplierList = new ArrayList<>();
+            if (status && b) {
+                JSONArray data = resultOb.getJSONArray("data");
+                for (int i = 0; i < data.size(); i++) {
+                    JSONObject obj = data.getJSONObject(i);
+                    String name = obj.getString("name");
+                    String creditNo = obj.getString("creditNo");
+                    String regNo = obj.getString("regNo");
+                    SupplierInfoVo vo = new SupplierInfoVo(name,creditNo,regNo);
+                    supplierList.add(vo);
+                }
+            }
+            if (CollectionUtil.isNotEmpty(supplierList)) {
+                //List<String> ids = new ArrayList<>();
+                Map<String, List<SupplierInfoVo>> map = supplierList.stream().collect(Collectors.groupingBy(SupplierInfoVo::getCompany));
+                infoList.stream().forEach(e -> {
+                    String company = e.getSupplier();
+                    boolean ck = map.containsKey(company);
+                    if (ck) {
+                        String code = e.getCode();
+                        List<SupplierInfoVo> infoVoList = map.get(company);
+                        boolean creditNoB = infoVoList.stream().anyMatch(info -> code.equals(info.getCreditNo()));
+                        boolean regNoB = infoVoList.stream().anyMatch(info -> code.equals(info.getRegNo()));
+                        if (!(creditNoB||regNoB)) {//查询出来的信用代码和填写的不一致
+                            String tips = e.getCheckTips();
+                            if (StrUtil.isBlank(tips) || !tips.contains("企业名称和统一社会信用代码/注册号不匹配")) {
+                                StringJoiner sj = new StringJoiner(",");
+                                if(StrUtil.isNotEmpty(e.getCheckTips())){
+                                    sj.add(e.getCheckTips());
+                                }
+                                sj.add("企业名称和统一社会信用代码/注册号不匹配");
+                                e.setCheckTips(sj.toString());
+                            }
+
+                            // ids.add(e.getId());
+                        } else { //查询出来的信用代码和填写的一致
+                            String tips = e.getCheckTips();
+                            if (StrUtil.isNotBlank(tips) && tips.contains("企业名称和统一社会信用代码/注册号不匹配")) {
+                                tips = tips.replace("企业名称和统一社会信用代码/注册号不匹配", "");
+                                e.setCheckTips(tips);
+                            }
+                        }
+                    }
+                });
+            }
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+        return infoList;
+    }
+/*    @Override
     public List<BanDealInfo> validBatchCompanyCode(List<BanDealInfo> infoList) {
         try {
             List<String> companyList = infoList.stream().map(BanDealInfo::getSupplier).collect(Collectors.toList());
@@ -649,7 +710,7 @@ public class BanDealInfoServiceImpl extends ServiceImpl<BanDealInfoMapper, BanDe
             e.printStackTrace();
         }
         return infoList;
-    }
+    }*/
 
     @Override
     public BanDealInfo validCompanyCode(BanDealInfo banDealInfo) {
@@ -666,25 +727,30 @@ public class BanDealInfoServiceImpl extends ServiceImpl<BanDealInfoMapper, BanDe
             boolean b = resultOb.containsKey("data");
             System.out.println("验证企业画像,status="+status+"----b="+b);
             System.out.println("验证企业画像,company="+company+"----b="+b);
-            Map<String, String> map = new HashMap<>();
+            List<SupplierInfoVo> supplierList = new ArrayList<>();
             if (status && b) {
                 JSONArray data = resultOb.getJSONArray("data");
                 for (int i = 0; i < data.size(); i++) {
                     JSONObject obj = data.getJSONObject(i);
                     String name = obj.getString("name");
                     String creditNo = obj.getString("creditNo");
-                    map.put(name, creditNo);
+                    String regNo = obj.getString("regNo");
+                    SupplierInfoVo vo = new SupplierInfoVo(name,creditNo,regNo);
+                    supplierList.add(vo);
                 }
             }
-            if (map != null && map.size() > 0) {
+            if (CollectionUtil.isNotEmpty(supplierList)) {
                 //List<String> ids = new ArrayList<>();
                 String companyName = banDealInfo.getSupplier();
+                Map<String, List<SupplierInfoVo>> map = supplierList.stream().collect(Collectors.groupingBy(SupplierInfoVo::getCompany));
                 boolean ck = map.containsKey(companyName);
                 if (ck) {
                     String code = banDealInfo.getCode();
-                    String creditNo = map.get(companyName).toString();
-                    System.out.println("验证企业画像,companyName="+companyName+"-code="+code+",creditNo="+creditNo);
-                    if (!creditNo.equals(code)) {//查询出来的信用代码和填写的不一致
+                    List<SupplierInfoVo> infoVoList = map.get(company);
+                    boolean creditNoB = infoVoList.stream().anyMatch(info -> code.equals(info.getCreditNo()));
+                    boolean regNoB = infoVoList.stream().anyMatch(info -> code.equals(info.getRegNo()));
+                    System.out.println("验证企业画像,companyName="+companyName+"-creditNoB="+creditNoB+",regNoB="+regNoB);
+                    if (!(creditNoB||regNoB)) {//查询出来的信用代码和填写的不一致
                         String tips = banDealInfo.getCheckTips();
                         if (StrUtil.isNotBlank(tips) && !tips.contains("企业名称和统一社会信用代码/注册号不匹配")) {
                             StringJoiner sj = new StringJoiner(",");
@@ -721,7 +787,7 @@ public class BanDealInfoServiceImpl extends ServiceImpl<BanDealInfoMapper, BanDe
             String supplier = e.getSupplier();//供应商名称
             String code = e.getCode();//信用代码
             String banPurchaseCode = e.getBanPurchaseCode();
-            if(StrUtil.isNotEmpty(code) &&code.length()<15){
+            if(StrUtil.isNotEmpty(code) &&code.length()<5){
                 e.setState(SystemConstant.INVALID_STATE); //无效
             } else if (StrUtil.isNotEmpty(supplier) && StrUtil.isNotEmpty(code) && StrUtil.isNotEmpty(banPurchaseCode)) {
                 e.setState(state);
@@ -737,7 +803,7 @@ public class BanDealInfoServiceImpl extends ServiceImpl<BanDealInfoMapper, BanDe
         String supplier = banDealInfo.getSupplier();//供应商名称
         String code = banDealInfo.getCode();//信用代码
         String banPurchaseCode = banDealInfo.getBanPurchaseCode();
-        if( StrUtil.isNotEmpty(code)&&code.length()<15){ //社会信用代码小于15位也无效，防止社会信用代码为  无，否，没有等无效数据。
+        if( StrUtil.isNotEmpty(code)&&code.length()<5){ //社会信用代码小于5位也无效，防止社会信用代码为  无，否，没有等无效数据。
             banDealInfo.setState(SystemConstant.INVALID_STATE); //无效
         }else if (StrUtil.isNotEmpty(supplier) && StrUtil.isNotEmpty(code) && StrUtil.isNotEmpty(banPurchaseCode)) {
             banDealInfo.setState(state);
@@ -804,7 +870,7 @@ public class BanDealInfoServiceImpl extends ServiceImpl<BanDealInfoMapper, BanDe
                 .eq(StringUtils.isNotBlank(dto.getState()),BanDealInfo::getState, dto.getState())
                 .like(StringUtils.isNotBlank(dto.getCompany()),BanDealInfo::getCompany,dto.getCompany())
                 .like(StringUtils.isNotBlank(dto.getName()),BanDealInfo::getName,dto.getName())
-                .like(StringUtils.isNotBlank(dto.getPost_type()),BanDealInfo::getPostType,dto.getPost_type())
+                .in(CollectionUtil.isNotEmpty(dto.getPost_type()),BanDealInfo::getPostType,dto.getPost_type())
                 .apply(AuthSqlUtil.getAuthSqlByTableNameAndOrgCode(ModelConstant.BAN_DEAL_INFO,dto.getOrgCode()))
         ).stream().map(t -> {
             ProhibitTransactionExcelVO vo = new ProhibitTransactionExcelVO();
