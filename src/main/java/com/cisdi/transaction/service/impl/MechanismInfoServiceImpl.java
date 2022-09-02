@@ -904,6 +904,7 @@ public class MechanismInfoServiceImpl extends ServiceImpl<MechanismInfoMapper, M
                 .eq(StringUtils.isNotBlank(exportDto.getState()),MechanismInfo::getState, exportDto.getState())
                 .like(StringUtils.isNotBlank(exportDto.getCompany()),MechanismInfo::getCompany,exportDto.getCompany())
                 .like(StringUtils.isNotBlank(exportDto.getGb_name()),MechanismInfo::getGbName,exportDto.getGb_name())
+                .in(CollectionUtil.isNotEmpty(exportDto.getCreate_account()),MechanismInfo::getCreateAccount,exportDto.getCreate_account())
                 .apply(AuthSqlUtil.getAuthSqlByTableNameAndOrgCode(ModelConstant.MECHANISM_INFO,exportDto.getOrgCode()))
         ).stream().map(t -> {
             CommunityServiceDTO dto = new CommunityServiceDTO();

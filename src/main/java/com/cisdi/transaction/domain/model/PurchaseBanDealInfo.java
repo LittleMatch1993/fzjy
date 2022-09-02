@@ -23,6 +23,7 @@ public class PurchaseBanDealInfo {
     /**
      * id
      */
+    @TableId(value = "id",type = IdType.ASSIGN_UUID)
     private String id;
     /**
      * 供应商名称
@@ -65,4 +66,10 @@ public class PurchaseBanDealInfo {
      * 创建时间
      */
     private Date createTime;
+
+    private  String refId;
+
+    private Integer delFlag;
+
+
 }

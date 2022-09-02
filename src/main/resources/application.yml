@@ -128,7 +128,7 @@ mybatis-plus:
 
 #企业画像根据企业名称查询社会统一信用代码
 wk:
-  url: http://113.207.43.93:28500/api/wk/supplier/getCompanyInfoByName
+  url: http://113.207.43.93:28500/api/wk/supplier/getCompanyRegisterCodeByName
 #组织接口
 org:
   #url: https://podev.minmetals.com.cn:50001/RESTAdapter/BS_OA/BS_MDM/GetAssHrTreeGxb

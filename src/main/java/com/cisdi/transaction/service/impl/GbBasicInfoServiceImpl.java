@@ -205,7 +205,7 @@ public class GbBasicInfoServiceImpl extends ServiceImpl<GbBasicInfoMapper, GbBas
                         .orderBy(StringUtils.isNotBlank(dto.getColumnName())&&Objects.nonNull(dto.getIsAsc()),dto.getIsAsc(),dto.getColumnName())
                         .orderByDesc(StringUtils.isBlank(dto.getColumnName())||Objects.isNull(dto.getIsAsc()),"create_time")
                         .lambda().like(StringUtils.isNotBlank(dto.getName()),GbBasicInfo::getName,dto.getName())
-        .like(StringUtils.isNotBlank(dto.getUnit()),GbBasicInfo::getUnit,dto.getUnit()).eq(StringUtils.isNotBlank(dto.getPost_type()),GbBasicInfo::getPostType,dto.getPost_type()).apply(AuthSqlUtil.getAuthSqlByTableNameAndOrgCode(ModelConstant.GB_BASIC_INFO,dto.getOrgCode()))
+        .like(StringUtils.isNotBlank(dto.getUnit()),GbBasicInfo::getUnit,dto.getUnit()).in(CollectionUtil.isNotEmpty(dto.getPost_type()),GbBasicInfo::getPostType,dto.getPost_type()).apply(AuthSqlUtil.getAuthSqlByTableNameAndOrgCode(ModelConstant.GB_BASIC_INFO,dto.getOrgCode()))
         ).stream().map(t -> {
             CadreExcelVO vo = new CadreExcelVO();
             BeanUtils.copyProperties(t, vo);

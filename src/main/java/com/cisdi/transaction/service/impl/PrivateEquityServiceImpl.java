@@ -902,6 +902,7 @@ public class PrivateEquityServiceImpl extends ServiceImpl<PrivateEquityMapper, P
                 .eq(StringUtils.isNotBlank(exportDto.getState()),PrivateEquity::getState, exportDto.getState())
                 .like(StringUtils.isNotBlank(exportDto.getCompany()),PrivateEquity::getCompany,exportDto.getCompany())
                 .like(StringUtils.isNotBlank(exportDto.getGb_name()),PrivateEquity::getGbName,exportDto.getGb_name())
+                .in(CollectionUtil.isNotEmpty(exportDto.getCreate_account()),PrivateEquity::getCreateAccount,exportDto.getCreate_account())
                 .apply(AuthSqlUtil.getAuthSqlByTableNameAndOrgCode(ModelConstant.PRIVATE_EQUITY,exportDto.getOrgCode()))
         ).stream().map(t -> {
             EquityFundsDTO dto = new EquityFundsDTO();

@@ -4,6 +4,8 @@ import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.StrUtil;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.cisdi.transaction.constant.SystemConstant;
 import com.cisdi.transaction.domain.model.BanDealInfo;
@@ -52,10 +54,13 @@ public class PurchaseBanDealInfoSeviceImpl extends ServiceImpl<PurchaseBanDealIn
         //推送数据
         List<PurchaseBanDealInfo> purchaseList = new ArrayList<>();
         infos.stream().forEach(info->{
-            PurchaseBanDealInfo purchase = new PurchaseBanDealInfo();
             if(SystemConstant.VALID_STATE.equals(info.getState())){
-                BeanUtil.copyProperties(info, purchase);
+                PurchaseBanDealInfo purchase = new PurchaseBanDealInfo();
+                String refId = info.getId();
+                BeanUtil.copyProperties(info, purchase,new String[]{"id"});
                 purchase.setCreateTime(DateUtil.date());
+                purchase.setRefId(refId);
+                purchase.setDelFlag(0);//未删除
                 String temp = purchase.getIsExtends();
                 String isExtends = sysDictBizService.getDictValue(temp, sysDictBizs);
                 purchase.setIsExtends(StrUtil.isNotEmpty(isExtends)?isExtends:temp);
@@ -68,11 +73,18 @@ public class PurchaseBanDealInfoSeviceImpl extends ServiceImpl<PurchaseBanDealIn
         return false;
     }
 
+    /**
+     * 逻辑删除，因为没有物理删除权限
+     * @param ids
+     * @return
+     */
     @Override
     public boolean deletePushDataForPurchase(List<String> ids) {
         if(CollectionUtil.isEmpty(ids)){
             return false;
         }
-        return this.removeByIds(ids);
+        UpdateWrapper<PurchaseBanDealInfo> updateWrapper = new UpdateWrapper<>();
+        updateWrapper.lambda().set(PurchaseBanDealInfo::getDelFlag,1).in(PurchaseBanDealInfo::getRefId,ids);
+        return  this.update(updateWrapper);
     }
 }

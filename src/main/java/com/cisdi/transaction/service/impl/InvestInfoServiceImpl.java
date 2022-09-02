@@ -989,6 +989,7 @@ public class InvestInfoServiceImpl extends ServiceImpl<InvestInfoMapper, InvestI
                 .eq(StringUtils.isNotBlank(exportDto.getState()),InvestInfo::getState, exportDto.getState())
                 .like(StringUtils.isNotBlank(exportDto.getCompany()),InvestInfo::getCompany,exportDto.getCompany())
                 .like(StringUtils.isNotBlank(exportDto.getGb_name()),InvestInfo::getGbName,exportDto.getGb_name())
+                .in(CollectionUtil.isNotEmpty(exportDto.getCreate_account()),InvestInfo::getCreateAccount,exportDto.getCreate_account())
                 .apply(AuthSqlUtil.getAuthSqlByTableNameAndOrgCode(ModelConstant.INVEST_INFO,exportDto.getOrgCode()))
         ).stream().map(t -> {
             InvestmentDTO dto = new InvestmentDTO();

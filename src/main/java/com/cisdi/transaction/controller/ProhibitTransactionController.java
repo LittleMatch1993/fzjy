@@ -72,7 +72,7 @@ public class ProhibitTransactionController{
             result = banDealInfoService.submitBanDealInfo(ids.getIds());
         }catch (Exception e){
             log.error("提交禁止交易信息异常",e);
-            return ResultMsgUtil.failure("推送禁止交易信息");
+            return ResultMsgUtil.failure("推送禁止交易信息失败");
         }
         return result;
     }
