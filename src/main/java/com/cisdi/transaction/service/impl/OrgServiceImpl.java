@@ -29,6 +29,7 @@ import com.cisdi.transaction.service.OrgService;
 import com.cisdi.transaction.service.SysDictBizService;
 import com.cisdi.transaction.util.ThreadLocalUtils;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -331,6 +332,16 @@ public class OrgServiceImpl extends ServiceImpl<OrgMapper, Org> implements OrgSe
 
     @Override
     public List<OrgVo> selectOrgByOrgCode(OrgConditionVO searchVO) {
+//        return selectOrgByOneOrgCode(searchVO);
+        return selectOrgByMoreOrgCode(searchVO);
+    }
+
+    /**
+     * 一个组织机构权限
+     * @param searchVO
+     * @return
+     */
+    private List<OrgVo> selectOrgByOneOrgCode(OrgConditionVO searchVO){
         //查询的orgCode
         String searchOrgCode = searchVO.getSearchOrgCode();
         //当前操作员的orgCode
@@ -399,6 +410,40 @@ public class OrgServiceImpl extends ServiceImpl<OrgMapper, Org> implements OrgSe
                 }
             }
         }
+    }
+
+
+    /**
+     * 多个组织机构权限
+     * @param searchVO
+     * @return
+     */
+    private List<OrgVo> selectOrgByMoreOrgCode(OrgConditionVO searchVO){
+        //查询的orgCode
+        String searchOrgCode = searchVO.getSearchOrgCode();
+        //当前操作员的orgCode
+        List<String> orgCodeList = Arrays.stream(searchVO.getOrgCode().split(",")).distinct().filter(StringUtils::isNotBlank).collect(Collectors.toList());
+        //如果查询orgCode为空则返回第一级内容
+        if (StringUtils.isBlank(searchOrgCode)){
+            Set<OrgVo> orgVos=new HashSet<>();
+            orgCodeList.forEach(orgCode->{
+                searchVO.setOrgCode(orgCode);
+                orgVos.addAll(Optional.ofNullable(selectOrgByOneOrgCode(searchVO)).orElse(Lists.newArrayList()));
+            });
+            if (CollectionUtils.isEmpty(orgVos)){
+                return null;
+            }else {
+                return Lists.newArrayList(orgVos);
+            }
+        }
+        for (String orgCode : orgCodeList) {
+            searchVO.setOrgCode(orgCode);
+            List<OrgVo> orgVos = selectOrgByOneOrgCode(searchVO);
+            if (!CollectionUtils.isEmpty(orgVos)){
+                return orgVos;
+            }
+        }
+        return null;
     }
 
     @Override
