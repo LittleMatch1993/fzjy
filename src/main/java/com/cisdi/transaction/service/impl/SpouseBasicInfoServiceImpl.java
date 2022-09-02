@@ -13,11 +13,14 @@ import com.cisdi.transaction.domain.dto.CadreFamiliesDTO;
 import com.cisdi.transaction.domain.dto.CadreFamilyExportDto;
 import com.cisdi.transaction.domain.model.GbBasicInfo;
 import com.cisdi.transaction.domain.model.SpouseBasicInfo;
+import com.cisdi.transaction.domain.model.SpouseEnterprise;
 import com.cisdi.transaction.domain.model.SysDictBiz;
 import com.cisdi.transaction.domain.vo.CadreFamiliesExcelVO;
 import com.cisdi.transaction.mapper.master.SpouseBasicInfoMapper;
 import com.cisdi.transaction.service.SpouseBasicInfoService;
+import com.cisdi.transaction.service.SpouseEnterpriseService;
 import com.cisdi.transaction.service.SysDictBizService;
+import com.google.common.collect.Lists;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,6 +42,8 @@ public class SpouseBasicInfoServiceImpl extends ServiceImpl<SpouseBasicInfoMappe
 
     @Autowired
     private SysDictBizService sysDictBizService;
+    @Autowired
+    private SpouseEnterpriseService spouseEnterpriseService;
     /**
      * 检测表中是否有重复数据，不重复才添加。
      * 根据干部身份证号码 和身份证号码判断是否重复
@@ -144,11 +149,14 @@ public class SpouseBasicInfoServiceImpl extends ServiceImpl<SpouseBasicInfoMappe
     }
 
     @Override
-    public void addBatchSpouse(List<SpouseBasicInfo> spouseBasicInfos) {
+    public void addBatchSpouse(List<SpouseBasicInfo> spouseBasicInfos,String type) {
         if (CollectionUtils.isEmpty(spouseBasicInfos)){
             return;
         }
+        //将关联的企业id和家人唯一码做映射
+        Map<String, String> refIdCodeMap = spouseBasicInfos.stream().collect(Collectors.toMap(SpouseBasicInfo::getRefId, spouseBasicInfo -> spouseBasicInfo.getCadreCardId() + "," + spouseBasicInfo.getTitle() + "," + spouseBasicInfo.getName()));
         Set<String> uniqueCodeSet=new HashSet<>();
+        //去掉重复的数据
         spouseBasicInfos=spouseBasicInfos.stream().filter(spouseBasicInfo->{
             String uniqueCode = spouseBasicInfo.getCadreCardId()+","+spouseBasicInfo.getTitle()+","+spouseBasicInfo.getName();
             if (uniqueCodeSet.contains(uniqueCode)){
@@ -160,15 +168,19 @@ public class SpouseBasicInfoServiceImpl extends ServiceImpl<SpouseBasicInfoMappe
         }).collect(Collectors.toList());
         //所有干部身份证号
         List<String> cadreCardIds = spouseBasicInfos.stream().map(SpouseBasicInfo::getCadreCardId).distinct().collect(Collectors.toList());
+        //获取已存在的干部对应的家人
         List<SpouseBasicInfo> spouseBasicInfoList = this.lambdaQuery().in(SpouseBasicInfo::getCadreCardId, cadreCardIds).list();
 
         if (!CollectionUtils.isEmpty(spouseBasicInfoList)){
-            //筛选出不存在的
+            //存在的家人信息
+            List<SpouseBasicInfo> existSpouseBasicInfoList= Lists.newArrayList();
+            //筛选出不存在的家人
             List<SpouseBasicInfo> addSpouseBasicInfos = spouseBasicInfos.stream().filter(spouseBasicInfo -> {
                 for (SpouseBasicInfo basicInfo : spouseBasicInfoList) {
                     if (basicInfo.getCadreCardId().equals(spouseBasicInfo.getCadreCardId())
                             && basicInfo.getTitle().equals(spouseBasicInfo.getTitle()) && basicInfo.getName().equals(spouseBasicInfo.getName())
                     ) {
+                        existSpouseBasicInfoList.add(basicInfo);
                         return false;
                     }
                 }
@@ -176,9 +188,88 @@ public class SpouseBasicInfoServiceImpl extends ServiceImpl<SpouseBasicInfoMappe
             }).collect(Collectors.toList());
             if (!CollectionUtils.isEmpty(addSpouseBasicInfos)){
                 this.saveBatch(addSpouseBasicInfos);
+                SpouseBasicInfo spouseBasicInfoOne = addSpouseBasicInfos.get(0);
+                //新增的家人唯一码和id映射
+                Map<String, String> codeSpouseIdMap = addSpouseBasicInfos.stream().collect(Collectors.toMap(spouseBasicInfo -> spouseBasicInfo.getCadreCardId() + "," + spouseBasicInfo.getTitle() + "," + spouseBasicInfo.getName(),SpouseBasicInfo::getId));
+                //新增关联的企业id和家人唯一码做映射
+                Map<String, String> filterMap = refIdCodeMap.entrySet().stream().filter(refIdCode ->
+                        codeSpouseIdMap.containsKey(refIdCode.getValue())
+                ).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+
+                List<SpouseEnterprise> spouseEnterpriseList = filterMap.entrySet().stream().map(refIdCode -> {
+                    SpouseEnterprise spouseEnterprise = new SpouseEnterprise();
+                    BeanUtils.copyProperties(spouseBasicInfoOne, spouseEnterprise);
+                    spouseEnterprise.setId(null);
+                    spouseEnterprise.setEnterpriseId(refIdCode.getKey());
+                    spouseEnterprise.setSpouseId(codeSpouseIdMap.get(refIdCode.getValue()));
+                    spouseEnterprise.setType(type);
+                    return spouseEnterprise;
+                }).collect(Collectors.toList());
+                spouseEnterpriseService.saveBatch(spouseEnterpriseList);
+            }
+
+            if (!existSpouseBasicInfoList.isEmpty()){
+                //已存在的家人唯一码和id映射
+                Map<String, String> codeSpouseIdMap = existSpouseBasicInfoList.stream().collect(Collectors.toMap(spouseBasicInfo -> spouseBasicInfo.getCadreCardId() + "," + spouseBasicInfo.getTitle() + "," + spouseBasicInfo.getName(),SpouseBasicInfo::getId));
+                //筛选出本次已存在家人关联的企业id
+                List<String> refIds = refIdCodeMap.entrySet().stream().filter(e -> codeSpouseIdMap.containsKey(e.getValue())).map(Map.Entry::getKey).collect(Collectors.toList());
+                //查询出所有已关联的家人和企业信息
+                List<SpouseEnterprise> spouseEnterpriseList = spouseEnterpriseService.lambdaQuery().eq(SpouseEnterprise::getType, type).in(SpouseEnterprise::getSpouseId, codeSpouseIdMap.values()).in(SpouseEnterprise::getEnterpriseId, refIds).list();
+                SpouseBasicInfo spouseBasicInfo = spouseBasicInfos.get(0);
+                if (CollectionUtils.isEmpty(spouseEnterpriseList)){
+                    //如果没有关联的则全部关联
+                    List<SpouseEnterprise> spouseEnterpriseAddList=refIds.stream().map(refId->{
+                        SpouseEnterprise spouseEnterprise = new SpouseEnterprise();
+                        BeanUtils.copyProperties(spouseBasicInfo, spouseEnterprise);
+                        spouseEnterprise.setId(null);
+                        spouseEnterprise.setEnterpriseId(refId);
+                        spouseEnterprise.setSpouseId(codeSpouseIdMap.get(refIdCodeMap.get(refId)));
+                        spouseEnterprise.setType(type);
+                        return spouseEnterprise;
+                    }).collect(Collectors.toList());
+                    spouseEnterpriseService.saveBatch(spouseEnterpriseAddList);
+                }else {
+                    //将有关联的去除掉再保存
+                    List<SpouseEnterprise> spouseEnterpriseAddList=refIds.stream()
+                            .filter(refId->{
+                                for (SpouseEnterprise spouseEnterprise : spouseEnterpriseList) {
+                                    if (spouseEnterprise.getEnterpriseId().equals(refId)&&spouseEnterprise.getSpouseId().equals(
+                                            codeSpouseIdMap.get(refIdCodeMap.get(refId))
+                                    )){
+                                        return false;
+                                    }
+                                }
+                                return true;
+                            })
+                            .map(refId->{
+                        SpouseEnterprise spouseEnterprise = new SpouseEnterprise();
+                        BeanUtils.copyProperties(spouseBasicInfo, spouseEnterprise);
+                        spouseEnterprise.setId(null);
+                        spouseEnterprise.setEnterpriseId(refId);
+                        spouseEnterprise.setSpouseId(codeSpouseIdMap.get(refIdCodeMap.get(refId)));
+                        spouseEnterprise.setType(type);
+                        return spouseEnterprise;
+                    }).collect(Collectors.toList());
+                    if (!CollectionUtils.isEmpty(spouseEnterpriseAddList)){
+                        spouseEnterpriseService.saveBatch(spouseEnterpriseAddList);
+                    }
+                }
             }
         }else {
             this.saveBatch(spouseBasicInfos);
+            SpouseBasicInfo spouseBasicInfoOne = spouseBasicInfos.get(0);
+            Map<String, String> codeSpouseIdMap = spouseBasicInfos.stream().collect(Collectors.toMap(spouseBasicInfo -> spouseBasicInfo.getCadreCardId() + "," + spouseBasicInfo.getTitle() + "," + spouseBasicInfo.getName(),SpouseBasicInfo::getId));
+            //家人企业关联全部保存
+            List<SpouseEnterprise> spouseEnterpriseList = refIdCodeMap.entrySet().stream().map(refIdCode -> {
+                SpouseEnterprise spouseEnterprise = new SpouseEnterprise();
+                BeanUtils.copyProperties(spouseBasicInfoOne, spouseEnterprise);
+                spouseEnterprise.setId(null);
+                spouseEnterprise.setEnterpriseId(refIdCode.getKey());
+                spouseEnterprise.setSpouseId(codeSpouseIdMap.get(refIdCode.getValue()));
+                spouseEnterprise.setType(type);
+                return spouseEnterprise;
+            }).collect(Collectors.toList());
+            spouseEnterpriseService.saveBatch(spouseEnterpriseList);
         }
     }
 

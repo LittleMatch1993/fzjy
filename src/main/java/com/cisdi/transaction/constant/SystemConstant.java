@@ -32,4 +32,9 @@ public class SystemConstant {
      * 国家/省份/市----中国地区号
      */
     public final static String CHINA_AREA_CODE="0086";
+
+    //INVESTMENT 13-1，COMMUNITY 13-2，
+    public final static String INVESTMENT="1";
+    public final static String COMMUNITY="2";
+    public final static String EQUITYFUNDS="3";
 }

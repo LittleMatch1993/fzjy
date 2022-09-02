@@ -84,7 +84,7 @@ public interface SpouseBasicInfoService extends IService<SpouseBasicInfo> {
      * 批量新增家属信息
      * @param spouseBasicInfos
      */
-    void addBatchSpouse(List<SpouseBasicInfo> spouseBasicInfos);
+    void addBatchSpouse(List<SpouseBasicInfo> spouseBasicInfos,String type);
 
 
 }
