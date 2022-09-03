@@ -139,4 +139,11 @@ public class AuthSqlUtil {
         return conditionSql;
     }
 
+    public static String getAuthSqlForPathnamecodeRegexp(List<String> pathnamecodeList){
+        String conditionSql = "asgpathnamecode regexp";
+        String pathnamecodeStr = pathnamecodeList.stream().collect(Collectors.joining("|"));
+        conditionSql = conditionSql.concat(" '^(").concat(pathnamecodeStr).concat(")'");
+        return conditionSql;
+    }
+
 }

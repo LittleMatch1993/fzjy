@@ -966,6 +966,10 @@ public class PrivateEquityServiceImpl extends ServiceImpl<PrivateEquityMapper, P
         if(StrUtil.isEmpty(orgCode)){
             return new ArrayList<>();
         }
+        List<String> orgCodeList = Arrays.stream(orgCode.split(",")).distinct().filter(StringUtils::isNotBlank).collect(Collectors.toList());
+        if(orgCodeList.size()>1){
+            orgCode = "70000003";//系统中只有pizd整个账号会传多个orgCode.他的主组织编码是70000003
+        }
         Org org = orgService.selectByOrgancode(orgCode);
         List<PrivateEquity> list = null;
         String asglevel = org.getAsglevel();

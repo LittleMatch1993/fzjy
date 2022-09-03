@@ -257,12 +257,15 @@ public class OrgServiceImpl extends ServiceImpl<OrgMapper, Org> implements OrgSe
         if(StrUtil.isEmpty(orgCode)){
             return list;
         }
-        Org org = this.selectByOrgancode(orgCode.toString());
-        if(Objects.isNull(org)){
+        List<String> orgCodeList = Arrays.stream(orgCode.split(",")).distinct().filter(StringUtils::isNotBlank).collect(Collectors.toList());
+        List<Org> orgList = this.selectByOrgancode(orgCodeList);
+       // Org org = this.selectByOrgancode(orgCode.toString());
+        if(CollectionUtil.isEmpty(orgList)){
             return list;
         }
         QueryWrapper<Org> queryWrapper = new QueryWrapper<>();
-        String asglevel = org.getAsglevel();
+       // String asglevel = org.getAsglevel();
+        String asglevel =  this.getHighestLevel(orgList);
         if(StrUtil.isNotEmpty(asglevel)&&asglevel.equals("0")){ //看所有
             if(StrUtil.isNotEmpty(name)){
                 if(name.endsWith("公司")||name.endsWith("公")){
@@ -275,17 +278,17 @@ public class OrgServiceImpl extends ServiceImpl<OrgMapper, Org> implements OrgSe
                 queryWrapper.lambda().likeLeft(Org::getAsgorganname, "公司").last(SqlConstant.ONE_SQL_YB);;
             }
         }else{
-            String pathnamecode = org.getAsgpathnamecode();
+            List<String> pathnamecodeList = orgList.stream().map(Org::getAsgpathnamecode).collect(Collectors.toList());
             if(StrUtil.isNotEmpty(name)){
-                queryWrapper.lambda().likeRight(Org::getAsgpathnamecode,pathnamecode);
                 if(name.endsWith("公司")||name.endsWith("公")){
                     queryWrapper.lambda().like(Org::getAsgorganname, name);
                 }else{
                     queryWrapper.lambda().like(Org::getAsgorganname, name+"%公司");
                 }
+                queryWrapper.lambda().apply(AuthSqlUtil.getAuthSqlForPathnamecodeRegexp(pathnamecodeList));
             }else{
                 queryWrapper.lambda().likeLeft(Org::getAsgorganname, "公司");
-                queryWrapper.lambda().likeRight(Org::getAsgpathnamecode,pathnamecode).last(SqlConstant.ONE_SQL_YB);
+                queryWrapper.lambda().apply(AuthSqlUtil.getAuthSqlForPathnamecodeRegexp(pathnamecodeList)).last(SqlConstant.ONE_SQL_YB);
             }
         }
 
