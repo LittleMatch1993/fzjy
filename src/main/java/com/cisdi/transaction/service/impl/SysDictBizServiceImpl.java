@@ -35,6 +35,11 @@ public class SysDictBizServiceImpl extends ServiceImpl<SysDictBizMapper, SysDict
     }
 
     @Override
+    public SysDictBiz selectById(String id, List<SysDictBiz> dictList, String parentId) {
+        return dictList.stream().filter(e -> e.getId().toString().equals(id)&&e.getParentId().equals(parentId)).findAny().orElse(null);
+    }
+
+    @Override
     public String getDictValue(String id, List<SysDictBiz> dictList) {
         SysDictBiz dict =  this.selectById(id,dictList);
         if(Objects.isNull(dict)){
@@ -44,8 +49,28 @@ public class SysDictBizServiceImpl extends ServiceImpl<SysDictBizMapper, SysDict
     }
 
     @Override
+    public String getDictValue(String id, List<SysDictBiz> dictList, String parentId) {
+        SysDictBiz dict =  this.selectById(id,dictList,parentId);
+        if(Objects.isNull(dict)){
+            return null;
+        }
+        return dict.getValue();
+    }
+
+    @Override
     public String getDictId(String value, List<SysDictBiz> dictList) {
         SysDictBiz dict = dictList.stream().filter(e -> e.getValue().equals(value)).findAny().orElse(null);
+        if(Objects.isNull(dict)){
+            return null;
+        }
+        return dict.getId().toString();
+    }
+
+    @Override
+    public String getDictId(String value, List<SysDictBiz> dictList, String parentId) {
+        SysDictBiz dict = dictList.stream().
+                filter(e -> e.getValue().equals(value)&&e.getParentId().equals(parentId))
+                .findAny().orElse(null);
         if(Objects.isNull(dict)){
             return null;
         }

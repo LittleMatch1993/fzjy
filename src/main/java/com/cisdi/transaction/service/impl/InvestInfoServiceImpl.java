@@ -65,6 +65,9 @@ public class InvestInfoServiceImpl extends ServiceImpl<InvestInfoMapper, InvestI
     @Autowired
     private OrgService orgService;
 
+    @Autowired
+    private SpouseEnterpriseService spouseEnterpriseService;
+
     @Transactional
     @Override
     public boolean updateState(List<String> ids, String state) {
@@ -217,9 +220,15 @@ public class InvestInfoServiceImpl extends ServiceImpl<InvestInfoMapper, InvestI
         info.setCreatorId(dto.getServiceUserId());
         info.setCreateAccount(dto.getServiceUserAccount());
         info.setCreateName(dto.getServicePersonName());
-        info.setOrgCode(dto.getOrgCode());
-        //info.setOrgName(dto.getOrgName());
-        info.setOrgName(dto.getServiceLesseeName());
+        String orgCode = dto.getOrgCode();
+        if(StrUtil.isNotEmpty(orgCode)&&orgCode.split(",").length>1){
+            info.setOrgCode("70000003");
+            info.setOrgName("五矿有色金属股份有限公司");
+        }else{
+            info.setOrgCode(orgCode);
+            info.setOrgName(dto.getServiceLesseeName());
+        }
+
         info = this.valid(info);
         //新增
         this.save(info);
@@ -230,13 +239,31 @@ public class InvestInfoServiceImpl extends ServiceImpl<InvestInfoMapper, InvestI
     public void addFamilyInfo(InvestInfo info) {
         List<SpouseBasicInfo> sbiList = new ArrayList<>();
         String cardId = info.getCardId();
+        String infoId = info.getId();
         String name = info.getName();
         String title = info.getTitle();
         if(StrUtil.isEmpty(cardId)||StrUtil.isEmpty(name)||StrUtil.isEmpty(title)){
             return;
         }
-        long i = spouseBasicInfoService.selectCount(cardId, name, title);
-        if (i > 0) { //i>0 说明当前数据重复了
+        List<SpouseBasicInfo>  spouseList = spouseBasicInfoService.selectSpouseInfo(cardId, name, title);
+        if (CollectionUtil.isNotEmpty(spouseList)){ //说明当前数据重复了
+            //查看中间表是否有关联数据，如果没有就添加
+            //正常情况下 spouseList 只有一个值，如果多个值之前程序bug导致的。
+            SpouseBasicInfo spouseBasicInfo = spouseList.get(0);
+            String sid = spouseBasicInfo.getId();
+            List<SpouseEnterprise> enterprisesList = spouseEnterpriseService.selectBySpouseIdAndEnterpriseIdAndType(sid, infoId, "1");
+            if(CollectionUtil.isEmpty(enterprisesList)){
+                spouseEnterpriseService.insertSpouseEnterprise(sid, infoId, "1");
+            }
+            //则修改家属信息
+            SpouseBasicInfo spouseBasic = new SpouseBasicInfo();
+            spouseBasic.setId(sid);
+            spouseBasic.setUpdateTime(DateUtil.date());
+            spouseBasic.setName(name);
+            spouseBasic.setTitle(title);
+            spouseBasic.setCardName(info.getFamilyCardType());
+            spouseBasic.setCardId(info.getFamilyCardId());
+            spouseBasicInfoService.updateById(spouseBasic);
             return;
         }
         SpouseBasicInfo temp = new SpouseBasicInfo();
@@ -254,6 +281,8 @@ public class InvestInfoServiceImpl extends ServiceImpl<InvestInfoMapper, InvestI
             //添加干部配偶，子女及其配偶数据
             try {
                 spouseBasicInfoService.saveBatch(sbiList);
+                //关联中间表添加数据
+                spouseEnterpriseService.insertSpouseEnterprise(temp.getId(), infoId, "1");
             } catch (Exception e) {
                 e.printStackTrace();
                 // this.updateState(ids, SystemConstant.SAVE_STATE)
@@ -1165,7 +1194,7 @@ public class InvestInfoServiceImpl extends ServiceImpl<InvestInfoMapper, InvestI
             //字典对应项
             String isSituation = sysDictBizService.getDictValue(dto.getIsSituation(), dictList);
             String title = sysDictBizService.getDictValue(dto.getTitle(), dictList);
-            String enterpriseState = sysDictBizService.getDictValue(dto.getEnterpriseState(), dictList);
+            String enterpriseState = sysDictBizService.getDictValue(dto.getEnterpriseState(), dictList,"1552585398045290496");
             String enterpriseType = sysDictBizService.getDictValue(dto.getEnterpriseType(), dictList);
             String shareholder = sysDictBizService.getDictValue(dto.getShareholder(), dictList);
             String seniorPosition = sysDictBizService.getDictValue(dto.getSeniorPosition(), dictList);

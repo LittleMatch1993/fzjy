@@ -94,11 +94,13 @@ public class GbBasicInfoServiceImpl extends ServiceImpl<GbBasicInfoMapper, GbBas
         if(StrUtil.isEmpty(orgCode)){
             return list;
         }
-        Org org = orgService.selectByOrgancode(orgCode);
-        if(Objects.isNull(org)){
+        List<String> orgCodeList = new ArrayList<String>(Arrays.asList(orgCode.split(",")));
+
+        List<Org> orgs = orgService.selectByOrgancode(orgCodeList);
+        if (CollectionUtil.isEmpty(orgs)){
             return list;
         }
-        String asglevel = org.getAsglevel();
+        String asglevel = orgService.getHighestLevel(orgs);
         if(StrUtil.isNotEmpty(asglevel)&&asglevel.equals("0")) { //看所有
             QueryWrapper<GbBasicInfo> queryWrapper = new QueryWrapper();
             if(StrUtil.isNotEmpty(name)){ //有名字时
@@ -108,7 +110,7 @@ public class GbBasicInfoServiceImpl extends ServiceImpl<GbBasicInfoMapper, GbBas
             }
            return this.baseMapper.selectList(queryWrapper);
         }else{ //按权限查看数据
-            String pathNameCode = org.getAsgpathnamecode();
+            List<String> pathNameCode = orgs.stream().map(Org::getAsgpathnamecode).collect(Collectors.toList());  //org.getAsgpathnamecode();
             List<GbOrgInfo> gbOrgInfoList = null;
             if(StrUtil.isNotEmpty(name)){ //有名字时
                 gbOrgInfoList = this.baseMapper.selectByOrgCodeAndGbName(name, pathNameCode);
@@ -228,15 +230,18 @@ public class GbBasicInfoServiceImpl extends ServiceImpl<GbBasicInfoMapper, GbBas
         if (StrUtil.isEmpty(orgCode)){
             return null;
         }
-        Org org = orgService.selectByOrgancode(orgCode);
-        if (Objects.isNull(org)){
+        List<String> orgCodeList = new ArrayList<String>(Arrays.asList(orgCode.split(",")));
+
+        List<Org> orgs = orgService.selectByOrgancode(orgCodeList);
+        if (CollectionUtil.isEmpty(orgs)){
             return null;
         }
-        String asglevel = org.getAsglevel();
+        String asglevel = orgService.getHighestLevel(orgs);
+
         if(StrUtil.isNotEmpty(asglevel)&&asglevel.equals("0")){
 
         }
-        String pathNamecode = org.getAsgpathnamecode();
+        List<String> pathNamecode = orgs.stream().map(Org::getAsgpathnamecode).collect(Collectors.toList());
         return this.baseMapper.selectByPathNameCode(pathNamecode);
     }
 
@@ -245,16 +250,19 @@ public class GbBasicInfoServiceImpl extends ServiceImpl<GbBasicInfoMapper, GbBas
         if (StrUtil.isEmpty(orgCode)){
             return null;
         }
-        Org org = orgService.selectByOrgancode(orgCode);
-        if (Objects.isNull(org)){
+
+        List<String> orgCodeList = new ArrayList<String>(Arrays.asList(orgCode.split(",")));
+
+        List<Org> orgs = orgService.selectByOrgancode(orgCodeList);
+        if (CollectionUtil.isEmpty(orgs)){
             return null;
         }
-        String asglevel = org.getAsglevel();
+        String asglevel = orgService.getHighestLevel(orgs);
         List<GbOrgInfo> list = new ArrayList<>();
         if(StrUtil.isNotEmpty(asglevel)&&asglevel.equals("0")){
             list =  this.baseMapper.selectByCardIds(cardIds);
         }else{
-            String pathNamecode = org.getAsgpathnamecode();
+            List<String> pathNamecode = orgs.stream().map(Org::getAsgpathnamecode).collect(Collectors.toList());
             list =this.baseMapper.selectByPathNameCodeAndCardIds(cardIds,pathNamecode);
         }
         if(CollectionUtil.isEmpty(list)){
@@ -396,11 +404,13 @@ public class GbBasicInfoServiceImpl extends ServiceImpl<GbBasicInfoMapper, GbBas
         if (StrUtil.isEmpty(orgCode)){
             return null;
         }
-        Org org = orgService.selectByOrgancode(orgCode);
-        if (Objects.isNull(org)){
+        List<String> orgCodeList = new ArrayList<String>(Arrays.asList(orgCode.split(",")));
+
+        List<Org> orgs = orgService.selectByOrgancode(orgCodeList);
+        if (CollectionUtil.isEmpty(orgs)){
             return null;
         }
-        String pathNamecode = org.getAsgpathnamecode();
+        List<String> pathNamecode =orgs.stream().map(Org::getAsgpathnamecode).collect(Collectors.toList());  //org.getAsgpathnamecode();
         return this.baseMapper.selectByOrgCodeAndGbName(name,pathNamecode);
 
     }

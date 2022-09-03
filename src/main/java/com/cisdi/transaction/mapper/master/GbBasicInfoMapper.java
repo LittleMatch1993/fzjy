@@ -74,8 +74,8 @@ public interface GbBasicInfoMapper extends BaseMapper<GbBasicInfo> {
             "                                sort in (5,6,7)\n" +
             "                        ) t4 ON t3.card_id = t4.card_id \n" +
             "                        AND t3.sort = t4.sort \n" +
-            "                        INNER JOIN ( SELECT DISTINCT asgorganname,asgorgancode FROM 69654103_org WHERE asgpathnamecode LIKE concat(#{pathNameCode},'%')) t5 ON t5.asgorganname = t3.unit")
-    public  List<GbOrgInfo> selectByPathNameCode(String pathNameCode);
+            "                        INNER JOIN ( SELECT DISTINCT asgorganname,asgorgancode FROM 69654103_org WHERE <foreach collection='list' item='pathNameCode'  open='(' separator='or' close=')'>  asgpathnamecode LIKE concat(#{pathNameCode},'%') </foreach>) t5 ON t5.asgorganname = t3.unit")
+    public  List<GbOrgInfo> selectByPathNameCode(List<String> pathNameCode);
 
 
     /**
@@ -111,9 +111,8 @@ public interface GbBasicInfoMapper extends BaseMapper<GbBasicInfo> {
             "                                sort in (5,6,7) \n" +
             "                        ) t4 ON t3.card_id = t4.card_id \n" +
             "                        AND t3.sort = t4.sort \n" +
-            "                        INNER JOIN ( SELECT DISTINCT asgorganname,asgorgancode,asglevel,asgpathnamecode FROM 69654103_org WHERE asgpathnamecode LIKE concat(#{pathNameCode},'%')) t5 ON t5.asgorganname = t3.unit </script> ")
-    public  List<GbOrgInfo> selectByPathNameCodeAndCardIds(@Param("list") List<String> cardIds,@Param("pathNameCode") String pathNameCode);
-
+            "                        INNER JOIN ( SELECT DISTINCT asgorganname,asgorgancode,asglevel,asgpathnamecode FROM 69654103_org WHERE  <foreach collection='pathNameCodes' item='pathNameCode'  open='(' separator='or' close=')'> asgpathnamecode LIKE concat(#{pathNameCode},'%') </foreach>  ) t5 ON t5.asgorganname = t3.unit </script> ")
+    public  List<GbOrgInfo> selectByPathNameCodeAndCardIds(@Param("list") List<String> cardIds,@Param("pathNameCodes") List<String> pathNameCode);
     /*@Select("   SELECT \n" +
             "                DISTINCT t3.*,t5.asgorgancode 'unit_code' \n" +
             "        FROM \n" +
@@ -194,8 +193,8 @@ public interface GbBasicInfoMapper extends BaseMapper<GbBasicInfo> {
             "                                sort in (5,6,7) \n" +
             "                        ) t4 ON t3.card_id = t4.card_id \n" +
             "                        AND t3.sort = t4.sort \n" +
-            "                        INNER JOIN ( SELECT DISTINCT asgorganname FROM 69654103_org WHERE asgpathnamecode LIKE concat(#{pathNameCode},'%')) t5 ON t5.asgorganname = t3.unit </script>")
-    public  List<GbOrgInfo>  selectByOrgCodeAndGbName(String name,String pathNameCode);
+            "                        INNER JOIN ( SELECT DISTINCT asgorganname FROM 69654103_org WHERE <foreach collection='list' item='pathNameCode'  open='(' separator='or' close=')'> asgpathnamecode LIKE concat(#{pathNameCode},'%') </foreach>) t5 ON t5.asgorganname = t3.unit </script>")
+    public  List<GbOrgInfo>  selectByOrgCodeAndGbName(@Param("name")String name,@Param("list")List<String> pathNameCode);
     @Select("  <script> SELECT " +
             "                DISTINCT t3.* " +
             "        FROM " +
@@ -220,9 +219,9 @@ public interface GbBasicInfoMapper extends BaseMapper<GbBasicInfo> {
             "                                sort in (5,6,7)  " +
             "                        ) t4 ON t3.card_id = t4.card_id " +
             "                        AND t3.sort = t4.sort " +
-            "                        INNER JOIN ( SELECT DISTINCT asgorganname FROM 69654103_org WHERE asgpathnamecode LIKE concat(#{pathNameCode},'%')) t5 ON t5.asgorganname = t3.unit limit 200" +
+            "                        INNER JOIN ( SELECT DISTINCT asgorganname FROM 69654103_org WHERE <foreach collection='list' item='pathNameCode'  open='(' separator='or' close=')'>  asgpathnamecode LIKE concat(#{pathNameCode},'%') </foreach>) t5 ON t5.asgorganname = t3.unit limit 200" +
             " </script>")
-    public  List<GbOrgInfo>  selectByOrgCodeAndGbNamePage(String name,String pathNameCode);
+    public  List<GbOrgInfo>  selectByOrgCodeAndGbNamePage(@Param("name") String name,@Param("list") List<String> pathNameCode);
 
 
     @Select("<script> select username 'user_name',person_name,c.name 'unit' from auth_user a \n" +

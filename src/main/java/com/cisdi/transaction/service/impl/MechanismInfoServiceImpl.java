@@ -66,6 +66,9 @@ public class MechanismInfoServiceImpl extends ServiceImpl<MechanismInfoMapper, M
 
     @Autowired
     private OrgService orgService;
+
+    @Autowired
+    private SpouseEnterpriseService spouseEnterpriseService;
     @Override
     public boolean updateState(List<String> ids, String state) {
         UpdateWrapper<MechanismInfo> updateWrapper = new UpdateWrapper<>();
@@ -226,11 +229,29 @@ public class MechanismInfoServiceImpl extends ServiceImpl<MechanismInfoMapper, M
         String cardId = info.getCardId();
         String name = info.getName();
         String title = info.getTitle();
+        String infoId = info.getId();
         if(StrUtil.isEmpty(cardId)||StrUtil.isEmpty(name)||StrUtil.isEmpty(title)){
             return;
         }
-        long i = spouseBasicInfoService.selectCount(cardId, name, title);
-        if (i > 0) { //i>0 说明当前数据重复了
+        List<SpouseBasicInfo>  spouseList = spouseBasicInfoService.selectSpouseInfo(cardId, name, title);
+        if (CollectionUtil.isNotEmpty(spouseList)){ //说明当前数据重复了
+            //查看中间表是否有关联数据，如果没有就添加
+            //正常情况下 spouseList 只有一个值，如果多个值之前程序bug导致的。
+            SpouseBasicInfo spouseBasicInfo = spouseList.get(0);
+            String sid = spouseBasicInfo.getId();
+            List<SpouseEnterprise> enterprisesList = spouseEnterpriseService.selectBySpouseIdAndEnterpriseIdAndType(sid, infoId, "1");
+            if(CollectionUtil.isEmpty(enterprisesList)){
+                spouseEnterpriseService.insertSpouseEnterprise(sid, infoId, "2");
+            }
+            //则修改家属信息
+            SpouseBasicInfo spouseBasic = new SpouseBasicInfo();
+            spouseBasic.setId(sid);
+            spouseBasic.setUpdateTime(DateUtil.date());
+            spouseBasic.setName(name);
+            spouseBasic.setTitle(title);
+            spouseBasic.setCardName(info.getFamilyCardType());
+            spouseBasic.setCardId(info.getFamilyCardId());
+            spouseBasicInfoService.updateById(spouseBasic);
             return;
         }
         List<SpouseBasicInfo> sbiList = new ArrayList<>();
@@ -251,6 +272,8 @@ public class MechanismInfoServiceImpl extends ServiceImpl<MechanismInfoMapper, M
             //添加干部配偶，子女及其配偶数据
             try {
                 spouseBasicInfoService.saveBatch(sbiList);
+                //关联中间表添加数据
+                spouseEnterpriseService.insertSpouseEnterprise(temp.getId(), infoId, "2");
             } catch (Exception e) {
                 e.printStackTrace();
                 // this.updateState(ids, SystemConstant.SAVE_STATE)
@@ -320,9 +343,14 @@ public class MechanismInfoServiceImpl extends ServiceImpl<MechanismInfoMapper, M
         info.setCreatorId(dto.getServiceUserId());
         info.setCreateAccount(dto.getServiceUserAccount());
         info.setCreateName(dto.getServicePersonName());
-        info.setOrgCode(dto.getOrgCode());
-        //info.setOrgName(dto.getOrgName());
-        info.setOrgName(dto.getServiceLesseeName());
+        String orgCode = dto.getOrgCode();
+        if(StrUtil.isNotEmpty(orgCode)&&orgCode.split(",").length>1){
+            info.setOrgCode("70000003");
+            info.setOrgName("五矿有色金属股份有限公司");
+        }else{
+            info.setOrgCode(orgCode);
+            info.setOrgName(dto.getServiceLesseeName());
+        }
         info = this.valid(info);
         this.save(info);
         addFamilyInfo(info);
@@ -1069,7 +1097,7 @@ public class MechanismInfoServiceImpl extends ServiceImpl<MechanismInfoMapper, M
             String isSituation =sysDictBizService.getDictValue(t.getIsSituation(),dictList);
             String title =sysDictBizService.getDictValue(t.getTitle(),dictList);
             String organizationType =sysDictBizService.getDictValue(t.getOrganizationType(),dictList);
-            String operatState =sysDictBizService.getDictValue(t.getOperatState(),dictList);
+            String operatState =sysDictBizService.getDictValue(t.getOperatState(),dictList,"1552594376078831616");
             String shareholder =sysDictBizService.getDictValue(t.getShareholder(),dictList);
             String practice =sysDictBizService.getDictValue(t.getPractice(),dictList);
             String isRelation =sysDictBizService.getDictValue(t.getIsRelation(),dictList);

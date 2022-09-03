@@ -137,4 +137,9 @@ public class BanDealInfo {
      * 关联数据id
      */
     private String refId;
+
+    /**
+     * 企业状态
+     */
+    private String enterpriseState;
 }

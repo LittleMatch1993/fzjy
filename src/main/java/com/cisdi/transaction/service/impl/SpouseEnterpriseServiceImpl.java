@@ -46,4 +46,57 @@ import java.util.stream.Stream;
 @Service
 public class SpouseEnterpriseServiceImpl extends ServiceImpl<SpouseEnterpriseMapper, SpouseEnterprise> implements SpouseEnterpriseService {
 
+    @Autowired
+    private SpouseBasicInfoService spouseBasicInfoService;
+    @Override
+    public List<SpouseEnterprise> selectBySpouseIdAndEnterpriseIdAndType(String spouseId, String enterpriseId, String type) {
+        return this.lambdaQuery().eq(SpouseEnterprise::getSpouseId,spouseId)
+                .eq(SpouseEnterprise::getEnterpriseId,enterpriseId)
+                .eq(StrUtil.isNotEmpty(type),SpouseEnterprise::getType,type).list();
+    }
+
+    @Override
+    public boolean insertSpouseEnterprise(String spouseId, String enterpriseId, String type) {
+        SpouseEnterprise enterprise = new SpouseEnterprise();
+        enterprise.setSpouseId(spouseId);
+        enterprise.setEnterpriseId(enterpriseId);
+        enterprise.setCreateTime(DateUtil.date());
+        enterprise.setType(type);
+        return this.save(enterprise);
+    }
+
+    @Transactional(rollbackFor = Exception.class)
+    @Override
+    public int deleteByEnterpriseIdAndType(List<String> enterpriseIds, String type) {
+        //1.获取中间表中要删除数据的管理数据
+        List<SpouseEnterprise> enterpriseList = this.lambdaQuery().in(SpouseEnterprise::getEnterpriseId,enterpriseIds)
+                .eq(SpouseEnterprise::getType,type).list();
+        if(CollectionUtil.isEmpty(enterpriseList)){
+            return 0;
+        }
+        //2.删除中间表的关联数据
+        QueryWrapper<SpouseEnterprise> queryWrapper = new QueryWrapper();
+        queryWrapper.lambda().in(SpouseEnterprise::getEnterpriseId,enterpriseIds)
+                .eq(SpouseEnterprise::getType,type);
+        int index = this.baseMapper.delete(queryWrapper);
+        if(index>0){
+            //获取关联数据删除之前的家属信息id
+            List<String> spouseIdList = enterpriseList.stream().map(SpouseEnterprise::getSpouseId).collect(Collectors.toList());
+            List<SpouseEnterprise> list = this.lambdaQuery().in(SpouseEnterprise::getSpouseId, spouseIdList).list();
+            List<String> deleteSpouseIdList = new ArrayList<>();
+            if(CollectionUtil.isNotEmpty(list)){
+                //获取关联数据删除之后的家属信息id
+                List<String> endSpouseIdList = list.stream().map(SpouseEnterprise::getSpouseId).collect(Collectors.toList());
+                //取差集,差集中的值
+                deleteSpouseIdList = spouseIdList.stream().filter(e->!endSpouseIdList.contains(e)).collect(Collectors.toList());
+            }else{
+                deleteSpouseIdList.addAll(spouseIdList);
+            }
+            if(CollectionUtil.isNotEmpty(deleteSpouseIdList)){
+                spouseBasicInfoService.removeByIds(deleteSpouseIdList);
+            }
+        }
+
+        return index;
+    }
 }

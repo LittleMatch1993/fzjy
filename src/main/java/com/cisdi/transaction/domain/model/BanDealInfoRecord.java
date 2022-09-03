@@ -138,4 +138,9 @@ public class BanDealInfoRecord {
 
     private String operationType;
 
+    /**
+     * 企业状态
+     */
+    private String enterpriseState;
+
 }

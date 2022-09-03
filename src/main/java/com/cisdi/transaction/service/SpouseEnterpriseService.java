@@ -15,4 +15,9 @@ import java.util.List;
  */
 public interface SpouseEnterpriseService extends IService<SpouseEnterprise> {
 
+    public List<SpouseEnterprise> selectBySpouseIdAndEnterpriseIdAndType(String spouseId,String enterpriseId,String type);
+
+    public boolean insertSpouseEnterprise(String spouseId,String enterpriseId,String type);
+
+    public int deleteByEnterpriseIdAndType(List<String> enterpriseIds,String type);
 }

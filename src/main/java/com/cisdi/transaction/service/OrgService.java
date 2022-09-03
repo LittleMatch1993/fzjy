@@ -61,6 +61,20 @@ public interface OrgService  extends IService<Org> {
 
     Org selectByOrgancode(String orgCode);
 
+    /**
+     * 根据orgcode批量查询
+     * @param orgCodes
+     * @return
+     */
+    List<Org> selectByOrgancode(List<String> orgCodes);
+
+    /**
+     * 获取多个组织的最高等级
+     * @param orgs
+     * @return
+     */
+    String getHighestLevel(List<Org> orgs);
+
     List<Org> selectChildOrgByPathnamecode(String pathnamecode);
 
     List<Org> selectByName(SearchVO search);

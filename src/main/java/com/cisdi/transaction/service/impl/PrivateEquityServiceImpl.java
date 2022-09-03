@@ -62,6 +62,9 @@ public class PrivateEquityServiceImpl extends ServiceImpl<PrivateEquityMapper, P
     @Autowired
     private OrgService orgService;
 
+    @Autowired
+    private SpouseEnterpriseService spouseEnterpriseService;
+
     @Override
     public boolean updateState(List<String> ids, String state) {
         UpdateWrapper<PrivateEquity> updateWrapper = new UpdateWrapper<>();
@@ -83,11 +86,29 @@ public class PrivateEquityServiceImpl extends ServiceImpl<PrivateEquityMapper, P
         String cardId = info.getCardId();
         String name = info.getName();
         String title = info.getTitle();
+        String infoId = info.getId();
         if(StrUtil.isEmpty(cardId)||StrUtil.isEmpty(name)||StrUtil.isEmpty(title)){
             return;
         }
-        long i = spouseBasicInfoService.selectCount(cardId, name, title);
-        if (i > 0) { //i>0 说明当前数据重复了
+        List<SpouseBasicInfo>  spouseList = spouseBasicInfoService.selectSpouseInfo(cardId, name, title);
+        if (CollectionUtil.isNotEmpty(spouseList)){ //说明当前数据重复了
+            //查看中间表是否有关联数据，如果没有就添加
+            //正常情况下 spouseList 只有一个值，如果多个值之前程序bug导致的。
+            SpouseBasicInfo spouseBasicInfo = spouseList.get(0);
+            String sid = spouseBasicInfo.getId();
+            List<SpouseEnterprise> enterprisesList = spouseEnterpriseService.selectBySpouseIdAndEnterpriseIdAndType(sid, infoId, "1");
+            if(CollectionUtil.isEmpty(enterprisesList)){
+                spouseEnterpriseService.insertSpouseEnterprise(sid, infoId, "3");
+            }
+            //则修改家属信息
+            SpouseBasicInfo spouseBasic = new SpouseBasicInfo();
+            spouseBasic.setId(sid);
+            spouseBasic.setUpdateTime(DateUtil.date());
+            spouseBasic.setName(name);
+            spouseBasic.setTitle(title);
+            spouseBasic.setCardName(info.getFamilyCardType());
+            spouseBasic.setCardId(info.getFamilyCardId());
+            spouseBasicInfoService.updateById(spouseBasic);
             return;
         }
         SpouseBasicInfo temp = new SpouseBasicInfo();
@@ -329,9 +350,14 @@ public class PrivateEquityServiceImpl extends ServiceImpl<PrivateEquityMapper, P
         equity.setCreatorId(dto.getServiceUserId());
         equity.setCreateAccount(dto.getServiceUserAccount());
         equity.setCreateName(dto.getServicePersonName());
-        equity.setOrgCode(dto.getOrgCode());
-        //equity.setOrgName(dto.getOrgName());
-        equity.setOrgName(dto.getServiceLesseeName());
+        String orgCode = dto.getOrgCode();
+        if(StrUtil.isNotEmpty(orgCode)&&orgCode.split(",").length>1){
+            equity.setOrgCode("70000003");
+            equity.setOrgName("五矿有色金属股份有限公司");
+        }else{
+            equity.setOrgCode(orgCode);
+            equity.setOrgName(dto.getServiceLesseeName());
+        }
         equity = this.valid(equity);
         //新增
         this.save(equity);

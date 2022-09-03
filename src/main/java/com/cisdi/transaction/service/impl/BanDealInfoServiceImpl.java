@@ -66,6 +66,9 @@ public class BanDealInfoServiceImpl extends ServiceImpl<BanDealInfoMapper, BanDe
 
     @Autowired
     private  GbBasicInfoService gbBasicInfoService;
+
+    @Autowired
+    private SpouseEnterpriseService spouseEnterpriseService;
     @Value("${wk.url}")
     private String url;
 
@@ -165,11 +168,20 @@ public class BanDealInfoServiceImpl extends ServiceImpl<BanDealInfoMapper, BanDe
         String cardId = info.getCardId(); //身份证号
         String name = info.getFamilyName(); //家属姓名
         String title = info.getRelation(); //关系
+        String infoId = info.getId();
         if(StrUtil.isEmpty(cardId)||StrUtil.isEmpty(name)||StrUtil.isEmpty(title)){
             return;
         }
-        long i = spouseBasicInfoService.selectCount(cardId, name, title);
-        if (i > 0) { //i>0 说明当前数据重复了
+        List<SpouseBasicInfo>  spouseList = spouseBasicInfoService.selectSpouseInfo(cardId, name, title);
+        if (CollectionUtil.isNotEmpty(spouseList)){ //说明当前数据重复了
+            //查看中间表是否有关联数据，如果没有就添加
+            //正常情况下 spouseList 只有一个值，如果多个值之前程序bug导致的。
+            SpouseBasicInfo spouseBasicInfo = spouseList.get(0);
+            String sid = spouseBasicInfo.getId();
+            List<SpouseEnterprise> enterprisesList = spouseEnterpriseService.selectBySpouseIdAndEnterpriseIdAndType(sid, infoId, "1");
+            if(CollectionUtil.isEmpty(enterprisesList)){
+                spouseEnterpriseService.insertSpouseEnterprise(sid, infoId, "1");
+            }
             return;
         }
         SpouseBasicInfo temp = new SpouseBasicInfo();
@@ -184,6 +196,8 @@ public class BanDealInfoServiceImpl extends ServiceImpl<BanDealInfoMapper, BanDe
             //添加干部配偶，子女及其配偶数据
             try {
                 spouseBasicInfoService.saveBatch(sbiList);
+                //关联中间表添加数据
+                spouseEnterpriseService.insertSpouseEnterprise(temp.getId(), infoId, "4");
             } catch (Exception e) {
                 e.printStackTrace();
                 // this.updateState(ids, SystemConstant.SAVE_STATE)
@@ -247,6 +261,11 @@ public class BanDealInfoServiceImpl extends ServiceImpl<BanDealInfoMapper, BanDe
                     bandealInfo.setOperatScope(info.getOperatScope());
                     bandealInfo.setSupplier(info.getEnterpriseName());
                     bandealInfo.setCode(info.getCode());
+                    String enterpriseStateId = info.getEnterpriseState();
+                    //强制转为禁止交易信息中的对应字典
+                    String dictValue = sysDictBizService.getDictValue(enterpriseStateId,dictList,"1552585398045290496");
+                    String dictId = sysDictBizService.getDictId(dictValue,dictList,"1565594588718817280");
+                    bandealInfo.setEnterpriseState(dictId);
                     //验证必填字段
                     boolean b = this.validRequiredFeild(info.getId(),bandealInfo,submitFailId);
                     if(!b){
@@ -489,6 +508,17 @@ public class BanDealInfoServiceImpl extends ServiceImpl<BanDealInfoMapper, BanDe
                     bandealInfo.setOperatScope(info.getOperatScope());
                     bandealInfo.setSupplier(info.getOrganizationName());
                     bandealInfo.setCode(info.getCode());
+                    String operatState = info.getOperatState();//正常执业 停业整顿  吊销  其他
+                    String dictId = null;
+                    switch (operatState){
+                        case "1552594560024227840":dictId = "1565595338052198400" ;break; //停业整顿 --停业整顿
+                        case "1552594504688775168":dictId = "1565595411632873472" ;break; //正常执业--存续（在营、开业、在册）
+                        case "1552917445913784320":dictId = "1565595276026830848" ;break; //吊销--吊销，未注销
+                        case "1552917525941104640":dictId = "1565595061265883136" ;break; //其他--其他
+                        default:
+                            dictId = info.getOperatState();break;
+                    }
+                    bandealInfo.setEnterpriseState(dictId);
                     //验证在数据库中必填字段是否有值。无值则不插入
                     boolean b = this.validRequiredFeild(info.getId(),bandealInfo,submitFailId);
                     if(!b){
@@ -656,61 +686,6 @@ public class BanDealInfoServiceImpl extends ServiceImpl<BanDealInfoMapper, BanDe
         }
         return infoList;
     }
-/*    @Override
-    public List<BanDealInfo> validBatchCompanyCode(List<BanDealInfo> infoList) {
-        try {
-            List<String> companyList = infoList.stream().map(BanDealInfo::getSupplier).collect(Collectors.toList());
-            JSONObject jbParam = new JSONObject();
-            jbParam.put("name", companyList);
-            //调用企业画像接口
-            JSONObject resultOb = this.getCompanyInfoByName(jbParam);
-            boolean status = resultOb.getBoolean("status");
-            boolean b = resultOb.containsKey("data");
-            Map<String, String> map = new HashMap<>();
-            if (status && b) {
-                JSONArray data = resultOb.getJSONArray("data");
-                for (int i = 0; i < data.size(); i++) {
-                    JSONObject obj = data.getJSONObject(i);
-                    String name = obj.getString("name");
-                    String creditNo = obj.getString("creditNo");
-                    map.put(name, creditNo);
-                }
-            }
-            if (map != null && map.size() > 0) {
-                //List<String> ids = new ArrayList<>();
-                infoList.stream().forEach(e -> {
-                    String company = e.getSupplier();
-                    boolean ck = map.containsKey(company);
-                    if (ck) {
-                        String code = e.getCode();
-                        String creditNo = map.get(company).toString();
-                        if (!creditNo.equals(code)) {//查询出来的信用代码和填写的不一致
-                            String tips = e.getCheckTips();
-                            if (StrUtil.isBlank(tips) || !tips.contains("企业名称和统一社会信用代码/注册号不匹配")) {
-                                StringJoiner sj = new StringJoiner(",");
-                                if(StrUtil.isNotEmpty(e.getCheckTips())){
-                                    sj.add(e.getCheckTips());
-                                }
-                                sj.add("企业名称和统一社会信用代码/注册号不匹配");
-                                e.setCheckTips(sj.toString());
-                            }
-
-                            // ids.add(e.getId());
-                        } else { //查询出来的信用代码和填写的一致
-                            String tips = e.getCheckTips();
-                            if (StrUtil.isNotBlank(tips) && tips.contains("企业名称和统一社会信用代码/注册号不匹配")) {
-                                tips = tips.replace("企业名称和统一社会信用代码/注册号不匹配", "");
-                                e.setCheckTips(tips);
-                            }
-                        }
-                    }
-                });
-            }
-        }catch (Exception e){
-            e.printStackTrace();
-        }
-        return infoList;
-    }*/
 
     @Override
     public BanDealInfo validCompanyCode(BanDealInfo banDealInfo) {
@@ -824,6 +799,8 @@ public class BanDealInfoServiceImpl extends ServiceImpl<BanDealInfoMapper, BanDe
             banDealInfoRecordService.insertBanDealInfoRecord(infoList, SystemConstant.OPERATION_TYPE_REMOVE);
             //删除采购系统那边的对应数据
             purchaseBanDealInfoSevice.deletePushDataForPurchase(ids);
+            //删除家人信息及中间表
+            spouseEnterpriseService.deleteByEnterpriseIdAndType(ids,"4");
         }
 
         return b;

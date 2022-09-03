@@ -46,6 +46,14 @@ public interface SpouseBasicInfoService extends IService<SpouseBasicInfo> {
      * @return
      */
     long selectCount(String cadreCardId, String name, String title);
+    /**
+     * 根据干部身份证，家属姓名，称谓取查询家属信息
+     * @param cadreCardId 干部身份证
+     * @param name 家属信息
+     * @param title 称谓
+     * @return
+     */
+    List<SpouseBasicInfo> selectSpouseInfo(String cadreCardId, String name, String title);
 
     List<SpouseBasicInfo> selectAll();
 

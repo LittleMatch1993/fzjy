@@ -32,6 +32,8 @@ public interface SysDictBizService extends IService<SysDictBiz> {
      */
     public SysDictBiz selectById(String id,List<SysDictBiz> dictList);
 
+    public SysDictBiz selectById(String id,List<SysDictBiz> dictList,String parentId);
+
     /**
      * 根据id返回字典值
      * <pre>
@@ -44,7 +46,10 @@ public interface SysDictBizService extends IService<SysDictBiz> {
      * @return
      */
     public String getDictValue(String id,List<SysDictBiz> dictList);
+
+    public String getDictValue(String id,List<SysDictBiz> dictList,String parentId);
     public String getDictId(String value,List<SysDictBiz> dictList);
+    public String getDictId(String value,List<SysDictBiz> dictList,String parentId);
 
     String getEnterpriseStateDictId(String enterpriseState, List<SysDictBiz> dictList);
 

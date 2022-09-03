@@ -18,6 +18,7 @@ import com.cisdi.transaction.domain.OrgTree;
 import com.cisdi.transaction.domain.dto.CadreFamilyExportDto;
 import com.cisdi.transaction.domain.dto.InstitutionalFrameworkDTO;
 import com.cisdi.transaction.domain.dto.InvestmentDTO;
+import com.cisdi.transaction.domain.model.GbOrgInfo;
 import com.cisdi.transaction.domain.model.Org;
 import com.cisdi.transaction.domain.model.SysDictBiz;
 import com.cisdi.transaction.domain.vo.InstitutionalFrameworkExcelVO;
@@ -170,6 +171,24 @@ public class OrgServiceImpl extends ServiceImpl<OrgMapper, Org> implements OrgSe
         queryWrapper.lambda().eq(Org::getAsgorgancode,orgCode);
         Org org = this.getOne(queryWrapper);
         return org;
+    }
+
+    @Override
+    public List<Org> selectByOrgancode(List<String> orgCodes) {
+        if(CollectionUtil.isEmpty(orgCodes)){
+            return null;
+        }
+        return  this.lambdaQuery().in(Org::getAsgorgancode,orgCodes).list();
+    }
+
+    @Override
+    public String getHighestLevel(List<Org> orgs) {
+        if(CollectionUtil.isEmpty(orgs)){
+            return null;
+        }
+        //Asglevel 值越小等级越高
+        String  level  = orgs.stream().min(Comparator.comparing(Org::getAsglevel)).get().getAsglevel();
+        return level;
     }
 
     @Override

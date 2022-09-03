@@ -190,4 +190,16 @@ public class EasyPoiController {
          }
          return ResultMsgUtil.success(treeList);
     }
+
+    /**
+     * 获取采购系统库表中的数据条数
+     * @return
+     */
+    @GetMapping("/getCgCount")
+    @ResponseBody
+    public ResultMsgUtil<Object> getCgCount(){
+        int i  = purchaseBanDealInfoSevice.lambdaQuery().eq(PurchaseBanDealInfo::getDelFlag,"0").count();
+        int j = purchaseBanDealInfoSevice.lambdaQuery().eq(PurchaseBanDealInfo::getDelFlag,"1").count();
+        return ResultMsgUtil.success(i+"----"+j);
+    }
 }
