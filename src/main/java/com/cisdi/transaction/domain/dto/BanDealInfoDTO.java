@@ -102,4 +102,8 @@ public class BanDealInfoDTO extends BaseDTO{
         @NotBlank(message = "禁止职务类型不能为空")
         private String banPostType;
 
+        @ApiModelProperty(value = "企业状态")
+        private String enterpriseState;
+
+
 }

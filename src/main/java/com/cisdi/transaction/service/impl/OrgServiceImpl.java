@@ -214,7 +214,10 @@ public class OrgServiceImpl extends ServiceImpl<OrgMapper, Org> implements OrgSe
         String asglevel = org.getAsglevel();
         List<String> names = search.getKeyword();
         List<String> codes = search.getCodes();
-        queryWrapper.lambda().in(CollectionUtil.isNotEmpty(codes), Org::getAsgorgancode,codes);
+        if(CollectionUtil.isNotEmpty(codes)){
+            queryWrapper.orderByDesc(AuthSqlUtil.getAuthSqlForAsgorganCodeOrderBy(codes));
+            queryWrapper.lambda().in(CollectionUtil.isNotEmpty(codes), Org::getAsgorgancode,codes).or();
+        }
         if(StrUtil.isNotEmpty(asglevel)&&asglevel.equals("0")){ //看所有
             if(CollectionUtil.isNotEmpty(names)){
                 for (int i = 0; i < names.size(); i++) {
@@ -246,7 +249,6 @@ public class OrgServiceImpl extends ServiceImpl<OrgMapper, Org> implements OrgSe
             }
             queryWrapper.lambda().likeRight(Org::getAsgpathnamecode,pathnamecode).last(SqlConstant.ONE_SQL_YB);;
         }
-
         return this.baseMapper.selectList(queryWrapper);
     }
 

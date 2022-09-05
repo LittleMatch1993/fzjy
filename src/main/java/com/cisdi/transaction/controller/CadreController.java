@@ -12,6 +12,7 @@ import com.cisdi.transaction.domain.dto.InstitutionalFrameworkDTO;
 import com.cisdi.transaction.domain.dto.InvestmentDTO;
 import com.cisdi.transaction.domain.model.GbBasicInfo;
 import com.cisdi.transaction.domain.vo.CadreExcelVO;
+import com.cisdi.transaction.domain.vo.GbDictVo;
 import com.cisdi.transaction.domain.vo.GbInfoByNameAndUnitAndPost;
 import com.cisdi.transaction.domain.vo.KVVO;
 import com.cisdi.transaction.service.GbBasicInfoService;
@@ -123,13 +124,14 @@ public class CadreController{
     /**
      * 根据干部姓名获取 干部字典类型数据，如：  id_name   name
      *
-     * @param name 干部姓名
+     * @param vo
      * @return
      */
     @ApiOperation("根据干部姓名获取 干部字典类型数据")
-    @GetMapping("/selectGbDivtVoByName")
-    public ResultMsgUtil<List> selectGbDivtVoByName(@ApiParam(value = "干部姓名") @RequestParam(value = "name" ,required = false) String name,
-                                                  @RequestParam(value = "orgCode" ,required = false) String orgCode) {
+    @PostMapping("/selectGbDivtVoByName")
+    public ResultMsgUtil<List> selectGbDivtVoByName(@RequestBody GbDictVo vo) {
+         String orgCode = vo.getOrgCode();
+         String name = vo.getName();
          System.out.println("orgCode------------"+orgCode);
          List<GbBasicInfo> list = gbBasicInfoService.selectGbDictVoByName(name,orgCode);
          List<KVVO> kvvoList = new ArrayList<>();

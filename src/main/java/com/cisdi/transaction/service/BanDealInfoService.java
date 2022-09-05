@@ -95,11 +95,18 @@ public interface BanDealInfoService extends IService<BanDealInfo> {
     boolean deleteBanDealInfo(List<String> ids);
 
     /**
-     * 根据关联关系id删除数据
+     * 根据关联关系id删除禁止交易表数据并删除采购库表中的关联数据
      * @param ids
      * @return
      */
     boolean deleteBanDealInfoByRefId(List<String> ids);
+
+    /**
+     * 根据关联关系id删除禁止交易表数据
+     * @param ids
+     * @return
+     */
+    boolean deleteOnlyBanDealInfoByRefId(List<String> ids);
 
     /**
      * 根据条件查询禁止交易表中的数据条数

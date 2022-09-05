@@ -135,7 +135,6 @@ public class BanDealInfoServiceImpl extends ServiceImpl<BanDealInfoMapper, BanDe
         String engageType = info.getEngageType();
         if(!engageType.equals("1552934977441804288")){
             //验证企业社会信用代码
-            System.out.println("engageType="+engageType);
             info = validCompanyCode(info);
         }
         //验证
@@ -178,9 +177,9 @@ public class BanDealInfoServiceImpl extends ServiceImpl<BanDealInfoMapper, BanDe
             //正常情况下 spouseList 只有一个值，如果多个值之前程序bug导致的。
             SpouseBasicInfo spouseBasicInfo = spouseList.get(0);
             String sid = spouseBasicInfo.getId();
-            List<SpouseEnterprise> enterprisesList = spouseEnterpriseService.selectBySpouseIdAndEnterpriseIdAndType(sid, infoId, "1");
+            List<SpouseEnterprise> enterprisesList = spouseEnterpriseService.selectBySpouseIdAndEnterpriseIdAndType(sid, infoId, "4");
             if(CollectionUtil.isEmpty(enterprisesList)){
-                spouseEnterpriseService.insertSpouseEnterprise(sid, infoId, "1");
+                spouseEnterpriseService.insertSpouseEnterprise(sid, infoId, "4");
             }
             return;
         }
@@ -799,8 +798,6 @@ public class BanDealInfoServiceImpl extends ServiceImpl<BanDealInfoMapper, BanDe
             banDealInfoRecordService.insertBanDealInfoRecord(infoList, SystemConstant.OPERATION_TYPE_REMOVE);
             //删除采购系统那边的对应数据
             purchaseBanDealInfoSevice.deletePushDataForPurchase(ids);
-            //删除家人信息及中间表
-            spouseEnterpriseService.deleteByEnterpriseIdAndType(ids,"4");
         }
 
         return b;
@@ -816,6 +813,15 @@ public class BanDealInfoServiceImpl extends ServiceImpl<BanDealInfoMapper, BanDe
         if (b) {
             purchaseBanDealInfoSevice.deletePushDataForPurchase(ids);
         }
+        return b;
+    }
+
+    @Override
+    public boolean deleteOnlyBanDealInfoByRefId(List<String> ids) {
+        QueryWrapper<BanDealInfo> queryWrapper = new QueryWrapper<>();
+        queryWrapper.in("ref_id", ids);
+        int delete = this.baseMapper.delete(queryWrapper);
+        boolean b = delete > 0 ? true : false;
         return b;
     }
 
@@ -867,6 +873,7 @@ public class BanDealInfoServiceImpl extends ServiceImpl<BanDealInfoMapper, BanDe
             String engageType = sysDictBizService.getDictValue(t.getEngageType(),dictList);
             String isExtends = sysDictBizService.getDictValue(t.getIsExtends(),dictList);
             String state = sysDictBizService.getDictValue(t.getState(),dictList);
+            String enterpriseState = sysDictBizService.getDictValue(t.getEnterpriseState(),dictList,"1565594588718817280");
 
             t.setPostType(postType);
             t.setBanPostType(banPostType);
@@ -874,6 +881,7 @@ public class BanDealInfoServiceImpl extends ServiceImpl<BanDealInfoMapper, BanDe
             t.setEngageType(engageType);
             t.setIsExtends(isExtends);
             t.setState(state);
+            t.setEnterpriseState(enterpriseState);
 
         });
         return list;
