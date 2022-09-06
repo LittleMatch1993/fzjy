@@ -322,12 +322,11 @@ public class CadreFamiliesController {
              */
             ExportReturnVO exportReturnVO= new ExportReturnVO();
             EasyExcel.read(file.getInputStream(), InvestmentDTO.class, new ImportInvestmentExcelListener(investInfoService,baseDTO,exportReturnVO)).sheet().headRowNumber(3).doRead();
-            exportReturnVO.addMessage();
             String fileName = new String("投资企业或者担任高级职务导入返回信息".getBytes(), StandardCharsets.UTF_8);
 //            List<CadreFamiliesExcelVO> list = spouseBasicInfoService.export(dto.getIds());
-            ExportReturnExcelVO exportReturnExcelVO=new ExportReturnExcelVO();
-            BeanUtils.copyProperties(exportReturnVO,exportReturnExcelVO);
-            MultipartFile multipartFile = ExportExcelUtils.exportExcel(response, fileName, ExportReturnExcelVO.class, Collections.singletonList(exportReturnExcelVO));
+//            ExportReturnExcelVO exportReturnExcelVO=new ExportReturnExcelVO();
+//            BeanUtils.copyProperties(exportReturnVO,exportReturnExcelVO);
+            MultipartFile multipartFile = ExportExcelUtils.importReturnExcel(response, fileName, ExportReturnMessageVO.class,exportReturnVO.getFailMessage(),exportReturnVO.getSuccessNumber(),exportReturnVO.getFailNumber());
             url = minIoUtil.downloadByMinio(multipartFile, bucketName, null);
             return ResultMsgUtil.success(url);
         } catch (Exception e) {
@@ -364,11 +363,11 @@ public class CadreFamiliesController {
         try {
             ExportReturnVO exportReturnVO= new ExportReturnVO();
             EasyExcel.read(file.getInputStream(), CommunityServiceDTO.class, new ImportCommunityServiceExcelListener(mechanismInfoService,baseDTO,exportReturnVO)).sheet().headRowNumber(3).doRead();
-            exportReturnVO.addMessage();
             String fileName = new String("开办有偿社会中介和法律服务机构或者从业的情况导入返回信息".getBytes(), StandardCharsets.UTF_8);
-            ExportReturnExcelVO exportReturnExcelVO=new ExportReturnExcelVO();
-            BeanUtils.copyProperties(exportReturnVO,exportReturnExcelVO);
-            MultipartFile multipartFile = ExportExcelUtils.exportExcel(response, fileName, ExportReturnExcelVO.class, Collections.singletonList(exportReturnExcelVO));
+//            ExportReturnExcelVO exportReturnExcelVO=new ExportReturnExcelVO();
+//            BeanUtils.copyProperties(exportReturnVO,exportReturnExcelVO);
+//            MultipartFile multipartFile = ExportExcelUtils.exportExcel(response, fileName, ExportReturnExcelVO.class, Collections.singletonList(exportReturnExcelVO));
+            MultipartFile multipartFile = ExportExcelUtils.importReturnExcel(response, fileName, ExportReturnMessageVO.class,exportReturnVO.getFailMessage(),exportReturnVO.getSuccessNumber(),exportReturnVO.getFailNumber());
             url = minIoUtil.downloadByMinio(multipartFile, bucketName, null);
             return ResultMsgUtil.success(url);
         } catch (Exception e) {
@@ -406,11 +405,11 @@ public class CadreFamiliesController {
         try {
             ExportReturnVO exportReturnVO= new ExportReturnVO();
             EasyExcel.read(file.getInputStream(), EquityFundsDTO.class, new ImportEquityFundsExcelListener(privateEquityService,baseDTO,exportReturnVO)).sheet().headRowNumber(3).doRead();
-            exportReturnVO.addMessage();
             String fileName = new String("投资私募股权投资基金或者担任高级职务的情况导入返回信息".getBytes(), StandardCharsets.UTF_8);
-            ExportReturnExcelVO exportReturnExcelVO=new ExportReturnExcelVO();
-            BeanUtils.copyProperties(exportReturnVO,exportReturnExcelVO);
-            MultipartFile multipartFile = ExportExcelUtils.exportExcel(response, fileName, ExportReturnExcelVO.class, Collections.singletonList(exportReturnExcelVO));
+//            ExportReturnExcelVO exportReturnExcelVO=new ExportReturnExcelVO();
+//            BeanUtils.copyProperties(exportReturnVO,exportReturnExcelVO);
+//            MultipartFile multipartFile = ExportExcelUtils.exportExcel(response, fileName, ExportReturnExcelVO.class, Collections.singletonList(exportReturnExcelVO));
+            MultipartFile multipartFile = ExportExcelUtils.importReturnExcel(response, fileName, ExportReturnMessageVO.class,exportReturnVO.getFailMessage(),exportReturnVO.getSuccessNumber(),exportReturnVO.getFailNumber());
             url = minIoUtil.downloadByMinio(multipartFile, bucketName, null);
             return ResultMsgUtil.success(url);
         } catch (Exception e) {
@@ -501,12 +500,12 @@ public class CadreFamiliesController {
      * @return
      */
     private List<RegionDropDownBoxVO> moveChinaToFirst(List<RegionDropDownBoxVO> regionDropDownBoxVOS){
-        if (CollectionUtils.isEmpty(regionDropDownBoxVOS)||!regionDropDownBoxVOS.stream().map(RegionDropDownBoxVO::getName).collect(Collectors.toList()).contains("中国")){
+        if (CollectionUtils.isEmpty(regionDropDownBoxVOS)||!regionDropDownBoxVOS.stream().map(RegionDropDownBoxVO::getName).collect(Collectors.toList()).contains(SystemConstant.CHINA)){
             return regionDropDownBoxVOS;
         }
         List<RegionDropDownBoxVO> regionDropDownBoxVOList=Lists.newArrayList();
-        regionDropDownBoxVOList.add(regionDropDownBoxVOS.stream().filter(regionDropDownBoxVO -> "中国".equals(regionDropDownBoxVO.getName())).collect(Collectors.toList()).get(0));
-        regionDropDownBoxVOList.addAll(regionDropDownBoxVOS.stream().filter(regionDropDownBoxVO -> !"中国".equals(regionDropDownBoxVO.getName()) ).collect(Collectors.toList()));
+        regionDropDownBoxVOList.add(regionDropDownBoxVOS.stream().filter(regionDropDownBoxVO -> SystemConstant.CHINA.equals(regionDropDownBoxVO.getName())).collect(Collectors.toList()).get(0));
+        regionDropDownBoxVOList.addAll(regionDropDownBoxVOS.stream().filter(regionDropDownBoxVO -> !SystemConstant.CHINA.equals(regionDropDownBoxVO.getName()) ).collect(Collectors.toList()));
         return regionDropDownBoxVOList;
     }
 }

@@ -629,42 +629,44 @@ public class MechanismInfoServiceImpl extends ServiceImpl<MechanismInfoMapper, M
             orgName=baseDTO.getOrgName();
         }
         //过滤掉必填校验未通过的字段
-        List<CommunityServiceDTO> list = lists.stream().filter(e -> StringUtils.isBlank(e.getMessage())).collect(Collectors.toList());
-        list=checkParams(list,exportReturnVO,baseDTO.getOrgCode());
+//        List<CommunityServiceDTO> list = lists.stream().filter(e -> StringUtils.isBlank(e.getMessage())).collect(Collectors.toList());
+        checkParams(lists,exportReturnVO,baseDTO.getOrgCode());
+        List<CommunityServiceDTO> list=lists;
         if (CollectionUtils.isEmpty(list)){
             return;
         }
         List<SysDictBiz> dictList = sysDictBizService.selectList();
         List<MechanismInfo> mechanismInfoList = new ArrayList<>();
-        List<String> cardIds = list.stream().distinct().map(t -> t.getCardId()).collect(Collectors.toList());
-        List<MechanismInfo> infoList = this.lambdaQuery().in(MechanismInfo::getCardId, cardIds).list();
+        List<String> cardIds = list.stream().filter(e->StringUtils.isBlank(e.getMessage())).map(CommunityServiceDTO::getCardId).distinct().collect(Collectors.toList());
+
+        List<MechanismInfo> infoList = CollectionUtils.isEmpty(cardIds)?Lists.newArrayList():this.lambdaQuery().in(MechanismInfo::getCardId, cardIds).list();
         Set<String> uniqueSet=new HashSet<>();
         Date date=new Date();
         if (infoList.isEmpty()) {
-            list.stream().forEach(t -> {
+            list.forEach(t -> {
+                String message = t.getMessage();
+                //校验国家/省/市
+                String returnMessage = checkImportArea(t);
                 String uniqueCode = t.getCardId() + "," + t.getName() + "," + t.getTitle()+","+t.getCode();
-                if (t.getIsSituation().equals(SystemConstant.IS_SITUATION_YES)) {
+                MechanismInfo investInfo = new MechanismInfo();
+                BeanUtils.copyProperties(t, investInfo);
+                investInfo.setState(SystemConstant.SAVE_STATE);//默认类型新建
+                String title = investInfo.getTitle();
+                //字典替换
+                String checkDict = this.replaceDictId(investInfo, dictList);
+                if (StringUtils.isBlank(message)) {
                     if (StringUtils.isNotBlank(t.getName()) && StringUtils.isNotBlank(t.getCode())) {
-                        //校验国家/省/市
-                        String returnMessage = checkImportArea(t);
                         if (StringUtils.isNotBlank(returnMessage)){
                             exportReturnVO.setFailNumber(exportReturnVO.getFailNumber()+1);
-                            exportReturnVO.getFailMessage().add(new ExportReturnMessageVO(t.getColumnNumber(),returnMessage));
+                            exportReturnVO.getFailMessage().add(new ExportReturnMessageVO(t.getColumnNumber(),returnMessage+(StringUtils.isBlank(checkDict)?"":checkDict)+(uniqueSet.contains(uniqueCode)?"数据重复:干部身份证号"+t.getCardId()+",家人姓名"+t.getName()+",称谓"+title+",统一社会信用代码/注册号"+t.getCode()+";":"")));
                         }else {
-                            MechanismInfo investInfo = new MechanismInfo();
-                            BeanUtils.copyProperties(t, investInfo);
-                            investInfo.setState(SystemConstant.SAVE_STATE);//默认类型新建
-
-                            String title = investInfo.getTitle();
-                            //字典替换
-                            String checkDict = this.replaceDictId(investInfo, dictList);
                             if (StringUtils.isNotBlank(checkDict)){
                                 exportReturnVO.setFailNumber(exportReturnVO.getFailNumber()+1);
-                                exportReturnVO.getFailMessage().add(new ExportReturnMessageVO(t.getColumnNumber(),checkDict));
+                                exportReturnVO.getFailMessage().add(new ExportReturnMessageVO(t.getColumnNumber(),checkDict+(uniqueSet.contains(uniqueCode)?"数据重复:干部身份证号"+t.getCardId()+",家人姓名"+t.getName()+",称谓"+title+",统一社会信用代码/注册号"+t.getCode()+";":"")));
                             }else {
                                 if (uniqueSet.contains(uniqueCode)){
                                     exportReturnVO.setFailNumber(exportReturnVO.getFailNumber()+1);
-                                    exportReturnVO.getFailMessage().add(new ExportReturnMessageVO(t.getColumnNumber(),"数据重复:干部身份证号"+t.getCardId()+",家人姓名"+t.getName()+",称谓"+title+",统一社会信用代码/注册号"+t.getCode()));
+                                    exportReturnVO.getFailMessage().add(new ExportReturnMessageVO(t.getColumnNumber(),"数据重复:干部身份证号"+t.getCardId()+",家人姓名"+t.getName()+",称谓"+title+",统一社会信用代码/注册号"+t.getCode()+";"));
                                 }else {
                                     uniqueSet.add(uniqueCode);
                                     investInfo.setCreateName(baseDTO.getServicePersonName());
@@ -681,36 +683,42 @@ public class MechanismInfoServiceImpl extends ServiceImpl<MechanismInfoMapper, M
                             }
 
                         }
+                    }else{
+                        exportReturnVO.getFailMessage().stream().filter(exportReturnMessageVO -> exportReturnMessageVO.getColumn().equals(t.getColumnNumber())).forEach(exportReturnMessageVO -> {
+                            exportReturnMessageVO.setMessage(exportReturnMessageVO.getMessage()+(returnMessage==null?"":returnMessage)+(StringUtils.isBlank(checkDict)?"":checkDict)+(uniqueSet.contains(uniqueCode)?(checkDict+"数据重复:干部身份证号"+t.getCardId()+",家人姓名"+t.getName()+",称谓"+title+",统一社会信用代码/注册号"+t.getCode()+";"):checkDict));
+                        });
                     }
                 } else {
-                    MechanismInfo investInfo = new MechanismInfo();
-                    BeanUtils.copyProperties(t, investInfo);
-                    investInfo.setState(SystemConstant.SAVE_STATE);
-                    String title = investInfo.getTitle();
-                    //字典替换
-                    String checkDict = this.replaceDictId(investInfo, dictList);
-                    if (StringUtils.isNotBlank(checkDict)){
-                        exportReturnVO.setFailNumber(exportReturnVO.getFailNumber()+1);
-                        exportReturnVO.getFailMessage().add(new ExportReturnMessageVO(t.getColumnNumber(),checkDict));
-                    }else {
-                        if (uniqueSet.contains(uniqueCode)){
-                            exportReturnVO.setFailNumber(exportReturnVO.getFailNumber()+1);
-                            exportReturnVO.getFailMessage().add(new ExportReturnMessageVO(t.getColumnNumber(),"数据重复:干部身份证号"+t.getCardId()+",家人姓名"+t.getName()+",称谓"+title+",统一社会信用代码/注册号"+t.getCode()));
-                        }else {
-                            uniqueSet.add(uniqueCode);
-                            investInfo.setCreateName(baseDTO.getServicePersonName());
-                            investInfo.setCreateAccount(baseDTO.getServiceUserAccount());
-                            investInfo.setOrgCode(baseDTO.getOrgCode());
-                            investInfo.setOrgName(baseDTO.getOrgName());
-                            long time = date.getTime();
-                            investInfo.setCreateTime(DateUtil.date(time+1000));
-                            investInfo.setUpdateTime(DateUtil.date(time+1000));
-                            date.setTime(time+1000);
-                            mechanismInfoList.add(investInfo);
-                            exportReturnVO.setSuccessNumber(exportReturnVO.getSuccessNumber()+1);
-                        }
-                    }
-
+//                    MechanismInfo investInfo = new MechanismInfo();
+//                    BeanUtils.copyProperties(t, investInfo);
+//                    investInfo.setState(SystemConstant.SAVE_STATE);
+//                    String title = investInfo.getTitle();
+//                    //字典替换
+//                    String checkDict = this.replaceDictId(investInfo, dictList);
+//                    if (StringUtils.isNotBlank(checkDict)){
+//                        exportReturnVO.setFailNumber(exportReturnVO.getFailNumber()+1);
+//                        exportReturnVO.getFailMessage().add(new ExportReturnMessageVO(t.getColumnNumber(),checkDict));
+//                    }else {
+//                        if (uniqueSet.contains(uniqueCode)){
+//                            exportReturnVO.setFailNumber(exportReturnVO.getFailNumber()+1);
+//                            exportReturnVO.getFailMessage().add(new ExportReturnMessageVO(t.getColumnNumber(),"数据重复:干部身份证号"+t.getCardId()+",家人姓名"+t.getName()+",称谓"+title+",统一社会信用代码/注册号"+t.getCode()));
+//                        }else {
+//                            uniqueSet.add(uniqueCode);
+//                            investInfo.setCreateName(baseDTO.getServicePersonName());
+//                            investInfo.setCreateAccount(baseDTO.getServiceUserAccount());
+//                            investInfo.setOrgCode(baseDTO.getOrgCode());
+//                            investInfo.setOrgName(baseDTO.getOrgName());
+//                            long time = date.getTime();
+//                            investInfo.setCreateTime(DateUtil.date(time+1000));
+//                            investInfo.setUpdateTime(DateUtil.date(time+1000));
+//                            date.setTime(time+1000);
+//                            mechanismInfoList.add(investInfo);
+//                            exportReturnVO.setSuccessNumber(exportReturnVO.getSuccessNumber()+1);
+//                        }
+//                    }
+                    exportReturnVO.getFailMessage().stream().filter(exportReturnMessageVO -> exportReturnMessageVO.getColumn().equals(t.getColumnNumber())).forEach(exportReturnMessageVO -> {
+                        exportReturnMessageVO.setMessage(exportReturnMessageVO.getMessage()+(returnMessage==null?"":returnMessage)+(StringUtils.isBlank(checkDict)?"":checkDict)+(uniqueSet.contains(uniqueCode)?(checkDict+"数据重复:干部身份证号"+t.getCardId()+",家人姓名"+t.getName()+",称谓"+title+",统一社会信用代码/注册号"+t.getCode()+";"):checkDict));
+                    });
                 }
             });
             if (!mechanismInfoList.isEmpty()) {
@@ -728,38 +736,38 @@ public class MechanismInfoServiceImpl extends ServiceImpl<MechanismInfoMapper, M
             return;
         }
         List<MechanismInfo> updateList = new ArrayList<>();
-        uniqueSet.clear();
         Map<String, List<MechanismInfo>> infoMap = infoList.stream().collect(Collectors.groupingBy(MechanismInfo::getCardId));
-        list.stream().forEach(t -> {
-            List<MechanismInfo> infos = infoMap.containsKey(t.getCardId())?infoMap.get(t.getCardId()):null;
+        list.forEach(t -> {
+            String message = t.getMessage();
+            List<MechanismInfo> infos = infoMap.getOrDefault(t.getCardId(), null);
             String uniqueCode = t.getCardId() + "," + t.getName() + "," + t.getTitle()+","+t.getCode();
-            if (t.getIsSituation().equals(SystemConstant.IS_SITUATION_YES)) {
+            MechanismInfo info = new MechanismInfo();
+            BeanUtils.copyProperties(t, info);
+            info.setState(SystemConstant.SAVE_STATE)//默认类型新建
+                    .setUpdateTime(DateUtil.date());
+            //判断该干部下的其他子项名称和代码是否相同
+            long nameIndex = infos.stream().filter(e->t.getName().equals(e.getName())).count();
+            long titleIndex = infos.stream().filter(e->sysDictBizService.getDictId(t.getTitle(),dictList).equals(e.getTitle())).count();
+            long codeIndex = infos.stream().filter(e->t.getCode().equals(e.getCode())).count();
+            String title1 = info.getTitle();
+            String checkDict = this.replaceDictId(info,dictList);
+            String returnMessage = checkImportArea(t);
+            if (StringUtils.isBlank(message)) {
                 if (CollectionUtil.isNotEmpty(infos)) {//如果不为空，进行比较
                     //校验姓名和统一社会信用代码不能为空
                     if (StringUtils.isNotBlank(t.getName())&&StringUtils.isNotBlank(t.getTitle())  && StringUtils.isNotBlank(t.getCode())) {
                         //校验国家/省/市
-                        String returnMessage = checkImportArea(t);
                         if (StringUtils.isNotBlank(returnMessage)){
                             exportReturnVO.setFailNumber(exportReturnVO.getFailNumber()+1);
-                            exportReturnVO.getFailMessage().add(new ExportReturnMessageVO(t.getColumnNumber(),returnMessage));
+                            exportReturnVO.getFailMessage().add(new ExportReturnMessageVO(t.getColumnNumber(),returnMessage+(StringUtils.isBlank(checkDict)?"":checkDict)+(uniqueSet.contains(uniqueCode)?"数据重复:干部身份证号"+t.getCardId()+",家人姓名"+t.getName()+",称谓"+title1+",统一社会信用代码/注册号"+t.getCode()+";":"")));
                         }else {
-                            MechanismInfo info = new MechanismInfo();
-                            BeanUtils.copyProperties(t, info);
-                            info.setState(SystemConstant.SAVE_STATE)//默认类型新建
-                                    .setUpdateTime(DateUtil.date());
-                            //判断该干部下的其他子项名称和代码是否相同
-                            long nameIndex = infos.stream().filter(e->t.getName().equals(e.getName())).count();
-                            long titleIndex = infos.stream().filter(e->sysDictBizService.getDictId(t.getTitle(),dictList).equals(e.getTitle())).count();
-                            long codeIndex = infos.stream().filter(e->t.getCode().equals(e.getCode())).count();
-                            String title1 = info.getTitle();
-                            String checkDict = this.replaceDictId(info,dictList);
                             if (StringUtils.isNotBlank(checkDict)){
                                 exportReturnVO.setFailNumber(exportReturnVO.getFailNumber()+1);
-                                exportReturnVO.getFailMessage().add(new ExportReturnMessageVO(t.getColumnNumber(),checkDict));
+                                exportReturnVO.getFailMessage().add(new ExportReturnMessageVO(t.getColumnNumber(),checkDict+(uniqueSet.contains(uniqueCode)?"数据重复:干部身份证号"+t.getCardId()+",家人姓名"+t.getName()+",称谓"+title1+",统一社会信用代码/注册号"+t.getCode()+";":"")));
                             }else {
                                 if (uniqueSet.contains(uniqueCode)){
                                     exportReturnVO.setFailNumber(exportReturnVO.getFailNumber()+1);
-                                    exportReturnVO.getFailMessage().add(new ExportReturnMessageVO(t.getColumnNumber(),"数据重复:干部身份证号"+t.getCardId()+",家人姓名"+t.getName()+",称谓"+title1+",统一社会信用代码/注册号"+t.getCode()));
+                                    exportReturnVO.getFailMessage().add(new ExportReturnMessageVO(t.getColumnNumber(),"数据重复:干部身份证号"+t.getCardId()+",家人姓名"+t.getName()+",称谓"+title1+",统一社会信用代码/注册号"+t.getCode()+";"));
                                 }else {
                                     if(nameIndex==0|titleIndex==0|codeIndex==0){ //一个都不重复
                                         long time = date.getTime() + 1000;
@@ -800,7 +808,7 @@ public class MechanismInfoServiceImpl extends ServiceImpl<MechanismInfoMapper, M
                                             uniqueSet.add(uniqueCode);
                                         }else {
                                             exportReturnVO.setFailNumber(exportReturnVO.getFailNumber()+1);
-                                            exportReturnVO.getFailMessage().add(new ExportReturnMessageVO(t.getColumnNumber(),"数据重复"));
+                                            exportReturnVO.getFailMessage().add(new ExportReturnMessageVO(t.getColumnNumber(),"数据重复;"));
                                         }
                                     }
                                 }
@@ -816,6 +824,10 @@ public class MechanismInfoServiceImpl extends ServiceImpl<MechanismInfoMapper, M
                             info.setId(e.getId());
                             updateList.add(info);
                         }*/
+                    }else {
+                        exportReturnVO.getFailMessage().stream().filter(exportReturnMessageVO -> exportReturnMessageVO.getColumn().equals(t.getColumnNumber())).forEach(exportReturnMessageVO -> {
+                            exportReturnMessageVO.setMessage(exportReturnMessageVO.getMessage()+(returnMessage==null?"":returnMessage)+(StringUtils.isBlank(checkDict)?"":checkDict)+(uniqueSet.contains(uniqueCode)?(checkDict+"数据重复:干部身份证号"+t.getCardId()+",家人姓名"+t.getName()+",称谓"+title1+",统一社会信用代码/注册号"+t.getCode()+";"):checkDict));
+                        });
                     }
                     //有此类情况
                    /* infos.stream().forEach(e -> {
@@ -841,27 +853,17 @@ public class MechanismInfoServiceImpl extends ServiceImpl<MechanismInfoMapper, M
                 } else {
                     if (StringUtils.isNotBlank(t.getName()) && StringUtils.isNotBlank(t.getCode())) {
                         //校验国家/省/市
-                        String returnMessage = checkImportArea(t);
                         if (StringUtils.isNotBlank(returnMessage)){
                             exportReturnVO.setFailNumber(exportReturnVO.getFailNumber()+1);
-                            exportReturnVO.getFailMessage().add(new ExportReturnMessageVO(t.getColumnNumber(),returnMessage));
+                            exportReturnVO.getFailMessage().add(new ExportReturnMessageVO(t.getColumnNumber(),returnMessage+(StringUtils.isBlank(checkDict)?"":checkDict)+(uniqueSet.contains(uniqueCode)?"数据重复:干部身份证号"+t.getCardId()+",家人姓名"+t.getName()+",称谓"+title1+",统一社会信用代码/注册号"+t.getCode()+";":"")));
                         }else {
-                            //数据库为空，直接add
-                            MechanismInfo info = new MechanismInfo();
-                            BeanUtils.copyProperties(t, info);
-                            info.setState(SystemConstant.SAVE_STATE)//默认类型新建
-                                    .setCreateTime(new Date())
-                                    .setUpdateTime(new Date());
-                            String title = info.getTitle();
-                            //字典替换
-                            String checkDict = this.replaceDictId(info,dictList);
                             if (StringUtils.isNotBlank(checkDict)){
                                 exportReturnVO.setFailNumber(exportReturnVO.getFailNumber()+1);
-                                exportReturnVO.getFailMessage().add(new ExportReturnMessageVO(t.getColumnNumber(),checkDict));
+                                exportReturnVO.getFailMessage().add(new ExportReturnMessageVO(t.getColumnNumber(),checkDict+(uniqueSet.contains(uniqueCode)?"数据重复:干部身份证号"+t.getCardId()+",家人姓名"+t.getName()+",称谓"+title1+",统一社会信用代码/注册号"+t.getCode()+";":"")));
                             }else {
                                 if (uniqueSet.contains(uniqueCode)){
                                     exportReturnVO.setFailNumber(exportReturnVO.getFailNumber()+1);
-                                    exportReturnVO.getFailMessage().add(new ExportReturnMessageVO(t.getColumnNumber(),"数据重复:干部身份证号"+t.getCardId()+",家人姓名"+t.getName()+",称谓"+title+",统一社会信用代码/注册号"+t.getCode()));
+                                    exportReturnVO.getFailMessage().add(new ExportReturnMessageVO(t.getColumnNumber(),"数据重复:干部身份证号"+t.getCardId()+",家人姓名"+t.getName()+",称谓"+title1+",统一社会信用代码/注册号"+t.getCode()+";"));
                                 }else {
                                     uniqueSet.add(uniqueCode);
                                     info.setCreateName(baseDTO.getServicePersonName());
@@ -875,45 +877,15 @@ public class MechanismInfoServiceImpl extends ServiceImpl<MechanismInfoMapper, M
                                     mechanismInfoList.add(info);
                                     exportReturnVO.setSuccessNumber(exportReturnVO.getSuccessNumber()+1);
                                 }
-
                             }
 
                         }
-
                     }
                 }
             } else {
-                //说明无此类情况
-                MechanismInfo info = new MechanismInfo();
-                BeanUtils.copyProperties(t, info);
-                info.setState(SystemConstant.SAVE_STATE)//默认类型新建
-                        .setUpdateTime(new Date());
-                //字典替换
-                String checkDict = this.replaceDictId(info,dictList);
-                if (StringUtils.isNotBlank(checkDict)){
-                    exportReturnVO.setFailNumber(exportReturnVO.getFailNumber()+1);
-                    exportReturnVO.getFailMessage().add(new ExportReturnMessageVO(t.getColumnNumber(),checkDict));
-                }else {
-                    //数据库中如果不存在数据
-                    if (CollectionUtil.isEmpty(infos)) {
-                        long time = date.getTime() + 1000;
-                        info.setCreateTime(DateUtil.date(time));
-                        info.setUpdateTime(DateUtil.date(time));
-                        date.setTime(time);
-                        info.setCreateName(baseDTO.getServicePersonName());
-                        info.setCreateAccount(baseDTO.getServiceUserAccount());
-                        info.setOrgCode(baseDTO.getOrgCode());
-                        info.setOrgName(baseDTO.getOrgName());
-                        mechanismInfoList.add(info);//可添加到数据库中
-                    } else {
-                        info.setId(infos.get(0).getId());
-                        long time = date.getTime() + 1000;
-                        info.setUpdateTime(DateUtil.date(time));
-                        info.setCreateTime(DateUtil.date(time));
-                        date.setTime(time);
-                        updateList.add(info);
-                    }
-                }
+                exportReturnVO.getFailMessage().stream().filter(exportReturnMessageVO -> exportReturnMessageVO.getColumn().equals(t.getColumnNumber())).forEach(exportReturnMessageVO -> {
+                    exportReturnMessageVO.setMessage(exportReturnMessageVO.getMessage()+(returnMessage==null?"":returnMessage)+(StringUtils.isBlank(checkDict)?"":checkDict)+(uniqueSet.contains(uniqueCode)?(checkDict+"数据重复:干部身份证号"+t.getCardId()+",家人姓名"+t.getName()+",称谓"+title1+",统一社会信用代码/注册号"+t.getCode()+";"):checkDict));
+                });
             }
         });
         if (!mechanismInfoList.isEmpty()) {
@@ -1021,10 +993,13 @@ public class MechanismInfoServiceImpl extends ServiceImpl<MechanismInfoMapper, M
         return resultList;
     }
 
-    private List<CommunityServiceDTO> checkParams(List<CommunityServiceDTO> list, ExportReturnVO exportReturnVO,String orgCode) {
+    private void checkParams(List<CommunityServiceDTO> list, ExportReturnVO exportReturnVO,String orgCode) {
         List<String> isOrNotList = Arrays.asList(SystemConstant.WHETHER_YES, SystemConstant.WHETHER_NO);
         List<String> cardIds = Optional.ofNullable(gbBasicInfoService.selectNoAuthCardIds(orgCode)).orElse(Lists.newArrayList());
-        return list.stream().filter(e->{
+        Map<Integer, String> columnMessageMap = exportReturnVO.getFailMessage().stream().collect(Collectors.toMap(ExportReturnMessageVO::getColumn, ExportReturnMessageVO::getMessage));
+        list.forEach(e->{
+            boolean haveColumn = columnMessageMap.containsKey(e.getColumnNumber());
+            StringBuilder message=new StringBuilder(haveColumn?columnMessageMap.get(e.getColumnNumber()):"");
             if (SystemConstant.IS_SITUATION_YES.equals(e.getIsSituation())){
 //                if (StringUtils.isBlank(e.getName())||StringUtils.isBlank(e.getTitle())||StringUtils.isBlank(e.getQualificationName())
 //                ||StringUtils.isBlank(e.getQualificationCode())||StringUtils.isBlank(e.getOrganizationName())||StringUtils.isBlank(e.getCode())||StringUtils.isBlank(e.getEstablishTime())
@@ -1035,20 +1010,23 @@ public class MechanismInfoServiceImpl extends ServiceImpl<MechanismInfoMapper, M
 //                    exportReturnVO.getFailMessage().add(new ExportReturnMessageVO(e.getColumnNumber(),"有此类情况时以下内容不能为空：姓名,称谓,执业资格名称,执业证号,开办或所在机构名称,统一社会信用代码/注册号,成立日期,注册地（国家）,注册地（省）,经营（服务）地,机构类型,注册资本（金）或资金数额（出资额）,经营状态,经营（服务）范围,是否为机构股东（合伙人、所有人等）,是否在该机构中从业,该企业或其他市场主体是否与报告人所在单位（系统）直接发生过商品、劳务、服务等经济关系,填报类型,年度。"));
 //                    return false;
 //                }
-                if (!isOrNotList.contains(e.getShareholder())||!isOrNotList.contains(e.getPractice())||!isOrNotList.contains(e.getIsRelation())){
-                    exportReturnVO.setFailNumber(exportReturnVO.getFailNumber()+1);
-                    exportReturnVO.getFailMessage().add(new ExportReturnMessageVO(e.getColumnNumber(),"有此类情况时以下内容只能填是否：是否为机构股东（合伙人、所有人等）,是否在该机构中从业,该企业或其他市场主体是否与报告人所在单位（系统）直接发生过商品、劳务、服务等经济关系。"));
-                    return false;
+                if ((StringUtils.isNotBlank(e.getShareholder())&&!isOrNotList.contains(e.getShareholder()))||(StringUtils.isNotBlank(e.getPractice())&&!isOrNotList.contains(e.getPractice()))||(StringUtils.isNotBlank(e.getIsRelation())&&!isOrNotList.contains(e.getIsRelation()))){
+//                    exportReturnVO.setFailNumber(exportReturnVO.getFailNumber()+1);
+//                    exportReturnVO.getFailMessage().add(new ExportReturnMessageVO(e.getColumnNumber(),"有此类情况时以下内容只能填是否：是否为机构股东（合伙人、所有人等）,是否在该机构中从业,该企业或其他市场主体是否与报告人所在单位（系统）直接发生过商品、劳务、服务等经济关系。"));
+//                    return false;
+                    message.append("有此类情况时以下内容只能填是否：是否为机构股东（合伙人、所有人等）,是否在该机构中从业,该企业或其他市场主体是否与报告人所在单位（系统）直接发生过商品、劳务、服务等经济关系;");
                 }
                 if (SystemConstant.WHETHER_YES.equals(e.getShareholder())&&(StringUtils.isBlank(e.getPersonalCapital())||StringUtils.isBlank(e.getPersonalRatio()))){
-                    exportReturnVO.setFailNumber(exportReturnVO.getFailNumber()+1);
-                    exportReturnVO.getFailMessage().add(new ExportReturnMessageVO(e.getColumnNumber(),"是为机构股东（合伙人、所有人等）时以下内容不能为空： 个人认缴出资额或个人出资额,个人认缴出资比例或个人出资比例。"));
-                    return false;
+//                    exportReturnVO.setFailNumber(exportReturnVO.getFailNumber()+1);
+//                    exportReturnVO.getFailMessage().add(new ExportReturnMessageVO(e.getColumnNumber(),"是为机构股东（合伙人、所有人等）时以下内容不能为空： 个人认缴出资额或个人出资额,个人认缴出资比例或个人出资比例。"));
+//                    return false;
+                    message.append("是为机构股东（合伙人、所有人等）时以下内容不能为空： 个人认缴出资额或个人出资额,个人认缴出资比例或个人出资比例;");
                 }
                 if (SystemConstant.WHETHER_YES.equals(e.getPractice())&&(StringUtils.isBlank(e.getPostName()))){
-                    exportReturnVO.setFailNumber(exportReturnVO.getFailNumber()+1);
-                    exportReturnVO.getFailMessage().add(new ExportReturnMessageVO(e.getColumnNumber(),"是在该机构中从业时以下内容不能为空： 所担任的职务名称。"));
-                    return false;
+//                    exportReturnVO.setFailNumber(exportReturnVO.getFailNumber()+1);
+//                    exportReturnVO.getFailMessage().add(new ExportReturnMessageVO(e.getColumnNumber(),"是在该机构中从业时以下内容不能为空： 所担任的职务名称。"));
+//                    return false;
+                    message.append("是在该机构中从业时以下内容不能为空： 所担任的职务名称;");
                 }
 //                if (SystemConstant.WHETHER_YES.equals(e.getIsRelation())&&StringUtils.isBlank(e.getRemarks())){
 //                    exportReturnVO.setFailNumber(exportReturnVO.getFailNumber()+1);
@@ -1057,41 +1035,54 @@ public class MechanismInfoServiceImpl extends ServiceImpl<MechanismInfoMapper, M
 //                }
                 List<String> numbers = Stream.of(e.getRegisterCapital(), e.getPersonalCapital(), e.getPersonalRatio(), e.getYear()).filter(StringUtils::isNotBlank).collect(Collectors.toList());
                 if (!NumberUtils.isAllNumeric(numbers)){
-                    exportReturnVO.setFailNumber(exportReturnVO.getFailNumber()+1);
-                    exportReturnVO.getFailMessage().add(new ExportReturnMessageVO(e.getColumnNumber(),"以下内容必须为正数：注册资本（金）或资金数额（出资额）,个人认缴出资额或个人出资额,个人认缴出资比例或个人出资比例,年度。"));
-                    return false;
+//                    exportReturnVO.setFailNumber(exportReturnVO.getFailNumber()+1);
+//                    exportReturnVO.getFailMessage().add(new ExportReturnMessageVO(e.getColumnNumber(),"以下内容必须为正数：注册资本（金）或资金数额（出资额）,个人认缴出资额或个人出资额,个人认缴出资比例或个人出资比例,年度。"));
+//                    return false;
+                    message.append("以下内容必须为正数：注册资本（金）或资金数额（出资额）,个人认缴出资额或个人出资额,个人认缴出资比例或个人出资比例,年度;");
                 }else {
                     String year = e.getYear();
                     if (StringUtils.isNotBlank(year)&&year.contains(".")){
-                        exportReturnVO.setFailNumber(exportReturnVO.getFailNumber()+1);
-                        exportReturnVO.getFailMessage().add(new ExportReturnMessageVO(e.getColumnNumber(),"年份不能为小数。"));
-                        return false;
+//                        exportReturnVO.setFailNumber(exportReturnVO.getFailNumber()+1);
+//                        exportReturnVO.getFailMessage().add(new ExportReturnMessageVO(e.getColumnNumber(),"年份不能为小数。"));
+//                        return false;
+                        message.append("年份不能为小数;");
                     }
-                    if (StringUtils.isNotBlank(year)&&Integer.parseInt(year)>Calendar.getInstance().get(Calendar.YEAR)){
-                        exportReturnVO.setFailNumber(exportReturnVO.getFailNumber()+1);
-                        exportReturnVO.getFailMessage().add(new ExportReturnMessageVO(e.getColumnNumber(),"年份不能大于当前年份。"));
-                        return false;
+                    if (StringUtils.isNotBlank(year)&&!year.contains(".")&&Integer.parseInt(year)>Calendar.getInstance().get(Calendar.YEAR)){
+//                        exportReturnVO.setFailNumber(exportReturnVO.getFailNumber()+1);
+//                        exportReturnVO.getFailMessage().add(new ExportReturnMessageVO(e.getColumnNumber(),"年份不能大于当前年份。"));
+//                        return false;
+                        message.append("年份不能大于当前年份;");
                     }
                 }
-                if (StringUtils.isNotBlank(e.getEstablishTime())&& CalendarUtil.greaterThanNow(e.getEstablishTime())){
-                    exportReturnVO.setFailNumber(exportReturnVO.getFailNumber()+1);
-                    exportReturnVO.getFailMessage().add(new ExportReturnMessageVO(e.getColumnNumber(),"成立日期不能大于当前日期。"));
-                    return false;
+                if (StringUtils.isNotBlank(e.getEstablishTime())&&!message.toString().contains("成立日期")&& CalendarUtil.greaterThanNow(e.getEstablishTime())){
+//                    exportReturnVO.setFailNumber(exportReturnVO.getFailNumber()+1);
+//                    exportReturnVO.getFailMessage().add(new ExportReturnMessageVO(e.getColumnNumber(),"成立日期不能大于当前日期。"));
+//                    return false;
+                    message.append("成立日期不能大于当前日期;");
                 }
-                if (StringUtils.isNotBlank(e.getJoinTime())&& CalendarUtil.greaterThanNow(e.getJoinTime())){
-                    exportReturnVO.setFailNumber(exportReturnVO.getFailNumber()+1);
-                    exportReturnVO.getFailMessage().add(new ExportReturnMessageVO(e.getColumnNumber(),"入股（合伙）时间不能大于当前日期。"));
-                    return false;
+                if (StringUtils.isNotBlank(e.getJoinTime())&&!message.toString().contains("入股（合伙）时间")&& CalendarUtil.greaterThanNow(e.getJoinTime())){
+//                    exportReturnVO.setFailNumber(exportReturnVO.getFailNumber()+1);
+//                    exportReturnVO.getFailMessage().add(new ExportReturnMessageVO(e.getColumnNumber(),"入股（合伙）时间不能大于当前日期。"));
+//                    return false;
+                    message.append("入股（合伙）时间不能大于当前日期;");
                 }
                 if (cardIds.contains(e.getCardId())){
+//                    exportReturnVO.setFailNumber(exportReturnVO.getFailNumber()+1);
+//                    exportReturnVO.getFailMessage().add(new ExportReturnMessageVO(e.getColumnNumber(),"没有当前干部权限:"+e.getCardId()+"。"));
+//                    return false;
+                    message.append("没有当前干部权限:").append(e.getCardId()).append(";");
+                }
+                int columnNumber = e.getColumnNumber();
+                if (haveColumn){
+                    exportReturnVO.getFailMessage().stream().filter(exportReturnMessageVO -> exportReturnMessageVO.getColumn().equals(columnNumber)).forEach(exportReturnMessageVO -> exportReturnMessageVO.setMessage(message.toString()));
+                }else if (message.length()>0){
                     exportReturnVO.setFailNumber(exportReturnVO.getFailNumber()+1);
-                    exportReturnVO.getFailMessage().add(new ExportReturnMessageVO(e.getColumnNumber(),"没有当前干部权限:"+e.getCardId()+"。"));
-                    return false;
+                    exportReturnVO.getFailMessage().add(new ExportReturnMessageVO(columnNumber, message.toString()));
                 }
 
             }
-            return true;
-        }).collect(Collectors.toList());
+            e.setMessage(message.toString());
+        });
     }
 
     private List<CommunityServiceDTO>  replaceDictValue(List<CommunityServiceDTO> list,List<SysDictBiz> dictList){

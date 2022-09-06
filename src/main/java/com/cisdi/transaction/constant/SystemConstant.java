@@ -33,6 +33,8 @@ public class SystemConstant {
      */
     public final static String CHINA_AREA_CODE="0086";
 
+    public final static String CHINA = "中国";
+
     //INVESTMENT 13-1，COMMUNITY 13-2，
     public final static String INVESTMENT="1";
     public final static String COMMUNITY="2";

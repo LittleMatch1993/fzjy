@@ -21,16 +21,5 @@ public class ExportReturnVO {
     private int successNumber=0;
     @ExcelProperty(value = "失败数量")
     private int failNumber=0;
-    @ExcelProperty(value = "返回内容")
-    private String message;
-
     private List<ExportReturnMessageVO> failMessage=new ArrayList<>();
-
-    public void addMessage(){
-        if (CollectionUtils.isEmpty(failMessage)){
-            this.message="无失败内容";
-        }else {
-            this.message=failMessage.toString();
-        }
-    }
 }
