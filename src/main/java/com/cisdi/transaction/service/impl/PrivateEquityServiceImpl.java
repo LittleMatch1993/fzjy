@@ -759,7 +759,7 @@ public class PrivateEquityServiceImpl extends ServiceImpl<PrivateEquityMapper, P
                     //字典替换
                     String checkDict = this.replaceDictId(investInfo,dictList);
                     if (StringUtils.isNotBlank(checkDict)){
-                        exportReturnVO.getFailMessage().stream().filter(exportReturnMessageVO -> exportReturnMessageVO.getColumn().equals(t.getColumnNumber())).forEach(exportReturnMessageVO -> exportReturnMessageVO.setMessage(message+checkDict));
+                        exportReturnVO.getFailMessage().stream().filter(exportReturnMessageVO -> exportReturnMessageVO.getColumn().equals(t.getColumnNumber())).forEach(exportReturnMessageVO -> exportReturnMessageVO.setMessage(message+Optional.ofNullable(checkDict).orElse("")));
                     }
                 }
 
@@ -928,7 +928,7 @@ public class PrivateEquityServiceImpl extends ServiceImpl<PrivateEquityMapper, P
                     //字典替换
                     String checkDict = this.replaceDictId(investInfo,dictList);
                     if (StringUtils.isNotBlank(checkDict)){
-                        exportReturnVO.getFailMessage().stream().filter(exportReturnMessageVO -> exportReturnMessageVO.getColumn().equals(t.getColumnNumber())).forEach(exportReturnMessageVO -> exportReturnMessageVO.setMessage(message+checkDict));
+                        exportReturnVO.getFailMessage().stream().filter(exportReturnMessageVO -> exportReturnMessageVO.getColumn().equals(t.getColumnNumber())).forEach(exportReturnMessageVO -> exportReturnMessageVO.setMessage(message+Optional.ofNullable(checkDict).orElse("")));
                     }
                 }
 

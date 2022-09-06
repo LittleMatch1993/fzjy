@@ -685,7 +685,7 @@ public class MechanismInfoServiceImpl extends ServiceImpl<MechanismInfoMapper, M
                         }
                     }else{
                         exportReturnVO.getFailMessage().stream().filter(exportReturnMessageVO -> exportReturnMessageVO.getColumn().equals(t.getColumnNumber())).forEach(exportReturnMessageVO -> {
-                            exportReturnMessageVO.setMessage(exportReturnMessageVO.getMessage()+(returnMessage==null?"":returnMessage)+(StringUtils.isBlank(checkDict)?"":checkDict)+(uniqueSet.contains(uniqueCode)?(checkDict+"数据重复:干部身份证号"+t.getCardId()+",家人姓名"+t.getName()+",称谓"+title+",统一社会信用代码/注册号"+t.getCode()+";"):checkDict));
+                            exportReturnMessageVO.setMessage(exportReturnMessageVO.getMessage()+(returnMessage==null?"":returnMessage)+(StringUtils.isBlank(checkDict)?"":checkDict)+(uniqueSet.contains(uniqueCode)?("数据重复:干部身份证号"+t.getCardId()+",家人姓名"+t.getName()+",称谓"+title+",统一社会信用代码/注册号"+t.getCode()+";"):""));
                         });
                     }
                 } else {
@@ -717,7 +717,7 @@ public class MechanismInfoServiceImpl extends ServiceImpl<MechanismInfoMapper, M
 //                        }
 //                    }
                     exportReturnVO.getFailMessage().stream().filter(exportReturnMessageVO -> exportReturnMessageVO.getColumn().equals(t.getColumnNumber())).forEach(exportReturnMessageVO -> {
-                        exportReturnMessageVO.setMessage(exportReturnMessageVO.getMessage()+(returnMessage==null?"":returnMessage)+(StringUtils.isBlank(checkDict)?"":checkDict)+(uniqueSet.contains(uniqueCode)?(checkDict+"数据重复:干部身份证号"+t.getCardId()+",家人姓名"+t.getName()+",称谓"+title+",统一社会信用代码/注册号"+t.getCode()+";"):checkDict));
+                        exportReturnMessageVO.setMessage(exportReturnMessageVO.getMessage()+(returnMessage==null?"":returnMessage)+(StringUtils.isBlank(checkDict)?"":checkDict)+(uniqueSet.contains(uniqueCode)?("数据重复:干部身份证号"+t.getCardId()+",家人姓名"+t.getName()+",称谓"+title+",统一社会信用代码/注册号"+t.getCode()+";"):""));
                     });
                 }
             });
@@ -739,20 +739,21 @@ public class MechanismInfoServiceImpl extends ServiceImpl<MechanismInfoMapper, M
         Map<String, List<MechanismInfo>> infoMap = infoList.stream().collect(Collectors.groupingBy(MechanismInfo::getCardId));
         list.forEach(t -> {
             String message = t.getMessage();
-            List<MechanismInfo> infos = infoMap.getOrDefault(t.getCardId(), null);
-            String uniqueCode = t.getCardId() + "," + t.getName() + "," + t.getTitle()+","+t.getCode();
-            MechanismInfo info = new MechanismInfo();
-            BeanUtils.copyProperties(t, info);
-            info.setState(SystemConstant.SAVE_STATE)//默认类型新建
-                    .setUpdateTime(DateUtil.date());
-            //判断该干部下的其他子项名称和代码是否相同
-            long nameIndex = infos.stream().filter(e->t.getName().equals(e.getName())).count();
-            long titleIndex = infos.stream().filter(e->sysDictBizService.getDictId(t.getTitle(),dictList).equals(e.getTitle())).count();
-            long codeIndex = infos.stream().filter(e->t.getCode().equals(e.getCode())).count();
-            String title1 = info.getTitle();
-            String checkDict = this.replaceDictId(info,dictList);
             String returnMessage = checkImportArea(t);
+            String checkDict="";
             if (StringUtils.isBlank(message)) {
+                List<MechanismInfo> infos = infoMap.getOrDefault(t.getCardId(), null);
+                String uniqueCode = t.getCardId() + "," + t.getName() + "," + t.getTitle()+","+t.getCode();
+                MechanismInfo info = new MechanismInfo();
+                BeanUtils.copyProperties(t, info);
+                info.setState(SystemConstant.SAVE_STATE)//默认类型新建
+                        .setUpdateTime(DateUtil.date());
+                //判断该干部下的其他子项名称和代码是否相同
+                long nameIndex = infos.stream().filter(e->t.getName().equals(e.getName())).count();
+                long titleIndex = infos.stream().filter(e->sysDictBizService.getDictId(t.getTitle(),dictList).equals(e.getTitle())).count();
+                long codeIndex = infos.stream().filter(e->t.getCode().equals(e.getCode())).count();
+                String title1 = info.getTitle();
+                checkDict = this.replaceDictId(info,dictList);
                 if (CollectionUtil.isNotEmpty(infos)) {//如果不为空，进行比较
                     //校验姓名和统一社会信用代码不能为空
                     if (StringUtils.isNotBlank(t.getName())&&StringUtils.isNotBlank(t.getTitle())  && StringUtils.isNotBlank(t.getCode())) {
@@ -825,8 +826,9 @@ public class MechanismInfoServiceImpl extends ServiceImpl<MechanismInfoMapper, M
                             updateList.add(info);
                         }*/
                     }else {
+                        final String dictCode=checkDict;
                         exportReturnVO.getFailMessage().stream().filter(exportReturnMessageVO -> exportReturnMessageVO.getColumn().equals(t.getColumnNumber())).forEach(exportReturnMessageVO -> {
-                            exportReturnMessageVO.setMessage(exportReturnMessageVO.getMessage()+(returnMessage==null?"":returnMessage)+(StringUtils.isBlank(checkDict)?"":checkDict)+(uniqueSet.contains(uniqueCode)?(checkDict+"数据重复:干部身份证号"+t.getCardId()+",家人姓名"+t.getName()+",称谓"+title1+",统一社会信用代码/注册号"+t.getCode()+";"):checkDict));
+                            exportReturnMessageVO.setMessage(exportReturnMessageVO.getMessage()+(returnMessage==null?"":returnMessage)+(StringUtils.isBlank(dictCode)?"":dictCode)+(uniqueSet.contains(uniqueCode)?("数据重复:干部身份证号"+t.getCardId()+",家人姓名"+t.getName()+",称谓"+title1+",统一社会信用代码/注册号"+t.getCode()+";"):""));
                         });
                     }
                     //有此类情况
@@ -883,8 +885,9 @@ public class MechanismInfoServiceImpl extends ServiceImpl<MechanismInfoMapper, M
                     }
                 }
             } else {
+                final String dictCode=checkDict;
                 exportReturnVO.getFailMessage().stream().filter(exportReturnMessageVO -> exportReturnMessageVO.getColumn().equals(t.getColumnNumber())).forEach(exportReturnMessageVO -> {
-                    exportReturnMessageVO.setMessage(exportReturnMessageVO.getMessage()+(returnMessage==null?"":returnMessage)+(StringUtils.isBlank(checkDict)?"":checkDict)+(uniqueSet.contains(uniqueCode)?(checkDict+"数据重复:干部身份证号"+t.getCardId()+",家人姓名"+t.getName()+",称谓"+title1+",统一社会信用代码/注册号"+t.getCode()+";"):checkDict));
+                    exportReturnMessageVO.setMessage(exportReturnMessageVO.getMessage()+(returnMessage==null?"":returnMessage)+(StringUtils.isBlank(dictCode)?"":dictCode));
                 });
             }
         });
