@@ -1191,25 +1191,25 @@ public class MechanismInfoServiceImpl extends ServiceImpl<MechanismInfoMapper, M
         //国家
         if (StringUtils.isBlank(dto.getRegisterCountry())) {
 //                throw new RuntimeException("在有此类情况下，注册地国家信息不能为空");
-            return "在有此类情况下，注册地国家信息不能为空";
+            return "在有此类情况下，注册地国家信息不能为空;";
         }
         GlobalCityInfo country = globalCityInfoService.lambdaQuery().eq(GlobalCityInfo::getName, dto.getRegisterCountry()).last(SqlConstant.ONE_SQL).one();
         if (country == null) {
 //                throw new RuntimeException(dto.getRegisterCountry() + ":" + "国家不存在");
-            return dto.getRegisterCountry() + ":" + "国家不存在";
+            return dto.getRegisterCountry() + ":" + "国家不存在;";
         }
         //如果是中国下的，校验省份和市
         if (country.getAreaCode().equals(SystemConstant.CHINA_AREA_CODE)) {
             if (StringUtils.isBlank(dto.getRegisterProvince())) {
 //                    throw new RuntimeException(dto.getRegisterCountry() + ":" + "国家下的省份或地级市信息不能为空");
-                return dto.getRegisterCountry() + ":" + "国家下的省份信息不能为空";
+                return dto.getRegisterCountry() + ":" + "国家下的省份信息不能为空;";
             }
             //省份
             GlobalCityInfo province = globalCityInfoService.lambdaQuery().eq(GlobalCityInfo::getName, dto.getRegisterProvince()).eq(GlobalCityInfo::getParentId,country.getCountryId()).last(SqlConstant.ONE_SQL).one();
 
             if (Objects.isNull(province)) {
 //                    throw new RuntimeException(dto.getRegisterCountry() + ":" + "国家下的省份和地级市不存在");
-                return dto.getRegisterCountry() + ":" + "国家下的省份不存在";
+                return dto.getRegisterCountry() + ":" + "国家下的省份不存在;";
             }
             //Map<String, GlobalCityInfo> infoMap = infoList.stream().collect(Collectors.toMap(GlobalCityInfo::getParentId, Function.identity()));
             //Map<String, List<GlobalCityInfo>> collect = infoList.stream().collect(Collectors.groupingBy(GlobalCityInfo::getParentId));
@@ -1218,7 +1218,7 @@ public class MechanismInfoServiceImpl extends ServiceImpl<MechanismInfoMapper, M
             if (StringUtils.isNotBlank(dto.getCity())){
                 GlobalCityInfo city = globalCityInfoService.lambdaQuery().eq(GlobalCityInfo::getName, dto.getCity()).isNull(GlobalCityInfo::getCountryId).last(SqlConstant.ONE_SQL).one();
                 if (Objects.isNull(city)){
-                    return dto.getRegisterProvince() + ":" + "省份下的市不存在";
+                    return dto.getRegisterProvince() + ":" + "省份下的市不存在;";
                 }
             }
 
