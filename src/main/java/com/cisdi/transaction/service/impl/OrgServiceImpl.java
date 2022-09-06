@@ -206,12 +206,13 @@ public class OrgServiceImpl extends ServiceImpl<OrgMapper, Org> implements OrgSe
         if(StrUtil.isEmpty(orgCode)){
             return list;
         }
-        Org org = this.selectByOrgancode(orgCode.toString());
-        if(Objects.isNull(org)){
+        List<String> orgCodeList = Arrays.stream(orgCode.split(",")).distinct().filter(StringUtils::isNotBlank).collect(Collectors.toList());
+        List<Org> orgList = this.selectByOrgancode(orgCodeList);
+        if(CollectionUtil.isEmpty(orgList)){
             return list;
         }
         QueryWrapper<Org> queryWrapper = new QueryWrapper<>();
-        String asglevel = org.getAsglevel();
+        String asglevel = this.getHighestLevel(orgList);
         List<String> names = search.getKeyword();
         List<String> codes = search.getCodes();
         if(CollectionUtil.isNotEmpty(codes)){
@@ -231,7 +232,7 @@ public class OrgServiceImpl extends ServiceImpl<OrgMapper, Org> implements OrgSe
             }
             queryWrapper.lambda().last(SqlConstant.ONE_SQL_YB);
         }else{
-            String pathnamecode = org.getAsgpathnamecode();
+            List<String> pathnamecodeList = orgList.stream().map(Org::getAsgpathnamecode).collect(Collectors.toList());
             if(CollectionUtil.isNotEmpty(names)){
                 //queryWrapper.lambda().likeRight(Org::getAsgpathnamecode,pathnamecode);
                 for (int i = 0; i < names.size(); i++) {
@@ -247,7 +248,7 @@ public class OrgServiceImpl extends ServiceImpl<OrgMapper, Org> implements OrgSe
 
                // queryWrapper.lambda().like(Org::getAsgorganname, name);
             }
-            queryWrapper.lambda().likeRight(Org::getAsgpathnamecode,pathnamecode).last(SqlConstant.ONE_SQL_YB);;
+            queryWrapper.lambda().apply(AuthSqlUtil.getAuthSqlForPathnamecodeRegexp(pathnamecodeList)).last(SqlConstant.ONE_SQL_YB);;
         }
         return this.baseMapper.selectList(queryWrapper);
     }

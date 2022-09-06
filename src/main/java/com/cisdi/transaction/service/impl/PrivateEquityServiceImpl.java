@@ -373,7 +373,7 @@ public class PrivateEquityServiceImpl extends ServiceImpl<PrivateEquityMapper, P
         equity.setUpdaterId(dto.getServiceUserId());
         equity = this.valid(equity);
         this.updateById(equity);
-        //addFamilyInfo(equity);
+        addFamilyInfo(equity);
         this.editRefSpouseBasic(equity);
     }
     private  void editRefSpouseBasic(PrivateEquity info){

@@ -397,7 +397,7 @@ public class MechanismInfoServiceImpl extends ServiceImpl<MechanismInfoMapper, M
         info.setUpdaterId(dto.getServiceUserId());
         info = this.valid(info);
         this.updateById(info);
-        //addFamilyInfo(info);
+        addFamilyInfo(info);
         this.editRefSpouseBasic(info);
     }
     private  void editRefSpouseBasic(MechanismInfo info){

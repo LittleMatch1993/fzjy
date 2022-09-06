@@ -414,7 +414,7 @@ public class InvestInfoServiceImpl extends ServiceImpl<InvestInfoMapper, InvestI
         info.setUpdaterId(dto.getServiceUserId());
         info = this.valid(info);
         this.updateById(info);
-        //addFamilyInfo(info);
+        addFamilyInfo(info);
         this.editRefSpouseBasic(info);
     }
 
