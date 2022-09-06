@@ -245,7 +245,7 @@ public class PrivateEquityServiceImpl extends ServiceImpl<PrivateEquityMapper, P
                 ids = infoList.stream().map(PrivateEquity::getCardId).collect(Collectors.toList());
             }*/
             //向禁止交易信息表中添加数据 并进行验证 及其他逻辑处理
-            banDealInfoService.deleteBanDealInfoByRefId(ids);
+            banDealInfoService.deleteOnlyBanDealInfoByRefId(ids);
             ResultMsgUtil<Map<String, Object>> mapResult = banDealInfoService.insertBanDealInfoOfPrivateEquity(infoList, gbOrgList);
             //处理提交数据后
             Map<String, Object> data = mapResult.getData();
@@ -373,7 +373,7 @@ public class PrivateEquityServiceImpl extends ServiceImpl<PrivateEquityMapper, P
         equity.setUpdaterId(dto.getServiceUserId());
         equity = this.valid(equity);
         this.updateById(equity);
-        //addFamilyInfo(equity);
+        addFamilyInfo(equity);
         this.editRefSpouseBasic(equity);
     }
     private  void editRefSpouseBasic(PrivateEquity info){

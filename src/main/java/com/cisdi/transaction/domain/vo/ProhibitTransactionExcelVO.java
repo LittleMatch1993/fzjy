@@ -39,6 +39,9 @@ public class ProhibitTransactionExcelVO {
     @ExcelProperty(value = "家人关系")
     private String relation;
 
+    @ExcelProperty(value = "企业状态/经营状态")
+    private String enterpriseState;
+
     @ExcelProperty(value = "经商类型")
     private String engageType;
 
@@ -83,4 +86,5 @@ public class ProhibitTransactionExcelVO {
 
     @ExcelProperty(value = "状态")
     private String state;
+
 }

@@ -187,7 +187,7 @@ public class MechanismInfoServiceImpl extends ServiceImpl<MechanismInfoMapper, M
                 ids = infoList.stream().map(MechanismInfo::getCardId).collect(Collectors.toList());
             }*/
             //向禁止交易信息表中添加数据 并进行验证 及其他逻辑处理
-            banDealInfoService.deleteBanDealInfoByRefId(ids);
+            banDealInfoService.deleteOnlyBanDealInfoByRefId(ids);
             ResultMsgUtil<Map<String, Object>> mapResult = banDealInfoService.insertBanDealInfoOfMechanismInfo(infoList,gbOrgList);
             //处理提交数据后
             Map<String, Object> data = mapResult.getData();
@@ -397,7 +397,7 @@ public class MechanismInfoServiceImpl extends ServiceImpl<MechanismInfoMapper, M
         info.setUpdaterId(dto.getServiceUserId());
         info = this.valid(info);
         this.updateById(info);
-        //addFamilyInfo(info);
+        addFamilyInfo(info);
         this.editRefSpouseBasic(info);
     }
     private  void editRefSpouseBasic(MechanismInfo info){

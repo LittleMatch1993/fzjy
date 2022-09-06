@@ -118,6 +118,7 @@ public class InstitutionalFrameworkController {
                 OrgDictVo vo = new OrgDictVo();
                 vo.setId(e.getAsgorganname());
                 vo.setName(e.getAsgorganname());
+                vo.setAsgpathname(e.getAsgpathname());
                 voList.add(vo);
             });
         }

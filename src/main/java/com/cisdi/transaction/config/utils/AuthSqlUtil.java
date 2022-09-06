@@ -11,10 +11,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 
 import javax.annotation.PostConstruct;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -143,6 +140,18 @@ public class AuthSqlUtil {
         String conditionSql = "asgpathnamecode regexp";
         String pathnamecodeStr = pathnamecodeList.stream().collect(Collectors.joining("|"));
         conditionSql = conditionSql.concat(" '^(").concat(pathnamecodeStr).concat(")'");
+        return conditionSql;
+    }
+
+    public static String getAuthSqlForAsgorganCodeOrderBy(List<String> orgCodes){
+        String conditionSql = "asgorgancode in";
+        StringJoiner sj = new StringJoiner(",");
+        for (String orgCode : orgCodes) {
+            String temp="'";
+            temp = temp.concat(orgCode).concat("'");
+            sj.add(temp);
+        }
+        conditionSql = conditionSql.concat("(").concat(sj.toString()).concat(")");
         return conditionSql;
     }
 

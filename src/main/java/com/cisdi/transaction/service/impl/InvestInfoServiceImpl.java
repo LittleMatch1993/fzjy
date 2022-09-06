@@ -162,7 +162,7 @@ public class InvestInfoServiceImpl extends ServiceImpl<InvestInfoMapper, InvestI
                 infoList = infoList.stream().filter(e->tempList.contains(e.getId())).collect(Collectors.toList());
                 ids = infoList.stream().map(InvestInfo::getCardId).collect(Collectors.toList());
             }*/
-            banDealInfoService.deleteBanDealInfoByRefId(ids);
+            banDealInfoService.deleteOnlyBanDealInfoByRefId(ids);
             //向禁止交易信息表中添加数据 并进行验证 及其他逻辑处理
             ResultMsgUtil<Map<String, Object>> mapResult = banDealInfoService.insertBanDealInfoOfInvestInfo(infoList, gbOrgList);
             //处理提交数据后
@@ -414,7 +414,7 @@ public class InvestInfoServiceImpl extends ServiceImpl<InvestInfoMapper, InvestI
         info.setUpdaterId(dto.getServiceUserId());
         info = this.valid(info);
         this.updateById(info);
-        //addFamilyInfo(info);
+        addFamilyInfo(info);
         this.editRefSpouseBasic(info);
     }
 
