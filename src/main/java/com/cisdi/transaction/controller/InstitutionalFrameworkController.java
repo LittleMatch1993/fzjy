@@ -117,7 +117,7 @@ public class InstitutionalFrameworkController {
             list.stream().forEach(e->{
                 OrgDictVo vo = new OrgDictVo();
                 vo.setId(e.getAsgorganname());
-                vo.setName(e.getAsgorgancode()+"-"+e.getAsgorganname());
+                vo.setName(e.getAsgorganname());
                 vo.setAsgpathname(e.getAsgpathname());
                 voList.add(vo);
             });
