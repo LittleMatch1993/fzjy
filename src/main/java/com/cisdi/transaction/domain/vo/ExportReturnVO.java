@@ -1,6 +1,7 @@
 package com.cisdi.transaction.domain.vo;
 
 import com.alibaba.excel.annotation.ExcelProperty;
+import io.swagger.models.auth.In;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import org.springframework.util.CollectionUtils;
@@ -22,4 +23,22 @@ public class ExportReturnVO {
     @ExcelProperty(value = "失败数量")
     private int failNumber=0;
     private List<ExportReturnMessageVO> failMessage=new ArrayList<>();
+
+
+    /**
+     * 新增失败内容
+     * @param columnNumber
+     * @param failMessage
+     */
+    public void addFailContent(Integer columnNumber,String failMessage){
+        this.failNumber++;
+        this.failMessage.add(new ExportReturnMessageVO(columnNumber, failMessage));
+    }
+
+    /**
+     * 添加成功数量
+     */
+    public void addSuccessNumber(){
+        this.successNumber++;
+    }
 }

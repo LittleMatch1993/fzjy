@@ -682,7 +682,7 @@ public class InvestInfoServiceImpl extends ServiceImpl<InvestInfoMapper, InvestI
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void saveBatchInvestmentInfo(List<InvestmentDTO> lists, BaseDTO baseDTO, ExportReturnVO exportReturnVO) {
+    public void saveBatchInvestmentInfo(List<InvestmentDTO> list, BaseDTO baseDTO, ExportReturnVO exportReturnVO) {
         final String orgCode;
         final String orgName;
         if (baseDTO.getOrgCode().contains(",")){
@@ -694,22 +694,29 @@ public class InvestInfoServiceImpl extends ServiceImpl<InvestInfoMapper, InvestI
         }
         //过滤掉必填校验未通过的字段
 //        List<InvestmentDTO> list = lists.stream().filter(e -> StringUtils.isBlank(e.getMessage())).collect(Collectors.toList());
-        List<InvestmentDTO> list = lists;
+//        List<InvestmentDTO> list = lists;
+        //部分参数校验
         checkParams(list,exportReturnVO,baseDTO.getOrgCode());
         if (CollectionUtils.isEmpty(list)){
             return;
         }
+        //获取所有字典信息
         List<SysDictBiz> dictList = sysDictBizService.selectList();
+        //新增的内容
         List<InvestInfo> investInfoList = new ArrayList<>();
-
+        //筛选出没有错误内容的干部身份证号
         List<String> cardIds = list.stream().filter(e->StringUtils.isBlank(e.getMessage())).map(InvestmentDTO::getCardId).distinct().collect(Collectors.toList());
+        //通过干部身份证号查询已经存在的投资企业或担任高级职务情况
         List<InvestInfo> infoList = CollectionUtils.isEmpty(cardIds)?Lists.newArrayList():this.lambdaQuery().in(InvestInfo::getCardId, cardIds).list();
 
+        //去重集合：通过干部身份证号、家人姓名、称谓、统一社会信用代码/注册号
         Set<String> uniqueSet=new HashSet<>();
         Date date=new Date();
         if (infoList.isEmpty()) {
             list.forEach(t -> {
+                //失败信息
                 String message = t.getMessage();
+                //国家省市校验
                 String returnMessage = checkImportArea(t);
                 InvestInfo investInfo = new InvestInfo();
                 BeanUtils.copyProperties(t, investInfo);
@@ -719,6 +726,13 @@ public class InvestInfoServiceImpl extends ServiceImpl<InvestInfoMapper, InvestI
                 String title = investInfo.getTitle();
                 String checkDict = this.repalceDictId(investInfo,dictList);
                 String uniqueCode = t.getCardId() + "," + t.getName() + "," + title+","+t.getCode();
+                //去重校验提示信息
+                String uniqueCheckMessage = "数据重复:干部身份证号" + t.getCardId() + ",家人姓名" + t.getName() + ",称谓" + title + ",统一社会信用代码/注册号" + t.getCode() + ";";
+                //失败信息
+                String failMessage=null;
+                //是否需要添加失败信息
+                boolean isAddFailMessage=false;
+                //如果上面校验后无失败信息，则做字典、国家省市校验和替换，且做去重校验
                 if (StringUtils.isBlank(message)){
                     if (t.getIsSituation().equals(SystemConstant.IS_SITUATION_YES)) {
                         if (StringUtils.isNotBlank(t.getName()) && StringUtils.isNotBlank(t.getCode())) {
@@ -726,8 +740,8 @@ public class InvestInfoServiceImpl extends ServiceImpl<InvestInfoMapper, InvestI
                             if (StringUtils.isBlank(returnMessage)){
                                 if (StringUtils.isBlank(checkDict)){
                                     if (uniqueSet.contains(uniqueCode)){
-                                        exportReturnVO.setFailNumber(exportReturnVO.getFailNumber()+1);
-                                        exportReturnVO.getFailMessage().add(new ExportReturnMessageVO(t.getColumnNumber(),"数据重复:干部身份证号"+t.getCardId()+",家人姓名"+t.getName()+",称谓"+title+",统一社会信用代码/注册号"+t.getCode()+";"));
+                                        failMessage=uniqueCheckMessage;
+                                        isAddFailMessage = true;
                                     }else {
                                         uniqueSet.add(uniqueCode);
                                         investInfo.setCreateName(baseDTO.getServicePersonName());
@@ -743,16 +757,13 @@ public class InvestInfoServiceImpl extends ServiceImpl<InvestInfoMapper, InvestI
                                     }
 
                                 }else {
-                                    exportReturnVO.setFailNumber(exportReturnVO.getFailNumber()+1);
-                                    exportReturnVO.getFailMessage().add(new ExportReturnMessageVO(t.getColumnNumber(),uniqueSet.contains(uniqueCode)?(checkDict+"数据重复:干部身份证号"+t.getCardId()+",家人姓名"+t.getName()+",称谓"+title+",统一社会信用代码/注册号"+t.getCode()+";"):checkDict));
+                                    failMessage=uniqueSet.contains(uniqueCode)?(checkDict+uniqueCheckMessage):checkDict;
+                                    isAddFailMessage = true;
                                 }
-
                             }else {
-                                exportReturnVO.setFailNumber(exportReturnVO.getFailNumber()+1);
-                                exportReturnVO.getFailMessage().add(new ExportReturnMessageVO(t.getColumnNumber(),returnMessage+(StringUtils.isBlank(checkDict)?"":checkDict)+(uniqueSet.contains(uniqueCode)?("数据重复:干部身份证号"+t.getCardId()+",家人姓名"+t.getName()+",称谓"+title+",统一社会信用代码/注册号"+t.getCode()+";"):"")));
+                                failMessage=returnMessage+(StringUtils.isBlank(checkDict)?"":checkDict)+(uniqueSet.contains(uniqueCode)? uniqueCheckMessage :"");
+                                isAddFailMessage = true;
                             }
-                        }else {
-                            exportReturnVO.getFailMessage().add(new ExportReturnMessageVO(t.getColumnNumber(),(returnMessage==null?"":returnMessage)+(StringUtils.isBlank(checkDict)?"":checkDict)+(uniqueSet.contains(uniqueCode)?("数据重复:干部身份证号"+t.getCardId()+",家人姓名"+t.getName()+",称谓"+title+",统一社会信用代码/注册号"+t.getCode()+";"):"")));
                         }
                     } else {
 //                        InvestInfo investInfo = new InvestInfo();
@@ -785,40 +796,32 @@ public class InvestInfoServiceImpl extends ServiceImpl<InvestInfoMapper, InvestI
 //                        }
 
                     }
+                    //新增失败内容
+                    if (isAddFailMessage){
+                        exportReturnVO.addFailContent(t.getColumnNumber(),failMessage);
+                    }
                 }else {
+                    //已经存在失败信息的列做字典、国家省市、唯一校验失败信息添加
                     exportReturnVO.getFailMessage().stream().filter(exportReturnMessageVO -> exportReturnMessageVO.getColumn().equals(t.getColumnNumber())).forEach(exportReturnMessageVO -> {
-                        exportReturnMessageVO.setMessage(exportReturnMessageVO.getMessage()+(returnMessage==null?"":returnMessage)+(StringUtils.isBlank(checkDict)?"":checkDict)+(uniqueSet.contains(uniqueCode)?("数据重复:干部身份证号"+t.getCardId()+",家人姓名"+t.getName()+",称谓"+title+",统一社会信用代码/注册号"+t.getCode()+";"):""));
+                        exportReturnMessageVO.setMessage(exportReturnMessageVO.getMessage()+(returnMessage==null?"":returnMessage)+(StringUtils.isBlank(checkDict)?"":checkDict)+(uniqueSet.contains(uniqueCode)? uniqueCheckMessage :""));
                     });
-//                    exportReturnVO.getFailMessage().add(new ExportReturnMessageVO(t.getColumnNumber(),);
                 }
-
             });
-            if (!investInfoList.isEmpty()) {
-                investInfoList.forEach(mechanismInfo -> {
-                    mechanismInfo.setOrgCode(orgCode);
-                    mechanismInfo.setOrgName(orgName);
-                });
-                this.saveBatch(investInfoList);
-                spouseBasicInfoService.addBatchSpouse(investInfoList.stream().map(investInfo ->
-                        new SpouseBasicInfo().setRefId(investInfo.getId()).setCreateTime(DateUtil.date()).setTenantId(baseDTO.getServiceLesseeId())
-                                .setCreatorId(baseDTO.getServiceUserId()).setUpdaterId(baseDTO.getServiceUserId()).setUpdateTime(DateUtil.date())
-                        .setCadreCardId(investInfo.getCardId()).setName(investInfo.getName()).setTitle(investInfo.getTitle()).setCadreName(investInfo.getGbName())
-                ).collect(Collectors.toList()),SystemConstant.INVESTMENT);
-            }
+            this.saveData(baseDTO, orgCode, orgName, investInfoList);
             return;
         }
+        //修改的内容
         List<InvestInfo> updateList = new ArrayList<>();
         Map<String, List<InvestInfo>> infoMap = infoList.stream().collect(Collectors.groupingBy(InvestInfo::getCardId));
         list.forEach(t -> {
             //List<InvestInfo> infos = infoMap.get(t.getCardId());
             String message = t.getMessage();
+            //校验国家/省/市
             String returnMessage = checkImportArea(t);
             String checkDict="";
             if (StringUtils.isBlank(message)) {
                 List<InvestInfo> infos = infoMap.getOrDefault(t.getCardId(), null);
                 String uniqueCode = t.getCardId() + "," + t.getName() + "," + t.getTitle()+","+t.getCode();
-                //校验国家/省/市
-
                 InvestInfo info = new InvestInfo();
                 BeanUtils.copyProperties(t, info);
                 info.setState(SystemConstant.SAVE_STATE)//默认类型新建
@@ -829,6 +832,9 @@ public class InvestInfoServiceImpl extends ServiceImpl<InvestInfoMapper, InvestI
                 long codeIndex = infos.stream().filter(e->t.getCode().equals(e.getCode())).count();
                 String title1 = info.getTitle();
                 checkDict = this.repalceDictId(info,dictList);
+                String uniqueCheckMessage = "数据重复:干部身份证号" + t.getCardId() + ",家人姓名" + t.getName() + ",称谓" + title1 + ",统一社会信用代码/注册号" + t.getCode() + ";";
+                String failMessage=null;
+                boolean isAddFailMessage=false;
                 if (CollectionUtil.isNotEmpty(infos)) {//如果不为空，进行比较
                     //校验姓名和统一社会信用代码不能为空
                     if (StringUtils.isNotBlank(t.getName())&&StringUtils.isNotBlank(t.getTitle())  && StringUtils.isNotBlank(t.getCode())) {
@@ -836,8 +842,8 @@ public class InvestInfoServiceImpl extends ServiceImpl<InvestInfoMapper, InvestI
                             if (StringUtils.isBlank(checkDict)){
                                 if(nameIndex==0||titleIndex==0||codeIndex==0){ //一个都不重复
                                     if (uniqueSet.contains(uniqueCode)){
-                                        exportReturnVO.setFailNumber(exportReturnVO.getFailNumber()+1);
-                                        exportReturnVO.getFailMessage().add(new ExportReturnMessageVO(t.getColumnNumber(),"数据重复:干部身份证号"+t.getCardId()+",家人姓名"+t.getName()+",称谓"+title1+",统一社会信用代码/注册号"+t.getCode()+";"));
+                                        isAddFailMessage=true;
+                                        failMessage=uniqueCheckMessage;
                                     }else {
                                         //如果不相同，新增，否则就是覆盖
                                         uniqueSet.add(uniqueCode);
@@ -850,7 +856,7 @@ public class InvestInfoServiceImpl extends ServiceImpl<InvestInfoMapper, InvestI
                                         info.setOrgCode(baseDTO.getOrgCode());
                                         info.setOrgName(baseDTO.getOrgName());
                                         investInfoList.add(info);
-                                        exportReturnVO.setSuccessNumber(exportReturnVO.getSuccessNumber()+1);
+                                        exportReturnVO.addSuccessNumber();
                                     }
                                 }else{ //有重复数据了
                                     InvestInfo existInfo = infos.stream().filter(e->t.getName().equals(e.getName())
@@ -859,8 +865,8 @@ public class InvestInfoServiceImpl extends ServiceImpl<InvestInfoMapper, InvestI
                                     String title = info.getTitle();
                                     if(Objects.nonNull(existInfo)){
                                         if (uniqueSet.contains(uniqueCode)){
-                                            exportReturnVO.setFailNumber(exportReturnVO.getFailNumber()+1);
-                                            exportReturnVO.getFailMessage().add(new ExportReturnMessageVO(t.getColumnNumber(),"数据重复:干部身份证号"+t.getCardId()+",家人姓名"+t.getName()+",称谓"+title1+",统一社会信用代码/注册号"+t.getCode()+";"));
+                                            isAddFailMessage=true;
+                                            failMessage=uniqueCheckMessage;
                                         }else {
                                             uniqueSet.add(uniqueCode);
                                             info.setId(existInfo.getId());
@@ -869,13 +875,13 @@ public class InvestInfoServiceImpl extends ServiceImpl<InvestInfoMapper, InvestI
                                             info.setUpdateTime(DateUtil.date(time));
                                             date.setTime(time);
                                             updateList.add(info);
-                                            exportReturnVO.setSuccessNumber(exportReturnVO.getSuccessNumber()+1);
+                                            exportReturnVO.addSuccessNumber();
                                         }
 
                                     }else if (investInfoList.isEmpty()||investInfoList.stream().filter(privateEquity1 -> t.getName().equals(privateEquity1.getName())&&t.getCode().equals(privateEquity1.getCode())&&title.equals(privateEquity1.getTitle())).count()==0){
                                         if (uniqueSet.contains(uniqueCode)){
-                                            exportReturnVO.setFailNumber(exportReturnVO.getFailNumber()+1);
-                                            exportReturnVO.getFailMessage().add(new ExportReturnMessageVO(t.getColumnNumber(),"数据重复:干部身份证号"+t.getCardId()+",家人姓名"+t.getName()+",称谓"+title1+",统一社会信用代码/注册号"+t.getCode()+";"));
+                                            isAddFailMessage=true;
+                                            failMessage=uniqueCheckMessage;
                                         }else {
                                             uniqueSet.add(uniqueCode);
                                             long time = date.getTime() + 1000;
@@ -887,22 +893,22 @@ public class InvestInfoServiceImpl extends ServiceImpl<InvestInfoMapper, InvestI
                                             info.setOrgCode(baseDTO.getOrgCode());
                                             info.setOrgName(baseDTO.getOrgName());
                                             investInfoList.add(info);
-                                            exportReturnVO.setSuccessNumber(exportReturnVO.getSuccessNumber()+1);
+                                            exportReturnVO.addSuccessNumber();
                                         }
 
                                     }else {
-                                        exportReturnVO.setFailNumber(exportReturnVO.getFailNumber()+1);
-                                        exportReturnVO.getFailMessage().add(new ExportReturnMessageVO(t.getColumnNumber(),"数据重复;"));
+                                        isAddFailMessage=true;
+                                        failMessage="数据重复;";
                                     }
                                 }
                             }else {
-                                exportReturnVO.setFailNumber(exportReturnVO.getFailNumber()+1);
-                                exportReturnVO.getFailMessage().add(new ExportReturnMessageVO(t.getColumnNumber(),checkDict+(uniqueSet.contains(uniqueCode)?"数据重复:干部身份证号"+t.getCardId()+",家人姓名"+t.getName()+",称谓"+title1+",统一社会信用代码/注册号"+t.getCode()+";":"")));
+                                isAddFailMessage=true;
+                                failMessage=checkDict+(uniqueSet.contains(uniqueCode)? uniqueCheckMessage :"");
                             }
 
                         }else {
-                            exportReturnVO.setFailNumber(exportReturnVO.getFailNumber()+1);
-                            exportReturnVO.getFailMessage().add(new ExportReturnMessageVO(t.getColumnNumber(),returnMessage+(StringUtils.isBlank(checkDict)?"":checkDict)+(uniqueSet.contains(uniqueCode)?"数据重复:干部身份证号"+t.getCardId()+",家人姓名"+t.getName()+",称谓"+title1+",统一社会信用代码/注册号"+t.getCode()+";":"")));
+                            isAddFailMessage=true;
+                            failMessage=returnMessage+(StringUtils.isBlank(checkDict)?"":checkDict)+(uniqueSet.contains(uniqueCode)? uniqueCheckMessage :"");
                         }
 
                         /*if (!t.getName().equals(e.getName()) &&!info.getTitle().equals(e.getTitle())&& !t.getCode().equals(e.getCode())) {
@@ -917,7 +923,7 @@ public class InvestInfoServiceImpl extends ServiceImpl<InvestInfoMapper, InvestI
                         final String dictCode=checkDict;
                         exportReturnVO.getFailMessage().stream().filter(exportReturnMessageVO -> exportReturnMessageVO.getColumn().equals(t.getColumnNumber()))
                                 .forEach(exportReturnMessageVO -> {
-                                    exportReturnMessageVO.setMessage(exportReturnMessageVO.getMessage()+(returnMessage==null?"":returnMessage)+(StringUtils.isBlank(dictCode)?"":dictCode)+(uniqueSet.contains(uniqueCode)?("数据重复:干部身份证号"+t.getCardId()+",家人姓名"+t.getName()+",称谓"+title1+",统一社会信用代码/注册号"+t.getCode()+";"):""));
+                                    exportReturnMessageVO.setMessage(exportReturnMessageVO.getMessage()+(returnMessage==null?"":returnMessage)+(StringUtils.isBlank(dictCode)?"":dictCode)+(uniqueSet.contains(uniqueCode)? uniqueCheckMessage :""));
                                 });
                     }
                     /*infos.stream().forEach(e -> {
@@ -944,20 +950,15 @@ public class InvestInfoServiceImpl extends ServiceImpl<InvestInfoMapper, InvestI
                 } else {
                     if (StringUtils.isNotBlank(t.getName()) && StringUtils.isNotBlank(t.getCode())) {
                         //校验国家/省/市
-//                        String returnMessage = checkImportArea(t);
                         if (StringUtils.isNotBlank(returnMessage)){
-                            exportReturnVO.setFailNumber(exportReturnVO.getFailNumber()+1);
-                            exportReturnVO.getFailMessage().add(new ExportReturnMessageVO(t.getColumnNumber(),returnMessage+(StringUtils.isBlank(checkDict)?"":checkDict)+(uniqueSet.contains(uniqueCode)?"数据重复:干部身份证号"+t.getCardId()+",家人姓名"+t.getName()+",称谓"+title1+",统一社会信用代码/注册号"+t.getCode()+";":"")));
+                            isAddFailMessage=true;
+                            failMessage=returnMessage+(StringUtils.isBlank(checkDict)?"":checkDict)+(uniqueSet.contains(uniqueCode)? uniqueCheckMessage :"");
                         }else {
                             //数据库为空，直接add
-//                            InvestInfo info = new InvestInfo();
-//                            BeanUtils.copyProperties(t, info);
-//                            String title = info.getTitle();
-//                            String checkDict = this.repalceDictId(info,dictList);
                             if (StringUtils.isBlank(checkDict)){
                                 if (uniqueSet.contains(uniqueCode)){
-                                    exportReturnVO.setFailNumber(exportReturnVO.getFailNumber()+1);
-                                    exportReturnVO.getFailMessage().add(new ExportReturnMessageVO(t.getColumnNumber(),"数据重复:干部身份证号"+t.getCardId()+",家人姓名"+t.getName()+",称谓"+title1+",统一社会信用代码/注册号"+t.getCode()+";"));
+                                    isAddFailMessage=true;
+                                    failMessage=uniqueCheckMessage;
                                 }else {
                                     uniqueSet.add(uniqueCode);
                                     info.setState(SystemConstant.SAVE_STATE);
@@ -970,15 +971,17 @@ public class InvestInfoServiceImpl extends ServiceImpl<InvestInfoMapper, InvestI
                                     info.setOrgCode(baseDTO.getOrgCode());
                                     info.setOrgName(baseDTO.getOrgName());
                                     investInfoList.add(info);
-                                    exportReturnVO.setSuccessNumber(exportReturnVO.getSuccessNumber()+1);
+                                    exportReturnVO.addSuccessNumber();
                                 }
-
                             }else {
-                                exportReturnVO.setFailNumber(exportReturnVO.getFailNumber()+1);
-                                exportReturnVO.getFailMessage().add(new ExportReturnMessageVO(t.getColumnNumber(),checkDict+(uniqueSet.contains(uniqueCode)?"数据重复:干部身份证号"+t.getCardId()+",家人姓名"+t.getName()+",称谓"+title1+",统一社会信用代码/注册号"+t.getCode()+";":"")));
+                                isAddFailMessage=true;
+                                failMessage=checkDict+(uniqueSet.contains(uniqueCode)? uniqueCheckMessage :"");
                             }
                         }
                     }
+                }
+                if (isAddFailMessage){
+                    exportReturnVO.addFailContent(t.getColumnNumber(),failMessage);
                 }
             } else {
 //                //说明无此类情况
@@ -1021,29 +1024,57 @@ public class InvestInfoServiceImpl extends ServiceImpl<InvestInfoMapper, InvestI
             }
 
         });
-        if (!investInfoList.isEmpty()) {
-            investInfoList.forEach(mechanismInfo -> {
-                mechanismInfo.setOrgCode(orgCode);
-                mechanismInfo.setOrgName(orgName);
-            });
-            this.saveBatch(investInfoList);
-            spouseBasicInfoService.addBatchSpouse(investInfoList.stream().map(investInfo ->
-                    new SpouseBasicInfo().setRefId(investInfo.getId()).setCreateTime(investInfo.getCreateTime()).setTenantId(baseDTO.getServiceLesseeId())
-                            .setCreatorId(baseDTO.getServiceUserId()).setUpdaterId(baseDTO.getServiceUserId()).setUpdateTime(investInfo.getUpdateTime())
-                            .setCadreCardId(investInfo.getCardId()).setName(investInfo.getName()).setTitle(investInfo.getTitle()).setCadreName(investInfo.getGbName())
-            ).collect(Collectors.toList()),SystemConstant.INVESTMENT);
-        }
+        //保存数据
+        this.saveData(baseDTO, orgCode, orgName, investInfoList);
+        //修改数据
+        this.updateData(baseDTO, orgCode, orgName, updateList);
+    }
+
+    /**
+     * 修改数据
+     * @param baseDTO
+     * @param orgCode
+     * @param orgName
+     * @param updateList
+     */
+    private void updateData(BaseDTO baseDTO, String orgCode, String orgName, List<InvestInfo> updateList) {
         if (!updateList.isEmpty()) {
+            //初始化组织机构信息
             updateList.forEach(mechanismInfo -> {
                 mechanismInfo.setOrgCode(orgCode);
                 mechanismInfo.setOrgName(orgName);
             });
             this.updateBatchById(updateList);
+            //保存家人信息
             spouseBasicInfoService.addBatchSpouse(updateList.stream().map(investInfo ->
                     new SpouseBasicInfo().setRefId(investInfo.getId()).setCreateTime(investInfo.getCreateTime()).setTenantId(baseDTO.getServiceLesseeId())
                             .setCreatorId(baseDTO.getServiceUserId()).setUpdaterId(baseDTO.getServiceUserId()).setUpdateTime(investInfo.getUpdateTime())
                             .setCadreCardId(investInfo.getCardId()).setName(investInfo.getName()).setTitle(investInfo.getTitle()).setCadreName(investInfo.getGbName())
-            ).collect(Collectors.toList()),SystemConstant.INVESTMENT);
+            ).collect(Collectors.toList()), SystemConstant.INVESTMENT);
+        }
+    }
+
+    /**
+     * 保存数据
+     * @param baseDTO
+     * @param orgCode
+     * @param orgName
+     * @param investInfoList
+     */
+    private void saveData(BaseDTO baseDTO, String orgCode, String orgName, List<InvestInfo> investInfoList) {
+        if (!investInfoList.isEmpty()) {
+            //初始化组织机构信息
+            investInfoList.forEach(mechanismInfo -> {
+                mechanismInfo.setOrgCode(orgCode);
+                mechanismInfo.setOrgName(orgName);
+            });
+            this.saveBatch(investInfoList);
+            //保存家人信息
+            spouseBasicInfoService.addBatchSpouse(investInfoList.stream().map(investInfo ->
+                    new SpouseBasicInfo().setRefId(investInfo.getId()).setCreateTime(investInfo.getCreateTime()).setTenantId(baseDTO.getServiceLesseeId())
+                            .setCreatorId(baseDTO.getServiceUserId()).setUpdaterId(baseDTO.getServiceUserId()).setUpdateTime(investInfo.getUpdateTime())
+                            .setCadreCardId(investInfo.getCardId()).setName(investInfo.getName()).setTitle(investInfo.getTitle()).setCadreName(investInfo.getGbName())
+            ).collect(Collectors.toList()), SystemConstant.INVESTMENT);
         }
     }
 
