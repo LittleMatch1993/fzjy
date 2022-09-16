@@ -148,4 +148,13 @@ public class EnterpriseDealInfo {
      * 修改人
      */
     private String updaterId;
+
+    /**
+     * 禁止交易采购单位代码
+     */
+    private String banPurchaseCode;
+    /**
+     * 禁止交易采购单位名称
+     */
+    private String banPurchaseName;
 }
