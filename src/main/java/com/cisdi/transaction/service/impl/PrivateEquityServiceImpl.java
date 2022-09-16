@@ -657,7 +657,7 @@ public class PrivateEquityServiceImpl extends ServiceImpl<PrivateEquityMapper, P
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void saveBatchInvestmentInfo(List<EquityFundsDTO> lists, BaseDTO baseDTO, ExportReturnVO exportReturnVO) {
+    public void saveBatchInvestmentInfo(List<EquityFundsDTO> list, BaseDTO baseDTO, ExportReturnVO exportReturnVO) {
         final String orgCode;
         final String orgName;
         if (baseDTO.getOrgCode().contains(",")){
@@ -669,20 +669,30 @@ public class PrivateEquityServiceImpl extends ServiceImpl<PrivateEquityMapper, P
         }
 
         //过滤掉必填校验未通过的字段
-        List<EquityFundsDTO> list = lists;
         checkParams(list,exportReturnVO,baseDTO.getOrgCode());
         if (CollectionUtils.isEmpty(list)){
             return;
         }
+        //获取所有字典信息
         List<SysDictBiz> dictList = sysDictBizService.selectList();
+        //新增的内容
         List<PrivateEquity> privateEquity = new ArrayList<>();
+        //筛选出没有错误内容的干部身份证号
         List<String> cardIds = list.stream().distinct().filter(e->StringUtils.isBlank(e.getMessage())).map(EquityFundsDTO::getCardId).collect(Collectors.toList());
+        //通过干部身份证号查询已经存在的配偶、子女及其配偶投资私募股权投资基金或者担任高级职务的情况
         List<PrivateEquity> infoList = CollectionUtils.isEmpty(cardIds)?Lists.newArrayList():this.lambdaQuery().in(PrivateEquity::getCardId, cardIds).list();
+        //去重集合：通过干部身份证号、家人姓名、称谓、登记编号
         Set<String> uniqueSet=new HashSet<>();
         Date date=new Date();
         if (infoList.isEmpty()) {
             list.forEach(t -> {
-//                Integer columnNumber = t.getColumnNumber();
+                String title = t.getTitle();
+                String uniqueCheckMessage = "数据重复:干部身份证号" + t.getCardId() + ",家人姓名" + t.getName() + ",称谓" + title + ",登记编号" + t.getRegistrationNumber() + ";";
+                //失败信息
+                String failMessage=null;
+                //是否需要添加失败信息
+                boolean isAddFailMessage=false;
+                //失败信息
                 String message = t.getMessage();
                 if (StringUtils.isBlank(message)){
                     String uniqueCode = t.getCardId() + "," + t.getName() + "," + t.getTitle()+","+t.getRegistrationNumber();
@@ -692,13 +702,12 @@ public class PrivateEquityServiceImpl extends ServiceImpl<PrivateEquityMapper, P
                         investInfo.setState(SystemConstant.SAVE_STATE)//默认类型新建
                                 .setCreateTime(new Date())
                                 .setUpdateTime(new Date());
-                        String title = investInfo.getTitle();
                         //字典替换
                         String checkDict = this.replaceDictId(investInfo, dictList);
                         if (StringUtils.isBlank(checkDict)){
                             if (uniqueSet.contains(uniqueCode)){
-                                exportReturnVO.setFailNumber(exportReturnVO.getFailNumber()+1);
-                                exportReturnVO.getFailMessage().add(new ExportReturnMessageVO(t.getColumnNumber(),"数据重复:干部身份证号"+t.getCardId()+",家人姓名"+t.getName()+",称谓"+title+",登记编号"+t.getRegistrationNumber()+";"));
+                                isAddFailMessage=true;
+                                failMessage=uniqueCheckMessage;
                             }else {
                                 uniqueSet.add(uniqueCode);
                                 investInfo.setCreateName(baseDTO.getServicePersonName());
@@ -710,12 +719,14 @@ public class PrivateEquityServiceImpl extends ServiceImpl<PrivateEquityMapper, P
                                 investInfo.setUpdateTime(DateUtil.date(time));
                                 date.setTime(time);
                                 privateEquity.add(investInfo);
-                                exportReturnVO.setSuccessNumber(exportReturnVO.getSuccessNumber()+1);
+                                exportReturnVO.addSuccessNumber();
                             }
 
                         }else {
-                            exportReturnVO.getFailMessage().add(new ExportReturnMessageVO(t.getColumnNumber(),uniqueSet.contains(uniqueCode)?(checkDict+"数据重复:干部身份证号"+t.getCardId()+",家人姓名"+t.getName()+",称谓"+title+",登记编号"+t.getRegistrationNumber()+";"):checkDict));
-                            exportReturnVO.setFailNumber(exportReturnVO.getFailNumber()+1);
+                            isAddFailMessage=true;
+                            failMessage=uniqueSet.contains(uniqueCode)?(checkDict+uniqueCheckMessage):checkDict;
+//                            exportReturnVO.getFailMessage().add(new ExportReturnMessageVO(t.getColumnNumber(),uniqueSet.contains(uniqueCode)?(checkDict+"数据重复:干部身份证号"+t.getCardId()+",家人姓名"+t.getName()+",称谓"+title+",登记编号"+t.getRegistrationNumber()+";"):checkDict));
+//                            exportReturnVO.setFailNumber(exportReturnVO.getFailNumber()+1);
                         }
                     } else {
                         PrivateEquity investInfo = new PrivateEquity();
@@ -723,13 +734,12 @@ public class PrivateEquityServiceImpl extends ServiceImpl<PrivateEquityMapper, P
                         investInfo.setState(SystemConstant.SAVE_STATE)//默认类型新建
                                 .setCreateTime(new Date())
                                 .setUpdateTime(new Date());
-                        String title = investInfo.getTitle();
                         //字典替换
                         String checkDict = this.replaceDictId(investInfo,dictList);
                         if (StringUtils.isBlank(checkDict)){
                             if (uniqueSet.contains(uniqueCode)){
-                                exportReturnVO.setFailNumber(exportReturnVO.getFailNumber()+1);
-                                exportReturnVO.getFailMessage().add(new ExportReturnMessageVO(t.getColumnNumber(),"数据重复:干部身份证号"+t.getCardId()+",家人姓名"+t.getName()+",称谓"+title+",登记编号"+t.getRegistrationNumber()+";"));
+                                isAddFailMessage=true;
+                                failMessage=uniqueCheckMessage;
                             }else {
                                 uniqueSet.add(uniqueCode);
                                 investInfo.setCreateName(baseDTO.getServicePersonName());
@@ -741,12 +751,12 @@ public class PrivateEquityServiceImpl extends ServiceImpl<PrivateEquityMapper, P
                                 investInfo.setCreateTime(DateUtil.date(time));
                                 date.setTime(time);
                                 privateEquity.add(investInfo);
-                                exportReturnVO.setSuccessNumber(exportReturnVO.getSuccessNumber()+1);
+                                exportReturnVO.addSuccessNumber();
                             }
 
                         }else {
-                            exportReturnVO.getFailMessage().add(new ExportReturnMessageVO(t.getColumnNumber(),uniqueSet.contains(uniqueCode)?(checkDict+"数据重复:干部身份证号"+t.getCardId()+",家人姓名"+t.getName()+",称谓"+title+",登记编号"+t.getRegistrationNumber()+";"):checkDict));
-                            exportReturnVO.setFailNumber(exportReturnVO.getFailNumber()+1);
+                            isAddFailMessage=true;
+                            failMessage=uniqueSet.contains(uniqueCode)?(checkDict+uniqueCheckMessage):checkDict;
                         }
                     }
                 }else {
@@ -762,20 +772,23 @@ public class PrivateEquityServiceImpl extends ServiceImpl<PrivateEquityMapper, P
                         exportReturnVO.getFailMessage().stream().filter(exportReturnMessageVO -> exportReturnMessageVO.getColumn().equals(t.getColumnNumber())).forEach(exportReturnMessageVO -> exportReturnMessageVO.setMessage(message+Optional.ofNullable(checkDict).orElse("")));
                     }
                 }
-
+                if (isAddFailMessage){
+                    exportReturnVO.addFailContent(t.getColumnNumber(),failMessage);
+                }
             });
-            if (!privateEquity.isEmpty()) {
-                privateEquity.forEach(mechanismInfo -> {
-                    mechanismInfo.setOrgCode(orgCode);
-                    mechanismInfo.setOrgName(orgName);
-                });
-                this.saveBatch(privateEquity);
-                spouseBasicInfoService.addBatchSpouse(privateEquity.stream().map(investInfo ->
-                        new SpouseBasicInfo().setRefId(investInfo.getId()).setCreateTime(investInfo.getCreateTime()).setTenantId(baseDTO.getServiceLesseeId())
-                                .setCreatorId(baseDTO.getServiceUserId()).setUpdaterId(baseDTO.getServiceUserId()).setUpdateTime(investInfo.getUpdateTime())
-                                .setCadreCardId(investInfo.getCardId()).setName(investInfo.getName()).setTitle(investInfo.getTitle()).setCadreName(investInfo.getGbName())
-                ).collect(Collectors.toList()),SystemConstant.EQUITYFUNDS);
-            }
+//            if (!privateEquity.isEmpty()) {
+//                privateEquity.forEach(mechanismInfo -> {
+//                    mechanismInfo.setOrgCode(orgCode);
+//                    mechanismInfo.setOrgName(orgName);
+//                });
+//                this.saveBatch(privateEquity);
+//                spouseBasicInfoService.addBatchSpouse(privateEquity.stream().map(investInfo ->
+//                        new SpouseBasicInfo().setRefId(investInfo.getId()).setCreateTime(investInfo.getCreateTime()).setTenantId(baseDTO.getServiceLesseeId())
+//                                .setCreatorId(baseDTO.getServiceUserId()).setUpdaterId(baseDTO.getServiceUserId()).setUpdateTime(investInfo.getUpdateTime())
+//                                .setCadreCardId(investInfo.getCardId()).setName(investInfo.getName()).setTitle(investInfo.getTitle()).setCadreName(investInfo.getGbName())
+//                ).collect(Collectors.toList()),SystemConstant.EQUITYFUNDS);
+//            }
+            this.saveData(privateEquity,orgCode,orgName,baseDTO);
             return;
         }
         List<PrivateEquity> updateList = new ArrayList<>();
@@ -785,6 +798,11 @@ public class PrivateEquityServiceImpl extends ServiceImpl<PrivateEquityMapper, P
             String uniqueCode = t.getCardId() + "," + t.getName() + "," + t.getTitle()+","+t.getRegistrationNumber();
             List<PrivateEquity> infos = infoMap.getOrDefault(t.getCardId(), null);
             String title1 = t.getTitle();
+            String uniqueCheckMessage = "数据重复:干部身份证号" + t.getCardId() + ",家人姓名" + t.getName() + ",称谓" + title1 + ",登记编号" + t.getRegistrationNumber() + ";";
+            //失败信息
+            String failMessage=null;
+            //是否需要添加失败信息
+            boolean isAddFailMessage=false;
             if (t.getIsSituation().equals(SystemConstant.IS_SITUATION_YES)) {
                 String message = t.getMessage();
                 if (StringUtils.isBlank(message)){
@@ -804,8 +822,10 @@ public class PrivateEquityServiceImpl extends ServiceImpl<PrivateEquityMapper, P
                             String checkDict = this.replaceDictId(info,dictList);
                             if (StringUtils.isBlank(checkDict)){
                                 if (uniqueSet.contains(uniqueCode)){
-                                    exportReturnVO.setFailNumber(exportReturnVO.getFailNumber()+1);
-                                    exportReturnVO.getFailMessage().add(new ExportReturnMessageVO(t.getColumnNumber(),"数据重复:干部身份证号"+t.getCardId()+",家人姓名"+t.getName()+",称谓"+title1+",登记编号"+t.getRegistrationNumber()+";"));
+//                                    exportReturnVO.setFailNumber(exportReturnVO.getFailNumber()+1);
+//                                    exportReturnVO.getFailMessage().add(new ExportReturnMessageVO(t.getColumnNumber(), uniqueCheckMessage));
+                                    isAddFailMessage=true;
+                                    failMessage=uniqueCheckMessage;
                                 }else {
                                     if(nameIndex==0|titleIndex==0){ //一个都不重复
                                         long time = date.getTime() + 1000;
@@ -818,7 +838,7 @@ public class PrivateEquityServiceImpl extends ServiceImpl<PrivateEquityMapper, P
                                         info.setOrgCode(baseDTO.getOrgCode());
                                         info.setOrgName(baseDTO.getOrgName());
                                         privateEquity.add(info);
-                                        exportReturnVO.setSuccessNumber(exportReturnVO.getSuccessNumber()+1);
+                                        exportReturnVO.addSuccessNumber();
                                         uniqueSet.add(uniqueCode);
                                     }else{ //有重复数据了
                                         PrivateEquity existInfo = infos.stream().filter(e->t.getName().equals(e.getName())
@@ -832,7 +852,7 @@ public class PrivateEquityServiceImpl extends ServiceImpl<PrivateEquityMapper, P
                                             info.setCreateTime(DateUtil.date(time));
                                             date.setTime(time);
                                             updateList.add(info);
-                                            exportReturnVO.setSuccessNumber(exportReturnVO.getSuccessNumber()+1);
+                                            exportReturnVO.addSuccessNumber();
                                             uniqueSet.add(uniqueCode);
                                         }else if (privateEquity.isEmpty()||privateEquity.stream().filter(privateEquity1 -> t.getName().equals(privateEquity1.getName())&&t.getCode().equals(privateEquity1.getCode())&&title.equals(privateEquity1.getTitle())).count()==0){
                                             long time = date.getTime() + 1000;
@@ -844,18 +864,20 @@ public class PrivateEquityServiceImpl extends ServiceImpl<PrivateEquityMapper, P
                                             info.setOrgCode(baseDTO.getOrgCode());
                                             info.setOrgName(baseDTO.getOrgName());
                                             privateEquity.add(info);
-                                            exportReturnVO.setSuccessNumber(exportReturnVO.getSuccessNumber()+1);
+                                            exportReturnVO.addSuccessNumber();
                                             uniqueSet.add(uniqueCode);
                                         }else {
-                                            exportReturnVO.getFailMessage().add(new ExportReturnMessageVO(t.getColumnNumber(),"数据重复"));
-                                            exportReturnVO.setFailNumber(exportReturnVO.getFailNumber()+1);
+                                            isAddFailMessage=true;
+                                            failMessage="数据重复;";
+//                                            exportReturnVO.getFailMessage().add(new ExportReturnMessageVO(t.getColumnNumber(),"数据重复;"));
+//                                            exportReturnVO.setFailNumber(exportReturnVO.getFailNumber()+1);
                                         }
                                     }
                                 }
 
                             }else {
-                                exportReturnVO.getFailMessage().add(new ExportReturnMessageVO(t.getColumnNumber(),uniqueSet.contains(uniqueCode)?(checkDict+"数据重复:干部身份证号"+t.getCardId()+",家人姓名"+t.getName()+",称谓"+title1+",登记编号"+t.getRegistrationNumber()+";"):checkDict));
-                                exportReturnVO.setFailNumber(exportReturnVO.getFailNumber()+1);
+                                isAddFailMessage=true;
+                                failMessage=uniqueSet.contains(uniqueCode)?(checkDict+uniqueCheckMessage):checkDict;
                             }
 
                         /*if (!t.getName().equals(e.getName()) &&!info.getTitle().equals(e.getTitle())&& !t.getCode().equals(e.getCode())) {
@@ -897,8 +919,8 @@ public class PrivateEquityServiceImpl extends ServiceImpl<PrivateEquityMapper, P
                             String checkDict = this.replaceDictId(info,dictList);
                             if (StringUtils.isBlank(checkDict)){
                                 if (uniqueSet.contains(uniqueCode)){
-                                    exportReturnVO.setFailNumber(exportReturnVO.getFailNumber()+1);
-                                    exportReturnVO.getFailMessage().add(new ExportReturnMessageVO(t.getColumnNumber(),"数据重复:干部身份证号"+t.getCardId()+",家人姓名"+t.getName()+",称谓"+title1+",登记编号"+t.getRegistrationNumber()+";"));
+                                    isAddFailMessage=true;
+                                    failMessage=uniqueCheckMessage;
                                 }else {
                                     uniqueSet.add(uniqueCode);
                                     info.setCreateName(baseDTO.getServicePersonName());
@@ -908,12 +930,14 @@ public class PrivateEquityServiceImpl extends ServiceImpl<PrivateEquityMapper, P
                                     info.setUpdateTime(DateUtil.date(time));
                                     date.setTime(time);
                                     privateEquity.add(info);
-                                    exportReturnVO.setSuccessNumber(exportReturnVO.getSuccessNumber()+1);
+                                    exportReturnVO.addSuccessNumber();
                                 }
 
                             }else {
-                                exportReturnVO.getFailMessage().add(new ExportReturnMessageVO(t.getColumnNumber(),uniqueSet.contains(uniqueCode)?(checkDict+"数据重复:干部身份证号"+t.getCardId()+",家人姓名"+t.getName()+",称谓"+title1+",登记编号"+t.getRegistrationNumber()+";"):checkDict));
-                                exportReturnVO.setFailNumber(exportReturnVO.getFailNumber()+1);
+//                                exportReturnVO.getFailMessage().add(new ExportReturnMessageVO(t.getColumnNumber(),uniqueSet.contains(uniqueCode)?(checkDict+"数据重复:干部身份证号"+t.getCardId()+",家人姓名"+t.getName()+",称谓"+title1+",登记编号"+t.getRegistrationNumber()+";"):checkDict));
+//                                exportReturnVO.setFailNumber(exportReturnVO.getFailNumber()+1);
+                                isAddFailMessage=true;
+                                failMessage=uniqueSet.contains(uniqueCode)?(checkDict+uniqueCheckMessage):checkDict;
                             }
 
                         }
@@ -965,20 +989,11 @@ public class PrivateEquityServiceImpl extends ServiceImpl<PrivateEquityMapper, P
                 }
 
             }
-
+            if (isAddFailMessage){
+                exportReturnVO.addFailContent(t.getColumnNumber(),failMessage);
+            }
         });
-        if (!privateEquity.isEmpty()) {
-            privateEquity.forEach(mechanismInfo -> {
-                mechanismInfo.setOrgCode(orgCode);
-                mechanismInfo.setOrgName(orgName);
-            });
-            this.saveBatch(privateEquity);
-            spouseBasicInfoService.addBatchSpouse(privateEquity.stream().map(investInfo ->
-                    new SpouseBasicInfo().setRefId(investInfo.getId()).setCreateTime(investInfo.getCreateTime()).setTenantId(baseDTO.getServiceLesseeId())
-                            .setCreatorId(baseDTO.getServiceUserId()).setUpdaterId(baseDTO.getServiceUserId()).setUpdateTime(investInfo.getUpdateTime())
-                            .setCadreCardId(investInfo.getCardId()).setName(investInfo.getName()).setTitle(investInfo.getTitle()).setCadreName(investInfo.getGbName())
-            ).collect(Collectors.toList()),SystemConstant.EQUITYFUNDS);
-        }
+        this.saveData(privateEquity,orgCode,orgName,baseDTO);
         if (!updateList.isEmpty()) {
             updateList.forEach(mechanismInfo -> {
                 mechanismInfo.setOrgCode(orgCode);
@@ -986,6 +1001,21 @@ public class PrivateEquityServiceImpl extends ServiceImpl<PrivateEquityMapper, P
             });
             this.updateBatchById(updateList);
             spouseBasicInfoService.addBatchSpouse(updateList.stream().map(investInfo ->
+                    new SpouseBasicInfo().setRefId(investInfo.getId()).setCreateTime(investInfo.getCreateTime()).setTenantId(baseDTO.getServiceLesseeId())
+                            .setCreatorId(baseDTO.getServiceUserId()).setUpdaterId(baseDTO.getServiceUserId()).setUpdateTime(investInfo.getUpdateTime())
+                            .setCadreCardId(investInfo.getCardId()).setName(investInfo.getName()).setTitle(investInfo.getTitle()).setCadreName(investInfo.getGbName())
+            ).collect(Collectors.toList()),SystemConstant.EQUITYFUNDS);
+        }
+    }
+
+    private void saveData(List<PrivateEquity> privateEquity,String orgCode,String orgName,BaseDTO baseDTO){
+        if (!privateEquity.isEmpty()) {
+            privateEquity.forEach(mechanismInfo -> {
+                mechanismInfo.setOrgCode(orgCode);
+                mechanismInfo.setOrgName(orgName);
+            });
+            this.saveBatch(privateEquity);
+            spouseBasicInfoService.addBatchSpouse(privateEquity.stream().map(investInfo ->
                     new SpouseBasicInfo().setRefId(investInfo.getId()).setCreateTime(investInfo.getCreateTime()).setTenantId(baseDTO.getServiceLesseeId())
                             .setCreatorId(baseDTO.getServiceUserId()).setUpdaterId(baseDTO.getServiceUserId()).setUpdateTime(investInfo.getUpdateTime())
                             .setCadreCardId(investInfo.getCardId()).setName(investInfo.getName()).setTitle(investInfo.getTitle()).setCadreName(investInfo.getGbName())

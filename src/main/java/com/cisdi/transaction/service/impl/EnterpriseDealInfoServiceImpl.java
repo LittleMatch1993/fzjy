@@ -115,7 +115,7 @@ public class EnterpriseDealInfoServiceImpl extends ServiceImpl<EnterpriseDealInf
                      infoList.forEach(t -> {
                         EnterpriseDealInfo info = new EnterpriseDealInfo();
                         BeanUtils.copyProperties(businessTransactionDTO, info);
-                        info.setCardId(t.getCardId())
+                        info.setBanPurchaseCode(t.getBanPurchaseCode()).setBanPurchaseName(t.getBanPurchaseName()).setCardId(t.getCardId())
                                 .setName(t.getName())
                                 .setCompany(t.getCompany())
                                 .setPost(t.getPost())
