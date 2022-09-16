@@ -16,6 +16,7 @@ import com.cisdi.transaction.service.PurchaseBanDealInfoSevice;
 import com.cisdi.transaction.service.SysDictBizService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -56,10 +57,10 @@ public class PurchaseBanDealInfoSeviceImpl extends ServiceImpl<PurchaseBanDealIn
         infos.stream().forEach(info->{
             if(SystemConstant.VALID_STATE.equals(info.getState())){
                 PurchaseBanDealInfo purchase = new PurchaseBanDealInfo();
-                String refId = info.getId();
+                String id = info.getId();
                 BeanUtil.copyProperties(info, purchase,new String[]{"id"});
                 purchase.setCreateTime(DateUtil.date());
-                purchase.setRefId(refId);
+                purchase.setSourceId(id);
                 purchase.setDelFlag(0);//未删除
                 String temp = purchase.getIsExtends();
                 String isExtends = sysDictBizService.getDictValue(temp, sysDictBizs);
@@ -78,6 +79,7 @@ public class PurchaseBanDealInfoSeviceImpl extends ServiceImpl<PurchaseBanDealIn
      * @param ids
      * @return
      */
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public boolean deletePushDataForPurchase(List<String> ids) {
         if(CollectionUtil.isEmpty(ids)){

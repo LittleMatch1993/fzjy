@@ -816,6 +816,7 @@ public class BanDealInfoServiceImpl extends ServiceImpl<BanDealInfoMapper, BanDe
         return b;
     }
 
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public boolean deleteOnlyBanDealInfoByRefId(List<String> ids) {
         QueryWrapper<BanDealInfo> queryWrapper = new QueryWrapper<>();

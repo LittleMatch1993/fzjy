@@ -9,16 +9,16 @@ import lombok.experimental.Accessors;
 
 import java.util.Date;
 
-/**
+/**推送采购数据记录
  * @Author: cxh
  * @Description:
- * @Date: 2022/8/5 9:21
+ * @Date: 2022/9/9 9:28
  */
 @Data
 @EqualsAndHashCode(callSuper = false)
 @Accessors(chain = true)
-@TableName("69654103_ban_deal_info")
-public class PurchaseBanDealInfo {
+@TableName("69654103_purchase_record")
+public class PurchaseRecord {
 
     /**
      * id
@@ -67,20 +67,7 @@ public class PurchaseBanDealInfo {
      */
     private Date createTime;
 
-    /**
-     * 关联数据id
-     */
     private  String refId;
 
-    /**
-     * 删除标识 0 未删除  1删除
-     */
     private Integer delFlag;
-
-    /**
-     * 源数据id
-     */
-    private String sourceId;
-
-
 }
